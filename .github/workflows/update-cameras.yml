@@ -1,0 +1,57 @@
+name: 更新測速照相點位
+
+on:
+  schedule:
+    # 每週一 03:00（台灣時間 UTC+8）
+    - cron: '0 19 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-cameras
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+
+      # 下載警政署 CSV → 正規化/驗證 → 內容有變才改寫 data/published/。
+      # 安全檢查未通過時 exit 1，不會 commit，GitHub 會寄出失敗通知。
+      - name: 抓取並驗證資料
+        run: ./gradlew :camera-sync:run
+
+      - name: 報告
+        if: always()
+        run: |
+          if [ -f build/camera-report.md ]; then cat build/camera-report.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: 保存報告與區間候選
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: camera-sync-report
+          path: |
+            build/camera-report.md
+            build/section-candidates.csv
+          if-no-files-found: ignore
+
+      - name: Commit 新資料
+        run: |
+          if [ -z "$(git status --porcelain -- data/published)" ]; then
+            echo "資料未變更，不需 commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/published
+          git commit -m "更新測速照相點位資料（$(jq -r .version data/published/meta.json)，$(jq -r .count data/published/meta.json) 筆）"
+          git push
