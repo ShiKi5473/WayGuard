@@ -24,6 +24,11 @@ data class Place(
     val lon: Double,
     /** What the point is (e.g. "大溪區公所（OSM）") — for humans reviewing the file. */
     val ref: String = "",
+    /**
+     * A road (`往興豐路方向`): the point is that road's nearest point to the cameras,
+     * which is only trusted when close (see [PlaceHeadingRules.MAX_ROAD_TARGET_M]).
+     */
+    val road: Boolean = false,
 ) {
     val pos: LatLng get() = LatLng(lat, lon)
 }

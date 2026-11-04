@@ -25,6 +25,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # 下載警政署 CSV → 正規化/驗證 → 內容有變才改寫 data/published/。
+      # 依地名推算方向的新點位，會向 OpenStreetMap 查詢所在道路走向，結果快取在
+      # data/generated/road-checks.json；查詢失敗的點位維持雙向提醒，下次再查。
       # 安全檢查未通過時 exit 1，不會 commit，GitHub 會寄出失敗通知。
       - name: 抓取並驗證資料
         run: ./gradlew :camera-sync:run
@@ -46,12 +48,12 @@ jobs:
 
       - name: Commit 新資料
         run: |
-          if [ -z "$(git status --porcelain -- data/published)" ]; then
+          if [ -z "$(git status --porcelain -- data/published data/generated)" ]; then
             echo "資料未變更，不需 commit"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/published
+          git add data/published data/generated
           git commit -m "更新測速照相點位資料（$(jq -r .version data/published/meta.json)，$(jq -r .count data/published/meta.json) 筆）"
           git push

@@ -9,41 +9,27 @@ import com.wayguard.core.validate.CountyBounds
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import java.io.File
-import java.net.URI
-import java.net.URLEncoder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.time.Duration
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Curation aid, run by hand (`--suggest-places`), never by the weekly job: geocodes the
  * destination names that data/source/places.json doesn't know yet via OpenStreetMap
  * Nominatim and writes candidates for review. Nothing is applied automatically — a
- * human checks each bearing and copies good entries into places.json.
+ * human checks the places and copies good entries into places.json. (Whether each
+ * camera's direction is then trusted is decided automatically by the road check.)
  *
  * Strategies, by what the name looks like:
  * - `市區` → the office of the camera's own district (scoped to that district);
- * - a district/town name (`大溪` → 大溪區) → its district office;
+ * - a district/town name of the camera's city (`大溪` → 大溪區) → its district office;
  * - a city name (`臺北市`) → the city hall;
  * - a road (`興豐路`, `國道二號`) → the point of that road nearest the camera(s), scoped
- *   to the cameras' district because a long road's relevant point differs per area;
- * - anything else → the best search hit near the cameras.
- *
- * Respects Nominatim's usage policy: identifying User-Agent, at most one request/s.
+ *   to the cameras' district and marked `road` (a far "nearest point" is not trusted);
+ * - anything else → the best search hit near the cameras, then a district of another city.
  */
-internal class PlaceSuggester(private val userAgent: String) {
+internal class PlaceSuggester(private val nominatim: Nominatim) {
 
     data class Suggestion(
         val ref: PlaceRef,
@@ -54,11 +40,7 @@ internal class PlaceSuggester(private val userAgent: String) {
         val osmLabel: String = "",
     )
 
-    private data class Hit(val pos: LatLng, val label: String, val category: String, val type: String)
-
-    private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build()
     private val prettyJson = Json(DatasetJson) { prettyPrint = true }
-    private var lastRequestMs = 0L
     /** (city, name) → result, so a town used from several districts is looked up once. */
     private val cityLevelCache = HashMap<Pair<String, String>, Suggestion>()
 
@@ -114,17 +96,17 @@ internal class PlaceSuggester(private val userAgent: String) {
     }
 
     private fun office(ref: PlaceRef, cams: List<LatLng>, query: String, scopeDistrict: Boolean, method: String): Suggestion {
-        val hits = search(query, viewbox = box(centroid(cams), 0.4))
+        val hits = nominatim.search(query, Nominatim.Box.around(centroid(cams), 0.4))
         // Must be that very office: a fuzzy "北埔鄉公所" for "埔心鄉公所" is no match.
         val hit = hits.firstOrNull { it.label.startsWith(query) && it.type == "townhall" }
             ?: hits.firstOrNull { it.label.startsWith(query) }
-        return toSuggestion(ref, cams, method, query, hit, scopeDistrict)
+        return toSuggestion(ref, cams, method, query, hit?.pos, hit?.label, scopeDistrict, road = false)
     }
 
     private fun landmark(ref: PlaceRef, cams: List<LatLng>, center: LatLng): Suggestion {
-        val hits = search(ref.name, viewbox = box(center, 0.15))
+        val hits = nominatim.search(ref.name, Nominatim.Box.around(center, 0.15))
         val hit = hits.firstOrNull { it.category != "highway" } ?: hits.firstOrNull()
-        return toSuggestion(ref, cams, "地標搜尋", ref.name, hit, scopeDistrict = false)
+        return toSuggestion(ref, cams, "地標搜尋", ref.name, hit?.pos, hit?.label, scopeDistrict = false, road = false)
     }
 
     /** Nearest point of the named road to the cameras (searches its geometry). */
@@ -135,105 +117,33 @@ internal class PlaceSuggester(private val userAgent: String) {
             Regex("[台臺](\\d+)").find(ref.name)?.let { add("台${it.groupValues[1]}線") }
         }
         for (q in queries) {
-            val lines = searchGeometry(q, box(center, 0.05))
-            val nearest = lines.flatMap { (label, pts) -> nearestOn(pts, center)?.let { listOf(label to it) } ?: emptyList() }
+            val nearest = nominatim.search(q, Nominatim.Box.around(center, 0.05), geometry = true)
+                .filter { it.category == "highway" }
+                .mapNotNull { h -> Nominatim.nearestOnLine(h.line, center)?.let { h.label to it.first } }
                 .minByOrNull { GeoUtils.haversine(center, it.second) }
             if (nearest != null) {
-                val hit = Hit(nearest.second, nearest.first, "highway", "")
-                return toSuggestion(ref, cams, "道路最近點", q, hit, scopeDistrict = true)
+                return toSuggestion(ref, cams, "道路最近點", q, nearest.second, nearest.first, scopeDistrict = true, road = true)
             }
         }
         return Suggestion(ref, cams, "道路最近點", queries.joinToString(" / "), null)
     }
 
-    private fun toSuggestion(ref: PlaceRef, cams: List<LatLng>, method: String, query: String, hit: Hit?, scopeDistrict: Boolean): Suggestion {
-        if (hit == null) return Suggestion(ref, cams, method, query, null)
-        val label = hit.label.split(", ").take(3).joinToString(", ")
+    private fun toSuggestion(
+        ref: PlaceRef, cams: List<LatLng>, method: String, query: String,
+        pos: LatLng?, osmLabel: String?, scopeDistrict: Boolean, road: Boolean,
+    ): Suggestion {
+        if (pos == null) return Suggestion(ref, cams, method, query, null)
+        val label = osmLabel.orEmpty().split(", ").take(3).joinToString(", ")
         val place = Place(
             name = ref.name,
             city = ref.city,
             district = ref.district.takeIf { scopeDistrict && it.isNotBlank() },
-            lat = round6(hit.pos.lat),
-            lon = round6(hit.pos.lon),
+            lat = round6(pos.lat),
+            lon = round6(pos.lon),
             ref = "$label（OSM，$method）",
+            road = road,
         )
         return Suggestion(ref, cams, method, query, place, label)
-    }
-
-    // ---------------- Nominatim ----------------
-
-    private data class Box(val minLat: Double, val maxLat: Double, val minLon: Double, val maxLon: Double)
-
-    private fun box(c: LatLng, deg: Double) = Box(c.lat - deg, c.lat + deg, c.lon - deg, c.lon + deg)
-
-    private fun search(q: String, viewbox: Box): List<Hit> =
-        request(q, viewbox, polygon = false).mapNotNull { o ->
-            val lat = o["lat"]?.jsonPrimitive?.contentOrNull?.toDoubleOrNull() ?: return@mapNotNull null
-            val lon = o["lon"]?.jsonPrimitive?.contentOrNull?.toDoubleOrNull() ?: return@mapNotNull null
-            Hit(
-                LatLng(lat, lon),
-                o["display_name"]?.jsonPrimitive?.contentOrNull.orEmpty(),
-                o["category"]?.jsonPrimitive?.contentOrNull.orEmpty(),
-                o["type"]?.jsonPrimitive?.contentOrNull.orEmpty(),
-            )
-        }
-
-    /** Highway results with their line geometry: label → points. */
-    private fun searchGeometry(q: String, viewbox: Box): List<Pair<String, List<LatLng>>> =
-        request(q, viewbox, polygon = true)
-            .filter { it["category"]?.jsonPrimitive?.contentOrNull == "highway" }
-            .mapNotNull { o ->
-                val geo = o["geojson"]?.jsonObject ?: return@mapNotNull null
-                val coords = geo["coordinates"] as? JsonArray ?: return@mapNotNull null
-                val pts = when (geo["type"]?.jsonPrimitive?.contentOrNull) {
-                    "LineString" -> coords.map(::toLatLng)
-                    "MultiLineString" -> coords.flatMap { it.jsonArray.map(::toLatLng) }
-                    "Point" -> listOf(toLatLng(coords))
-                    else -> emptyList()
-                }.filterNotNull()
-                (o["display_name"]?.jsonPrimitive?.contentOrNull.orEmpty()) to pts
-            }
-
-    private fun toLatLng(e: kotlinx.serialization.json.JsonElement): LatLng? {
-        val a = e as? JsonArray ?: return null
-        val lon = a.getOrNull(0)?.jsonPrimitive?.doubleOrNull ?: return null
-        val lat = a.getOrNull(1)?.jsonPrimitive?.doubleOrNull ?: return null
-        return LatLng(lat, lon)
-    }
-
-    private fun request(q: String, b: Box, polygon: Boolean): List<JsonObject> {
-        // Nominatim allows at most one request per second.
-        val wait = 1_100 - (System.currentTimeMillis() - lastRequestMs)
-        if (wait > 0) Thread.sleep(wait)
-        lastRequestMs = System.currentTimeMillis()
-        val url = buildString {
-            append("https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=tw&limit=10")
-            append("&accept-language=zh-TW&bounded=1")
-            append("&viewbox=").append("${b.minLon},${b.maxLat},${b.maxLon},${b.minLat}")
-            if (polygon) append("&polygon_geojson=1&polygon_threshold=0.00005")
-            append("&q=").append(URLEncoder.encode(q, Charsets.UTF_8))
-        }
-        return try {
-            val resp = client.send(
-                HttpRequest.newBuilder(URI.create(url)).header("User-Agent", userAgent)
-                    .timeout(Duration.ofSeconds(30)).GET().build(),
-                HttpResponse.BodyHandlers.ofString(Charsets.UTF_8),
-            )
-            if (resp.statusCode() != 200) emptyList()
-            else DatasetJson.parseToJsonElement(resp.body()).jsonArray.map { it.jsonObject }
-        } catch (e: Exception) {
-            System.err.println("查詢失敗：$q（$e）")
-            emptyList()
-        }
-    }
-
-    // ---------------- geometry / output ----------------
-
-    private fun nearestOn(pts: List<LatLng>, p: LatLng): LatLng? = when (pts.size) {
-        0 -> null
-        1 -> pts[0]
-        else -> pts.zipWithNext { a, b -> GeoUtils.projectOnSegment(p, a, b) }
-            .minByOrNull { GeoUtils.haversine(p, it) }
     }
 
     private fun centroid(pts: List<LatLng>) = LatLng(pts.map { it.lat }.average(), pts.map { it.lon }.average())
@@ -246,10 +156,10 @@ internal class PlaceSuggester(private val userAgent: String) {
     private fun markdown(list: List<Suggestion>): String = buildString {
         appendLine("# 地名對照候選")
         appendLine()
-        appendLine("由 Nominatim（OpenStreetMap）查得，**未經確認**。請檢查每個測速點的推算方向是否符合道路走向，")
-        appendLine("確認後把 `place-suggestions.json` 中正確的項目複製到 `data/source/places.json`（可合併成 aliases）。")
+        appendLine("由 Nominatim（OpenStreetMap）查得，**未經確認**。請確認地點正確後，把 `place-suggestions.json` 中的項目")
+        appendLine("複製到 `data/source/places.json`（可合併成 aliases）。各測速點是否採用推算方向，之後由道路走向比對自動決定。")
         appendLine()
-        appendLine("| 範圍 | 地名 | 方法 | 查詢 | OSM 結果 | 座標 | 各測速點：推算方向／距離 |")
+        appendLine("| 範圍 | 地名 | 方法 | 查詢 | OSM 結果 | 座標 | 各測速點：目的地方位／距離 |")
         appendLine("|---|---|---|---|---|---|---|")
         for (s in list.sortedWith(compareBy({ it.place == null }, { it.ref.city }, { it.ref.name }, { it.ref.district }))) {
             val p = s.place

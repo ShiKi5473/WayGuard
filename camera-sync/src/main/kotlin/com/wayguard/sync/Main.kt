@@ -4,6 +4,7 @@ import com.wayguard.core.dataset.BuildResult
 import com.wayguard.core.dataset.DatasetBuilder
 import com.wayguard.core.dataset.Overrides
 import com.wayguard.core.dataset.Place
+import com.wayguard.core.dataset.RoadCheck
 import com.wayguard.core.model.DatasetIo
 import com.wayguard.core.model.DatasetJson
 import com.wayguard.core.model.DatasetMeta
@@ -20,6 +21,11 @@ import java.time.temporal.ChronoUnit
 import kotlin.system.exitProcess
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+
+private val prettyJson = Json(DatasetJson) { prettyPrint = true }
 
 /** 警政署「測速執法設置點」(data.gov.tw dataset 7320) CSV download. */
 const val NPA_URL =
@@ -50,6 +56,10 @@ data class SyncArgs(
     val sections: File = File("data/source/sections.json"),
     val overrides: File = File("data/source/overrides.json"),
     val places: File = File("data/source/places.json"),
+    /** Cache of the road each place-derived camera stands on (machine-maintained). */
+    val roadChecks: File = File("data/generated/road-checks.json"),
+    /** Skip the road lookups (unchecked cameras then stay both ways). */
+    val offline: Boolean = false,
     val out: File = File("data/published"),
     val report: File = File("build/camera-report.md"),
     val candidates: File = File("build/section-candidates.csv"),
@@ -65,8 +75,8 @@ data class SyncArgs(
 ) {
     companion object {
         const val USAGE = "usage: camera-sync [--source URL|FILE] [--sections FILE] [--overrides FILE] " +
-            "[--places FILE] [--out DIR] [--report FILE] [--candidates FILE] [--min-ratio 0.8] " +
-            "[--max-reject 0.3] [--suggest-places]"
+            "[--places FILE] [--road-checks FILE] [--offline] [--out DIR] [--report FILE] [--candidates FILE] " +
+            "[--min-ratio 0.8] [--max-reject 0.3] [--suggest-places]"
 
         fun parse(args: Array<String>): SyncArgs {
             var a = SyncArgs()
@@ -78,6 +88,8 @@ data class SyncArgs(
                     "--sections" -> a.copy(sections = File(value()))
                     "--overrides" -> a.copy(overrides = File(value()))
                     "--places" -> a.copy(places = File(value()))
+                    "--road-checks" -> a.copy(roadChecks = File(value()))
+                    "--offline" -> a.copy(offline = true)
                     "--suggest-places" -> a.copy(suggestPlaces = true)
                     "--out" -> a.copy(out = File(value()))
                     "--report" -> a.copy(report = File(value()))
@@ -104,14 +116,40 @@ fun sync(a: SyncArgs): Int {
     val sections = readJson(a.sections, ListSerializer(Section.serializer())) ?: emptyList()
     val overrides = readJson(a.overrides, Overrides.serializer()) ?: Overrides()
     val places = readJson(a.places, ListSerializer(Place.serializer())) ?: emptyList()
+    val checksSerializer = MapSerializer(String.serializer(), RoadCheck.serializer())
+    val cachedChecks = readJson(a.roadChecks, checksSerializer) ?: emptyMap()
+    val checks = LinkedHashMap(cachedChecks)
     val now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
-    val result = DatasetBuilder.build(parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places)
+    fun build() = DatasetBuilder.build(
+        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks,
+    )
+    var result = build()
+    val nominatim = Nominatim(USER_AGENT)
 
     if (a.suggestPlaces) {
         val outDir = a.report.absoluteFile.parentFile
-        val n = PlaceSuggester(USER_AGENT).run(result, outDir)
+        val n = PlaceSuggester(nominatim).run(result, outDir)
         println("已查詢 ${result.report.unmatchedPlaces.size} 個未對照地名，找到 $n 個候選：${File(outDir, "place-suggestions.md")}")
         return 0
+    }
+
+    // Verify destination-derived directions against the road each new camera stands on.
+    // Unverified cameras stay both ways, so a failed lookup is safe and retried next run.
+    val pending = result.report.needsRoadCheck
+    if (pending.isNotEmpty() && !a.offline) {
+        val found = RoadChecker(nominatim).check(pending.map { it.cameraId to it.pos }, now)
+        println("比對道路走向：待比對 ${pending.size} 個點位，取得 ${found.size} 筆")
+        if (found.isNotEmpty()) {
+            checks += found
+            result = build()
+        }
+    }
+    // Keep only cameras that still use a destination, so the cache doesn't grow forever.
+    val inUse = (result.report.placeDerived + result.report.placeSkipped).mapTo(HashSet()) { it.cameraId }
+    val prunedChecks = checks.filterKeys { it in inUse }.toSortedMap()
+    if (prunedChecks != cachedChecks.toSortedMap()) {
+        a.roadChecks.parentFile?.mkdirs()
+        a.roadChecks.writeText(prettyJson.encodeToString(checksSerializer, prunedChecks) + "\n")
     }
 
     val metaFile = File(a.out, "meta.json")

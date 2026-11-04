@@ -22,13 +22,14 @@ Android 測速照相守衛（Kotlin + Jetpack Compose + MapLibre GL）。地圖�
 | `app/` | Android App：`guard/`（前景服務、TTS、懸浮窗）、`data/`（資料載入與合併）、`sync/`（WorkManager 更新）、`settings/`、`ui/` |
 | `data/source/` | 人工維護：`overrides.json`（修正、排除、新增點位）、`sections.json`（區間起訖點）、`places.json`（方向文字中的地名座標） |
 | `data/published/` | CI 產出：`cameras.json`、`meta.json`。App 也會把這兩個檔案打包成內建快照 |
+| `data/generated/` | CI 自動維護：`road-checks.json`（依地名推算方向的點位所在道路走向，來自 OpenStreetMap） |
 
 ## 資料更新流程
 
 1. `.github/workflows/update-cameras.yml` 每週一 03:00（台灣時間）執行 `./gradlew :camera-sync:run`，也可以手動觸發。
 2. camera-sync 會先正規化方向文字（指向地名的，依 `places.json` 推算方向），再修正對調的經緯度、拒絕座標不在縣市範圍內的列、合併重複點位、套用 `overrides.json`。版本號由內容的 hash 決定。
 3. **安全閥**：有效筆數比上一版少 20% 以上，或被拒絕的列超過 30% 時，以 exit 1 結束，不寫入任何資料。
-4. 內容有變才會 commit `data/published/`。報告寫在 Actions 的 Summary，`section-candidates.csv` 則存成 artifact。
+4. 內容有變才會 commit `data/published/` 和 `data/generated/`。報告寫在 Actions 的 Summary，`section-candidates.csv` 則存成 artifact。
 5. App 每 7 天（可設定只在 Wi-Fi 下）讀取 `meta.json` 比對版本；有新版才下載 `cameras.json`，驗證 SHA-256 後原子寫入。超過 14 天沒檢查時，開啟 App 就會立刻檢查一次。
 
 > GitHub 會停用公開 repo 中 60 天沒有活動的排程 workflow。如果資料長時間沒變（沒有 bot commit），需要到 Actions 頁面重新啟用。
@@ -51,11 +52,18 @@ Android 測速照相守衛（Kotlin + Jetpack Compose + MapLibre GL）。地圖�
 ]
 ```
 
-- **地名方向**：「往大溪方向」「中山路上往桃園車站方向」這類寫法，會到 `data/source/places.json` 查目的地座標，以「測速點 → 目的地」的方位角當作行車方向。因為道路可能彎曲，推算出的方向容許 ±100°（官方方向為 ±70°），只排除明顯相反的行車方向；目的地離測速點不到 150 m 就不推算。`overrides.json` 的 `fix.headings` 優先於推算結果。
+- **地名方向**：「往大溪方向」「中山路上往桃園車站方向」這類寫法，會到 `data/source/places.json` 查目的地座標，再**自動判斷是否可靠**：不可靠就維持雙向提醒，不需要人工補 `overrides.json`。只有以下條件全部成立才採用：
+  1. 目的地離測速點至少 150 m；若目的地是路名（`"road": true`），最近點不超過 1 km（太遠代表可能找錯路段）。
+  2. 已從 OpenStreetMap 查到測速點所在的道路（`data/generated/road-checks.json`，CI 自動查詢並快取），而且不是巷弄。
+  3. 查到的道路就是方向文字或地址上的那條路（「X路上往…」或地址只有一條路名）。地址是「A與B口」這種路口、又沒說在哪條路上的，無法確定，不採用。
+  4. 那條道路的走向，和「測速點 → 目的地」的方位相差不超過 60°（彎路、路口抓錯路會在這裡被排除）。
+
+  採用時，方向取「該道路通往目的地的那一側」，容許 ±100°。新出現的點位在還沒比對道路之前，一律維持雙向；查詢失敗也一樣，下次執行會再查。`overrides.json` 的 `fix.headings` 優先於以上規則。
   - 每筆地名可以限定範圍：有 `district` 只套用該區，只有 `city` 套用整個縣市，兩者都沒有則套用全國。「市區」這類相對說法和路名請限定到區；`aliases` 可放其他寫法（「台」「臺」視為同一字）。
-  - 報告的「未對照的地名」會列出尚未收錄的地名。執行 `./gradlew :camera-sync:run --args="--suggest-places"` 會用 OpenStreetMap Nominatim 查詢候選座標，並在 `build/place-suggestions.md` 列出每個測速點的推算方向。**人工確認**符合道路走向後，再把 `build/place-suggestions.json` 中的項目複製進 `places.json`。每週的自動更新只讀 `places.json`，不會連線查詢。
-  - 目前不收錄（維持雙向）：往下山（不是地名）、往大埔（不確定指哪裡）、往長庚（長庚大學與林口長庚醫院方向相反）、往國道二號方向（附近有兩個交流道）、北投竹子湖「往市區」（山路，目的地不明確）。寶慶路離測速點只有約 100 m，不會套用。
-  - 山路上的點位彎道多，推算方向可能偏差超過 100° 而漏報，所以用 `overrides.json` 的 `"headings": []` 強制維持雙向：台七線羅浮、台七乙線 8.8K、龍潭三坑下坡、大溪復興路二段「往復興」。其他山路點位若有同樣疑慮，也比照這個方式處理。
+  - 報告的「未對照的地名」會列出尚未收錄的地名。執行 `./gradlew :camera-sync:run --args="--suggest-places"` 會用 OpenStreetMap Nominatim 查詢候選座標，寫入 `build/place-suggestions.md`。**人工確認地點正確**後，再把 `build/place-suggestions.json` 中的項目複製進 `places.json`；各點位是否採用，之後由上面的規則自動決定。
+  - 報告的「地名已收錄但未採用推算」會列出每個點位的原因，僅供參考，不需要處理。
+  - 目前不收錄的地名（維持雙向）：往下山（不是地名）、往大埔（不確定指哪裡）、往長庚（長庚大學與林口長庚醫院方向相反）、往國道二號方向（附近有兩個交流道）、北投竹子湖「往市區」（山路，目的地不明確）。
+  - 另有 4 筆山路點位，是先前人工決定的，以 `overrides.json` 的 `"headings": []` 維持雙向：台七線羅浮、台七乙線 8.8K、龍潭三坑下坡、大溪復興路二段「往復興」。
 - **未判讀方向**：仍無法判斷方向的寫法一律視為雙向提醒，並列在報告中。若同一種寫法反覆出現，可以補進 `DirectionParser` 的規則。
 
 ## 建置

@@ -2,6 +2,7 @@ package com.wayguard.sync
 
 import com.wayguard.core.dataset.BuildResult
 import com.wayguard.core.dataset.DatasetBuilder
+import com.wayguard.core.dataset.PlaceDerivation
 import com.wayguard.core.model.DatasetMeta
 
 /** Human-readable outputs of a sync run (GitHub step summary + curation aids). */
@@ -24,7 +25,7 @@ internal object Report {
             appendLine("- 經緯度對調並修正：${rep.swappedLines.size}")
             appendLine("- 重複合併：${rep.duplicates}")
             appendLine("- 缺速限：${rep.missingLimit}")
-            appendLine("- 依地名推算方向：${rep.placeDerived.size}（容許 ±${DatasetBuilder.PLACE_HEADING_TOLERANCE_DEG}°）")
+            appendLine("- 依地名推算方向：採用 ${rep.placeDerived.size}、未採用 ${rep.placeSkipped.size}（其中待比對道路 ${rep.needsRoadCheck.size}）")
             appendLine("- 未判讀方向（視為雙向提醒）：${rep.unknownDirections.values.sum()}")
             appendLine("- overrides：修正 ${rep.fixed}、排除 ${rep.excluded}、新增 ${rep.added}")
             appendLine("- 區間測速：已整理 ${ds.sections.size} 個區間；候選列 ${rep.sectionCandidates.size}（見 section-candidates.csv）")
@@ -47,14 +48,18 @@ internal object Report {
                     .forEach { (ref, cams) -> appendLine("| ${ref.city}${ref.district} | ${cell(ref.name)} | ${cams.size} |") }
             }
 
-            if (rep.placeTooClose.isNotEmpty()) {
+            if (rep.placeSkipped.isNotEmpty()) {
                 appendLine()
-                appendLine("## 地名離測速點太近（未推算）")
+                appendLine("## 地名已收錄但未採用推算（維持雙向）")
                 appendLine()
-                appendLine("| id | 方向文字 | 地點 | 距離 |")
-                appendLine("|---|---|---|---|")
-                rep.placeTooClose.forEach {
-                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | ${it.distanceM.toInt()} m |")
+                appendLine("自動判斷不可靠的推算，不需人工處理；「尚未比對」的點位會在下次執行時查詢道路走向。")
+                appendLine()
+                appendLine("| id | 方向文字 | 地點 | 目的地方位／距離 | 測速點所在道路 | 原因 |")
+                appendLine("|---|---|---|---|---|---|")
+                rep.placeSkipped.forEach {
+                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | " +
+                        "${it.bearingToPlace}°／${km(it.distanceM)} | ${roadCell(it)} | ${it.skipReason?.text.orEmpty()}" +
+                        "${it.roadDiffDeg?.let { d -> "（相差 $d°）" } ?: ""} |")
                 }
             }
 
@@ -62,11 +67,13 @@ internal object Report {
                 appendLine()
                 appendLine("## 依地名推算的方向")
                 appendLine()
-                appendLine("| id | 方向文字 | 地點 | 推算方位 | 距離 |")
-                appendLine("|---|---|---|---|---|")
+                appendLine("採用測速點所在道路通往目的地的那一側走向，容許 ±${DatasetBuilder.PLACE_HEADING_TOLERANCE_DEG}°。")
+                appendLine()
+                appendLine("| id | 方向文字 | 地點 | 目的地方位／距離 | 測速點所在道路 | 採用方向 |")
+                appendLine("|---|---|---|---|---|---|")
                 rep.placeDerived.forEach {
-                    val km = String.format(java.util.Locale.ROOT, "%.1f", it.distanceM / 1000)
-                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | ${it.heading}° | $km km |")
+                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | " +
+                        "${it.bearingToPlace}°／${km(it.distanceM)} | ${roadCell(it)} | ${it.heading}°（相差 ${it.roadDiffDeg}°） |")
                 }
             }
 
@@ -104,6 +111,15 @@ internal object Report {
     }
 
     private fun signed(n: Int) = if (n > 0) "+$n" else n.toString()
+
+    private fun km(m: Double) = "${String.format(java.util.Locale.ROOT, "%.1f", m / 1000)} km"
+
+    private fun roadCell(d: PlaceDerivation): String {
+        val r = d.road ?: return "—"
+        val name = r.road.ifBlank { "（無名道路）" }
+        val b = r.bearing ?: return "$name（找不到，${r.distanceM?.let { "$it m" } ?: "—"}）"
+        return "${cell(name)} ${b}°／${(b + 180) % 360}°"
+    }
 
     private fun cell(s: String) = s.replace("|", "\\|").replace("\n", " ")
 

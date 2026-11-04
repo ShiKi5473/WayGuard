@@ -44,13 +44,20 @@ data class CameraFix(
 /** A destination name as it appears in one area. */
 data class PlaceRef(val city: String, val district: String, val name: String)
 
-/** A camera whose direction was estimated from the destination its text names. */
+/** A camera whose direction text names a destination known to places.json. */
 data class PlaceDerivation(
     val cameraId: String,
+    val pos: LatLng,
     val directionText: String,
     val place: Place,
-    val heading: Int,
+    val bearingToPlace: Int,
     val distanceM: Double,
+    /** The applied heading (the camera road's way toward the destination), or null when skipped. */
+    val heading: Int? = null,
+    val road: RoadCheck? = null,
+    val skipReason: SkipReason? = null,
+    /** Angle between the road at the camera and the destination's bearing. */
+    val roadDiffDeg: Int? = null,
 )
 
 data class BuildReport(
@@ -67,13 +74,17 @@ data class BuildReport(
     val added: Int,
     /** Rows marked 區間測速 — material for curating sections.json by hand. */
     val sectionCandidates: List<Pair<String, NpaRow>>,
-    /** Directions estimated from places.json. */
+    /** Directions estimated from places.json and applied. */
     val placeDerived: List<PlaceDerivation> = emptyList(),
     /** Destination names missing from places.json → positions of the cameras using them. */
     val unmatchedPlaces: Map<PlaceRef, List<LatLng>> = emptyMap(),
-    /** Destinations too close to the camera for a meaningful bearing (kept both ways). */
-    val placeTooClose: List<PlaceDerivation> = emptyList(),
-)
+    /** Known destinations whose direction was not trusted (kept both ways), with [PlaceDerivation.skipReason]. */
+    val placeSkipped: List<PlaceDerivation> = emptyList(),
+) {
+    /** Cameras still waiting for a road lookup — what camera-sync should check. */
+    val needsRoadCheck: List<PlaceDerivation>
+        get() = placeSkipped.filter { it.skipReason == SkipReason.NOT_CHECKED }
+}
 
 data class BuildResult(val dataset: CameraDataset, val report: BuildReport)
 
@@ -84,14 +95,15 @@ object DatasetBuilder {
 
     /**
      * Tolerance for headings estimated from a destination. Wider than the published
-     * ones' ±70° because the road may curve between camera and destination: it only
-     * has to rule out travel the opposite way.
+     * ones' ±70°: it only has to rule out travel the opposite way.
      */
     const val PLACE_HEADING_TOLERANCE_DEG = 100
 
-    /** Closer than this, the bearing to the destination says little about the road. */
-    const val MIN_PLACE_DISTANCE_M = 150.0
-
+    /**
+     * @param roadChecks camera id → the road it stands on (data/generated/road-checks.json).
+     *   A destination-derived direction is only applied once the camera's road agrees
+     *   with it ([PlaceHeadingRules]); until then the camera alerts both ways.
+     */
     fun build(
         rows: List<NpaRow>,
         csvRejected: List<RejectedRow>,
@@ -100,13 +112,14 @@ object DatasetBuilder {
         generatedAt: String,
         source: String,
         places: List<Place> = emptyList(),
+        roadChecks: Map<String, RoadCheck> = emptyMap(),
     ): BuildResult {
         val rejected = ArrayList(csvRejected)
         val swapped = ArrayList<Int>()
         val unknown = LinkedHashMap<String, Int>()
         val candidates = ArrayList<Pair<String, NpaRow>>()
         val placeDerived = ArrayList<PlaceDerivation>()
-        val placeTooClose = ArrayList<PlaceDerivation>()
+        val placeSkipped = ArrayList<PlaceDerivation>()
         val unmatchedPlaces = LinkedHashMap<PlaceRef, MutableList<LatLng>>()
         val directory = PlaceDirectory(places)
         var missingLimit = 0
@@ -153,13 +166,17 @@ object DatasetBuilder {
                     val pos = LatLng(lat, lon)
                     val d = GeoUtils.haversine(pos, place.pos)
                     val h = (GeoUtils.bearing(pos, place.pos).roundToInt() % 360 + 360) % 360
-                    val derivation = PlaceDerivation(baseId, row.direct, place, h, d)
-                    if (d >= MIN_PLACE_DISTANCE_M) {
-                        headings = listOf(h)
-                        tolerance = PLACE_HEADING_TOLERANCE_DEG
-                        placeDerived += derivation
-                    } else {
-                        placeTooClose += derivation
+                    val check = roadChecks[baseId]
+                    val derivation = PlaceDerivation(baseId, pos, row.direct, place, h, d, road = check)
+                    val cameraRoad = CameraRoad.of(row.address, row.direct)
+                    when (val o = PlaceHeadingRules.decide(place, d, h, check, cameraRoad)) {
+                        is PlaceHeadingRules.Outcome.Apply -> {
+                            headings = listOf(o.heading)
+                            tolerance = PLACE_HEADING_TOLERANCE_DEG
+                            placeDerived += derivation.copy(heading = o.heading, roadDiffDeg = o.diffDeg)
+                        }
+                        is PlaceHeadingRules.Outcome.Skip ->
+                            placeSkipped += derivation.copy(skipReason = o.reason, roadDiffDeg = o.diffDeg)
                     }
                 }
                 if (headings.isEmpty()) unknown.merge(row.direct.ifBlank { "(空白)" }, 1, Int::plus)
@@ -228,7 +245,7 @@ object DatasetBuilder {
             sectionCandidates = candidates,
             placeDerived = placeDerived,
             unmatchedPlaces = unmatchedPlaces,
-            placeTooClose = placeTooClose,
+            placeSkipped = placeSkipped,
         )
         return BuildResult(dataset, report)
     }
