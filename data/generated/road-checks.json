@@ -1,0 +1,479 @@
+{
+    "npa-007eb37e0f": {
+        "bearing": 95,
+        "road": "中山西路三段",
+        "distanceM": 5,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-03ce75a957": {
+        "bearing": 193,
+        "road": "東龍街",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-0850fb8968": {
+        "bearing": 0,
+        "road": "建德路",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-0b0f9b8a8f": {
+        "bearing": 242,
+        "road": "中山路",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-0c12ae6316": {
+        "bearing": 299,
+        "road": "龍源路大平段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-0cc9abdfae": {
+        "bearing": 115,
+        "road": "永安路",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-0f5d0233d6": {
+        "bearing": 58,
+        "road": "晉元路",
+        "distanceM": 5,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-17a9b154de": {
+        "bearing": 238,
+        "road": "中華路",
+        "distanceM": 5,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-1c4df6cbb8": {
+        "bearing": 340,
+        "road": "中豐路山頂段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-24348ee196": {
+        "bearing": 334,
+        "road": "中豐北路一段",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-2535ca5911": {
+        "bearing": 223,
+        "road": "中山北路二段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-25aa1884f9": {
+        "bearing": 268,
+        "road": "金門大橋",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-262437551d": {
+        "bearing": 238,
+        "road": "中正路二段239巷",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-2914b40664": {
+        "bearing": 227,
+        "road": "和平西路一段",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-359f346484": {
+        "bearing": 42,
+        "road": "高鐵北路三段",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-35b28bdc8d": {
+        "bearing": 62,
+        "road": "介壽路",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-3d8274bb0c": {
+        "bearing": 317,
+        "road": "中園路二段",
+        "distanceM": 12,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-3efcba4f1d": {
+        "bearing": 180,
+        "road": "中正東路二段",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-43f1153b50": {
+        "bearing": 18,
+        "road": "埔頂路二段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-4aeb76bcaa": {
+        "bearing": 88,
+        "road": "中山路",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-4c47e63536": {
+        "bearing": 227,
+        "road": "振興路",
+        "distanceM": 12,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-4c9e3633e5": {
+        "bearing": 245,
+        "road": "中北路二段",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-4dcfa24ebe": {
+        "bearing": 41,
+        "road": "成功路三段",
+        "distanceM": 19,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-51b298b218": {
+        "bearing": 291,
+        "road": "和強路",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-57e2c0a988": {
+        "bearing": 158,
+        "road": "普忠路770巷",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-5e26a144d8": {
+        "bearing": 51,
+        "road": "環中東路",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-623092ccd2": {
+        "bearing": 315,
+        "road": "信義路",
+        "distanceM": 17,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-654772e942": {
+        "bearing": 277,
+        "road": "中山西路三段",
+        "distanceM": 24,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-6d438597cb": {
+        "bearing": 152,
+        "road": "中豐北路二段",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-70f3b0da57": {
+        "bearing": 72,
+        "road": "青溪三路",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-73f7bd3d06": {
+        "bearing": 350,
+        "road": "金陵路五段",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-7d64195d82": {
+        "bearing": 163,
+        "road": "普忠路",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-7e04f49235": {
+        "bearing": 135,
+        "road": "快速路一段",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-80d8f8f567": {
+        "bearing": 87,
+        "road": "大鶯路",
+        "distanceM": 6,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-8259ae3a59": {
+        "road": "內厝十一路",
+        "distanceM": 95,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-82f1091b22": {
+        "bearing": 249,
+        "road": "中山東路一段",
+        "distanceM": 26,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-83c4f1c72e": {
+        "bearing": 35,
+        "road": "溫州街",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-89c88143da": {
+        "bearing": 306,
+        "road": "中正路三林段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-8c0db49954": {
+        "bearing": 104,
+        "road": "萬板大橋",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-939cdb72df": {
+        "bearing": 212,
+        "road": "介壽路",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-9727f69ad1": {
+        "bearing": 151,
+        "road": "龍壽街",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-a2655785d9": {
+        "bearing": 150,
+        "road": "聖亭路",
+        "distanceM": 25,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-a26a12f3e0": {
+        "bearing": 73,
+        "road": "八德一路",
+        "distanceM": 6,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-a2b8efe9fb": {
+        "bearing": 116,
+        "road": "延平路三段260巷",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-a2be69d787": {
+        "bearing": 153,
+        "road": "中正路",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-a4ae3ebde7": {
+        "bearing": 125,
+        "road": "中山路一段",
+        "distanceM": 11,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-aa6197dd86": {
+        "road": "振興路",
+        "distanceM": 48,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-acd594b790": {
+        "bearing": 354,
+        "road": "新生路三段",
+        "distanceM": 25,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b1fd3dd5ce": {
+        "bearing": 179,
+        "road": "中興路平鎮段",
+        "distanceM": 16,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b277173138": {
+        "bearing": 197,
+        "road": "中豐路一段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b2c3d90535": {
+        "bearing": 0,
+        "road": "介壽路二段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b375e560fb": {
+        "bearing": 48,
+        "road": "復興二路",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b39e188524": {
+        "bearing": 109,
+        "road": "山林路二段",
+        "distanceM": 22,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b49d375352": {
+        "bearing": 341,
+        "road": "民族路",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-b8d0645b5a": {
+        "bearing": 47,
+        "road": "大興西路三段",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-be8f9d43e1": {
+        "bearing": 320,
+        "road": "民生路",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-c258b08787": {
+        "bearing": 273,
+        "road": "福源路",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-c287fb8133": {
+        "bearing": 112,
+        "road": "中美路一段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-c6c050de6d": {
+        "bearing": 93,
+        "road": "復興路",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-c951ca7a86": {
+        "bearing": 74,
+        "road": "萬壽路一段",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-c9d372bbfe": {
+        "bearing": 234,
+        "road": "桃5",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-ca58281411": {
+        "bearing": 345,
+        "road": "龍山街426巷",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-cad78b2d92": {
+        "bearing": 121,
+        "road": "大竹路119巷",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-cb07e57725": {
+        "bearing": 87,
+        "road": "萬壽路二段",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-cd7ac41ddf": {
+        "bearing": 226,
+        "road": "康莊路五段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-cfebc1e9d0": {
+        "bearing": 216,
+        "road": "康莊路三段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-d718a24252": {
+        "bearing": 102,
+        "road": "龍源路大平段",
+        "distanceM": 10,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-d85ec94c8c": {
+        "bearing": 349,
+        "road": "中園路二段",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-d8cf9d9d53": {
+        "bearing": 315,
+        "road": "大竹北路",
+        "distanceM": 4,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-d9e4095421": {
+        "bearing": 239,
+        "road": "金門大橋",
+        "distanceM": 1,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-db14e04f31": {
+        "bearing": 344,
+        "road": "富國路二段",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-de23951493": {
+        "bearing": 321,
+        "road": "信義路",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-e04afd38a4": {
+        "road": "民族路雙連二段",
+        "distanceM": 40,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-e06b37005d": {
+        "bearing": 103,
+        "road": "南豐路",
+        "distanceM": 3,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-e38ff5db07": {
+        "bearing": 203,
+        "road": "新生路",
+        "distanceM": 0,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-e5be709630": {
+        "bearing": 177,
+        "road": "石園路",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-ee8b8d496d": {
+        "bearing": 325,
+        "road": "富國路",
+        "distanceM": 7,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-f4310b117f": {
+        "bearing": 7,
+        "road": "介壽路二段",
+        "distanceM": 8,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-f689c75acd": {
+        "bearing": 235,
+        "road": "興豐路",
+        "distanceM": 5,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    },
+    "npa-fd6d66beb2": {
+        "bearing": 92,
+        "road": "長興路",
+        "distanceM": 2,
+        "checkedAt": "2026-11-04T09:38:18Z"
+    }
+}
