@@ -47,6 +47,10 @@ fun CameraDetailDialog(
                 if (place.isNotBlank()) Text(place, fontWeight = FontWeight.Bold)
                 Text("速限：${camera.limitKmh?.let { "$it km/h" } ?: "未提供"}")
                 Text("方向：${formatHeadings(camera.headings)}")
+                if (camera.headings.isNotEmpty() && camera.headingToleranceDeg != null) {
+                    // Estimated from a destination name (往大溪方向): only the opposite way is ruled out.
+                    Text("（依方向文字中的地名推算，只排除相反方向）")
+                }
                 if (camera.directionText.isNotBlank()) Text("原始方向：${camera.directionText}")
                 if (CameraKind.RED_LIGHT in camera.kinds) Text("兼闖紅燈照相")
                 Text(if (isUser) "來源：自訂點位（僅存在本機）" else "來源：內政部警政署開放資料")

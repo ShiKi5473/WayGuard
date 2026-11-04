@@ -20,7 +20,10 @@ data class AlertConfig(
     val minSpeedKmh: Double = 5.0,
     /** The camera must be within ± this of the direction of travel to count as ahead. */
     val aheadToleranceDeg: Double = 35.0,
-    /** A one-way camera matches when travel is within ± this of its heading. */
+    /**
+     * A one-way camera matches when travel is within ± this of its heading (unless the
+     * camera carries its own [SpeedCamera.headingToleranceDeg]).
+     */
     val headingToleranceDeg: Double = 70.0,
     /** Overspeed = speed > limit + this. */
     val overspeedToleranceKmh: Int = 0,
@@ -174,9 +177,11 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
     private fun isAhead(pos: LatLng, cam: SpeedCamera, heading: Double, d: Double, cfg: AlertConfig): Boolean =
         d <= CLOSE_M || GeoUtils.angleDiff(GeoUtils.bearing(pos, cam.pos), heading) <= cfg.aheadToleranceDeg
 
-    private fun headingMatches(cam: SpeedCamera, heading: Double, cfg: AlertConfig): Boolean =
-        cam.headings.isEmpty() ||
-            cam.headings.any { GeoUtils.angleDiff(it.toDouble(), heading) <= cfg.headingToleranceDeg }
+    private fun headingMatches(cam: SpeedCamera, heading: Double, cfg: AlertConfig): Boolean {
+        if (cam.headings.isEmpty()) return true
+        val tolerance = cam.headingToleranceDeg?.toDouble() ?: cfg.headingToleranceDeg
+        return cam.headings.any { GeoUtils.angleDiff(it.toDouble(), heading) <= tolerance }
+    }
 
     private companion object {
         /** Closer than this, bearing-to-camera is too noisy to judge "ahead". */

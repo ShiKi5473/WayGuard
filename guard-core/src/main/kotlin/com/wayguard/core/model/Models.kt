@@ -38,6 +38,11 @@ data class SpeedCamera(
     val address: String = "",
     /** Direction text as published, kept for display. */
     val directionText: String = "",
+    /**
+     * Per-camera match tolerance (± degrees) for [headings]; null = the engine default.
+     * Wider for headings estimated from a destination name rather than published.
+     */
+    val headingToleranceDeg: Int? = null,
 ) {
     val pos: LatLng get() = LatLng(lat, lon)
 }

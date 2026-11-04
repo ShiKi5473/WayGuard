@@ -1,6 +1,7 @@
 package com.wayguard.sync
 
 import com.wayguard.core.dataset.BuildResult
+import com.wayguard.core.dataset.DatasetBuilder
 import com.wayguard.core.model.DatasetMeta
 
 /** Human-readable outputs of a sync run (GitHub step summary + curation aids). */
@@ -23,6 +24,7 @@ internal object Report {
             appendLine("- 經緯度對調並修正：${rep.swappedLines.size}")
             appendLine("- 重複合併：${rep.duplicates}")
             appendLine("- 缺速限：${rep.missingLimit}")
+            appendLine("- 依地名推算方向：${rep.placeDerived.size}（容許 ±${DatasetBuilder.PLACE_HEADING_TOLERANCE_DEG}°）")
             appendLine("- 未判讀方向（視為雙向提醒）：${rep.unknownDirections.values.sum()}")
             appendLine("- overrides：修正 ${rep.fixed}、排除 ${rep.excluded}、新增 ${rep.added}")
             appendLine("- 區間測速：已整理 ${ds.sections.size} 個區間；候選列 ${rep.sectionCandidates.size}（見 section-candidates.csv）")
@@ -32,11 +34,48 @@ internal object Report {
             if (problems.isEmpty()) appendLine("- ✅ 通過")
             else problems.forEach { appendLine("- ❌ $it") }
 
+            if (rep.unmatchedPlaces.isNotEmpty()) {
+                appendLine()
+                appendLine("## 未對照的地名")
+                appendLine()
+                appendLine("方向文字指向這些地名，但 `data/source/places.json` 尚未收錄，目前視為雙向提醒。")
+                appendLine("可執行 `./gradlew :camera-sync:run --args=\"--suggest-places\"` 取得候選座標。")
+                appendLine()
+                appendLine("| 範圍 | 地名 | 測速點數 |")
+                appendLine("|---|---|---|")
+                rep.unmatchedPlaces.entries.sortedWith(compareBy({ it.key.city }, { it.key.name }, { it.key.district }))
+                    .forEach { (ref, cams) -> appendLine("| ${ref.city}${ref.district} | ${cell(ref.name)} | ${cams.size} |") }
+            }
+
+            if (rep.placeTooClose.isNotEmpty()) {
+                appendLine()
+                appendLine("## 地名離測速點太近（未推算）")
+                appendLine()
+                appendLine("| id | 方向文字 | 地點 | 距離 |")
+                appendLine("|---|---|---|---|")
+                rep.placeTooClose.forEach {
+                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | ${it.distanceM.toInt()} m |")
+                }
+            }
+
+            if (rep.placeDerived.isNotEmpty()) {
+                appendLine()
+                appendLine("## 依地名推算的方向")
+                appendLine()
+                appendLine("| id | 方向文字 | 地點 | 推算方位 | 距離 |")
+                appendLine("|---|---|---|---|---|")
+                rep.placeDerived.forEach {
+                    val km = String.format(java.util.Locale.ROOT, "%.1f", it.distanceM / 1000)
+                    appendLine("| ${it.cameraId} | ${cell(it.directionText)} | ${cell(it.place.ref.ifBlank { it.place.name })} | ${it.heading}° | $km km |")
+                }
+            }
+
             if (rep.unknownDirections.isNotEmpty()) {
                 appendLine()
                 appendLine("## 未判讀方向")
                 appendLine()
-                appendLine("無法判讀的方向一律視為雙向提醒。若常見寫法反覆出現，請補進 `DirectionParser` 的規則。")
+                appendLine("無法判讀的方向一律視為雙向提醒。若常見寫法反覆出現，請補進 `DirectionParser` 的規則；")
+                appendLine("指向地名的請補進 `data/source/places.json`。")
                 appendLine()
                 appendLine("| 方向文字 | 筆數 |")
                 appendLine("|---|---|")

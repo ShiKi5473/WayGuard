@@ -7,10 +7,14 @@ import com.wayguard.core.model.Section
 import com.wayguard.core.model.SpeedCamera
 import com.wayguard.core.parse.DirectionParser
 import com.wayguard.core.parse.NpaRow
+import com.wayguard.core.parse.PlaceTarget
 import com.wayguard.core.parse.RejectedRow
 import com.wayguard.core.validate.CountyBounds
+import com.waymap.geo.GeoUtils
+import com.waymap.geo.LatLng
 import java.security.MessageDigest
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 
@@ -31,8 +35,22 @@ data class CameraFix(
     val lon: Double? = null,
     val limitKmh: Int? = null,
     val headings: List<Int>? = null,
+    /** Match tolerance for [headings]; null = the app default (±70°). */
+    val headingToleranceDeg: Int? = null,
     /** Why — for humans reading the file. */
     val note: String = "",
+)
+
+/** A destination name as it appears in one area. */
+data class PlaceRef(val city: String, val district: String, val name: String)
+
+/** A camera whose direction was estimated from the destination its text names. */
+data class PlaceDerivation(
+    val cameraId: String,
+    val directionText: String,
+    val place: Place,
+    val heading: Int,
+    val distanceM: Double,
 )
 
 data class BuildReport(
@@ -49,6 +67,12 @@ data class BuildReport(
     val added: Int,
     /** Rows marked 區間測速 — material for curating sections.json by hand. */
     val sectionCandidates: List<Pair<String, NpaRow>>,
+    /** Directions estimated from places.json. */
+    val placeDerived: List<PlaceDerivation> = emptyList(),
+    /** Destination names missing from places.json → positions of the cameras using them. */
+    val unmatchedPlaces: Map<PlaceRef, List<LatLng>> = emptyMap(),
+    /** Destinations too close to the camera for a meaningful bearing (kept both ways). */
+    val placeTooClose: List<PlaceDerivation> = emptyList(),
 )
 
 data class BuildResult(val dataset: CameraDataset, val report: BuildReport)
@@ -58,6 +82,16 @@ object DatasetBuilder {
 
     private val LIMIT = Regex("\\d{2,3}")
 
+    /**
+     * Tolerance for headings estimated from a destination. Wider than the published
+     * ones' ±70° because the road may curve between camera and destination: it only
+     * has to rule out travel the opposite way.
+     */
+    const val PLACE_HEADING_TOLERANCE_DEG = 100
+
+    /** Closer than this, the bearing to the destination says little about the road. */
+    const val MIN_PLACE_DISTANCE_M = 150.0
+
     fun build(
         rows: List<NpaRow>,
         csvRejected: List<RejectedRow>,
@@ -65,11 +99,16 @@ object DatasetBuilder {
         overrides: Overrides,
         generatedAt: String,
         source: String,
+        places: List<Place> = emptyList(),
     ): BuildResult {
         val rejected = ArrayList(csvRejected)
         val swapped = ArrayList<Int>()
         val unknown = LinkedHashMap<String, Int>()
         val candidates = ArrayList<Pair<String, NpaRow>>()
+        val placeDerived = ArrayList<PlaceDerivation>()
+        val placeTooClose = ArrayList<PlaceDerivation>()
+        val unmatchedPlaces = LinkedHashMap<PlaceRef, MutableList<LatLng>>()
+        val directory = PlaceDirectory(places)
         var missingLimit = 0
         var fixed = 0
 
@@ -79,7 +118,6 @@ object DatasetBuilder {
         for (row in rows) {
             val baseId = stableId(row)
             val parsed = DirectionParser.parse(row.direct)
-            if (!parsed.understood) unknown.merge(row.direct.ifBlank { "(空白)" }, 1, Int::plus)
             if (CameraKind.SECTION in parsed.kinds) candidates += baseId to row
 
             val city = CountyBounds.normalizeCity(row.city)
@@ -98,15 +136,45 @@ object DatasetBuilder {
             val limit = LIMIT.find(row.limit)?.value?.toInt()?.takeIf { it in 10..130 }
             if (limit == null && parsed.limitsByHeading.isEmpty()) missingLimit++
 
+            val district = district(row.region, city)
+            var headings = parsed.headings
+            var tolerance: Int? = null
+            if (fix?.headings != null) {
+                headings = fix.headings
+                tolerance = fix.headingToleranceDeg
+            } else if (!parsed.understood) {
+                // 往大溪方向: aim at the named destination when places.json knows it.
+                val target = PlaceTarget.of(row.direct)
+                val place = target?.let { directory.find(it, city, district) }
+                if (target != null && place == null) {
+                    unmatchedPlaces.getOrPut(PlaceRef(city, district, target)) { ArrayList() } += LatLng(lat, lon)
+                }
+                if (place != null) {
+                    val pos = LatLng(lat, lon)
+                    val d = GeoUtils.haversine(pos, place.pos)
+                    val h = (GeoUtils.bearing(pos, place.pos).roundToInt() % 360 + 360) % 360
+                    val derivation = PlaceDerivation(baseId, row.direct, place, h, d)
+                    if (d >= MIN_PLACE_DISTANCE_M) {
+                        headings = listOf(h)
+                        tolerance = PLACE_HEADING_TOLERANCE_DEG
+                        placeDerived += derivation
+                    } else {
+                        placeTooClose += derivation
+                    }
+                }
+                if (headings.isEmpty()) unknown.merge(row.direct.ifBlank { "(空白)" }, 1, Int::plus)
+            }
+
             val base = SpeedCamera(
                 id = baseId,
                 lat = lat,
                 lon = lon,
                 limitKmh = fix?.limitKmh ?: limit,
-                headings = fix?.headings ?: parsed.headings,
+                headings = headings,
+                headingToleranceDeg = tolerance,
                 kinds = parsed.kinds,
                 city = city,
-                district = district(row.region, city),
+                district = district,
                 address = row.address,
                 directionText = row.direct,
             )
@@ -158,6 +226,9 @@ object DatasetBuilder {
             fixed = fixed,
             added = overrides.add.size,
             sectionCandidates = candidates,
+            placeDerived = placeDerived,
+            unmatchedPlaces = unmatchedPlaces,
+            placeTooClose = placeTooClose,
         )
         return BuildResult(dataset, report)
     }

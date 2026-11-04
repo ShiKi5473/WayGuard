@@ -91,6 +91,22 @@ class AlertEngineTest {
     }
 
     @Test
+    fun perCameraToleranceWidensTheDirectionMatch() {
+        // Camera heading 90° (east) but the road runs north: 90° off.
+        val estimated = camera(listOf(90)).copy(headingToleranceDeg = 100)
+        val strict = camera(listOf(90))
+        assertEquals(
+            listOf(AlertType.APPROACH, AlertType.NEAR, AlertType.PASSED),
+            types(run(engine(estimated), drive(origin, 0.0, 60.0, 150))),
+        )
+        assertTrue(run(engine(strict), drive(origin, 0.0, 60.0, 150)).isEmpty())
+        // Even ±100° still rules out travel in the opposite direction (180° off).
+        val north = camera(listOf(0)).copy(headingToleranceDeg = 100)
+        val start = GeoUtils.destinationPoint(origin, 2400.0, 0.0)
+        assertTrue(run(engine(north), drive(start, 180.0, 60.0, 150)).isEmpty())
+    }
+
+    @Test
     fun disabledKindsAreIgnored() {
         val cfg = AlertConfig(enabledKinds = setOf(CameraKind.RED_LIGHT))
         val events = run(engine(camera(listOf(0)), config = cfg), drive(origin, 0.0, 60.0, 150))

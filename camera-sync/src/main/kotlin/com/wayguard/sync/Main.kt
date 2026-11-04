@@ -3,6 +3,7 @@ package com.wayguard.sync
 import com.wayguard.core.dataset.BuildResult
 import com.wayguard.core.dataset.DatasetBuilder
 import com.wayguard.core.dataset.Overrides
+import com.wayguard.core.dataset.Place
 import com.wayguard.core.model.DatasetIo
 import com.wayguard.core.model.DatasetJson
 import com.wayguard.core.model.DatasetMeta
@@ -48,6 +49,7 @@ data class SyncArgs(
     val source: String = NPA_URL,
     val sections: File = File("data/source/sections.json"),
     val overrides: File = File("data/source/overrides.json"),
+    val places: File = File("data/source/places.json"),
     val out: File = File("data/published"),
     val report: File = File("build/camera-report.md"),
     val candidates: File = File("build/section-candidates.csv"),
@@ -55,10 +57,16 @@ data class SyncArgs(
     val minRatio: Double = 0.8,
     /** Fail when more than this fraction of source rows is rejected. */
     val maxRejectRatio: Double = 0.3,
+    /**
+     * Instead of publishing, geocode destination names missing from places.json and
+     * write review candidates to `build/place-suggestions.{md,json}`.
+     */
+    val suggestPlaces: Boolean = false,
 ) {
     companion object {
         const val USAGE = "usage: camera-sync [--source URL|FILE] [--sections FILE] [--overrides FILE] " +
-            "[--out DIR] [--report FILE] [--candidates FILE] [--min-ratio 0.8] [--max-reject 0.3]"
+            "[--places FILE] [--out DIR] [--report FILE] [--candidates FILE] [--min-ratio 0.8] " +
+            "[--max-reject 0.3] [--suggest-places]"
 
         fun parse(args: Array<String>): SyncArgs {
             var a = SyncArgs()
@@ -69,6 +77,8 @@ data class SyncArgs(
                     "--source" -> a.copy(source = value())
                     "--sections" -> a.copy(sections = File(value()))
                     "--overrides" -> a.copy(overrides = File(value()))
+                    "--places" -> a.copy(places = File(value()))
+                    "--suggest-places" -> a.copy(suggestPlaces = true)
                     "--out" -> a.copy(out = File(value()))
                     "--report" -> a.copy(report = File(value()))
                     "--candidates" -> a.copy(candidates = File(value()))
@@ -93,8 +103,16 @@ fun sync(a: SyncArgs): Int {
     val parsed = NpaCsvParser.parse(csv)
     val sections = readJson(a.sections, ListSerializer(Section.serializer())) ?: emptyList()
     val overrides = readJson(a.overrides, Overrides.serializer()) ?: Overrides()
+    val places = readJson(a.places, ListSerializer(Place.serializer())) ?: emptyList()
     val now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
-    val result = DatasetBuilder.build(parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source))
+    val result = DatasetBuilder.build(parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places)
+
+    if (a.suggestPlaces) {
+        val outDir = a.report.absoluteFile.parentFile
+        val n = PlaceSuggester(USER_AGENT).run(result, outDir)
+        println("已查詢 ${result.report.unmatchedPlaces.size} 個未對照地名，找到 $n 個候選：${File(outDir, "place-suggestions.md")}")
+        return 0
+    }
 
     val metaFile = File(a.out, "meta.json")
     val previous = metaFile.takeIf { it.isFile }?.let { runCatching { DatasetIo.decodeMeta(it.readText()) }.getOrNull() }
