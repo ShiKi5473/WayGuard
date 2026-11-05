@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # 可在 Actions 頁面手動重跑（例如 GitHub 事故導致 push 事件遺失時）
+  workflow_dispatch:
 
 jobs:
   build:
