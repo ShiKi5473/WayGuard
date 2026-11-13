@@ -1,0 +1,58 @@
+{
+    "npa-4fd28f09de": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-a8eb2eec00（臺北市中山區 中山北路2段長春路口）相距 0m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 25.054731,
+        "lon": 121.52277
+    },
+    "npa-595ff4acc6": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-75f144dd98（臺南市善化區 南科七路與三抱竹路口）相距 3m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 23.090633,
+        "lon": 120.282524
+    },
+    "npa-75f144dd98": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-595ff4acc6（臺南市新市區 南科南路與環西路一段路口）相距 3m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 23.090631,
+        "lon": 120.282555
+    },
+    "npa-7bd3c928a0": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-b4c5d58e9e（臺南市新市區 西拉雅大道與南科南路口）相距 2m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 23.102247,
+        "lon": 120.28029
+    },
+    "npa-9a32d5b117": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-75f144dd98（臺南市善化區 南科七路與三抱竹路口）相距 4m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 23.090643,
+        "lon": 120.28252
+    },
+    "npa-a8eb2eec00": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-4fd28f09de（臺北市中山區 建國北路農安街口）相距 0m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 25.054731,
+        "lon": 121.52277
+    },
+    "npa-b4c5d58e9e": {
+        "verdict": "SUSPECT",
+        "method": "internal",
+        "reason": "與 npa-7bd3c928a0（臺南市新市區 西拉雅大道與南科南北路口）相距 2m 但路名不同",
+        "checkedAt": "2026-11-13T04:55:45Z",
+        "lat": 23.102236,
+        "lon": 120.2803
+    }
+}
