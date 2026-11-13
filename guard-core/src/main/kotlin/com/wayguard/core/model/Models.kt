@@ -43,6 +43,8 @@ data class SpeedCamera(
      * Wider for headings estimated from a destination name rather than published.
      */
     val headingToleranceDeg: Int? = null,
+    /** Location cross-verification flag (`"suspect"` or `"mismatch"`); null when OK or unverified. */
+    val loc: String? = null,
 ) {
     val pos: LatLng get() = LatLng(lat, lon)
 }

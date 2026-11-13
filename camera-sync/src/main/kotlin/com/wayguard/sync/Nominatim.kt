@@ -40,7 +40,7 @@ internal class Nominatim(private val userAgent: String) {
         val lines: List<List<LatLng>> = emptyList(),
     )
 
-    private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build()
+    private val client by lazy { HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build() }
     private var lastRequestMs = 0L
 
     fun search(q: String, viewbox: Box, geometry: Boolean = false): List<Hit> {

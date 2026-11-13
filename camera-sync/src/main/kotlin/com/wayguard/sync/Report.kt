@@ -4,11 +4,22 @@ import com.wayguard.core.dataset.BuildResult
 import com.wayguard.core.dataset.DatasetBuilder
 import com.wayguard.core.dataset.PlaceDerivation
 import com.wayguard.core.model.DatasetMeta
+import com.wayguard.core.validate.LocationCheck
+import com.wayguard.core.validate.VerdictLevel
+import java.util.Locale
 
 /** Human-readable outputs of a sync run (GitHub step summary + curation aids). */
 internal object Report {
 
-    fun markdown(r: BuildResult, previous: DatasetMeta?, problems: List<String>, unchanged: Boolean): String =
+    private const val MAX_LOCATION_ISSUE_ROWS = 100
+
+    fun markdown(
+        r: BuildResult,
+        previous: DatasetMeta?,
+        problems: List<String>,
+        unchanged: Boolean,
+        locationChecks: Map<String, LocationCheck> = emptyMap(),
+    ): String =
         buildString {
             val rep = r.report
             val ds = r.dataset
@@ -30,6 +41,13 @@ internal object Report {
             val unmatched = if (rep.unmatchedOverrides.isEmpty()) "" else "（未命中 ${rep.unmatchedOverrides.size}）"
             appendLine("- overrides：修正 ${rep.fixed}、排除 ${rep.excluded}、新增 ${rep.added}$unmatched")
             appendLine("- 區間測速：共 ${ds.sections.size} 個區間（人工整理 ${ds.sections.size - rep.autoSections.size}、自動配對 ${rep.autoSections.size}）；候選列 ${rep.sectionCandidates.size}（見 section-candidates.csv）")
+            val cameraIds = ds.cameras.mapTo(HashSet()) { it.id }
+            val camChecks = locationChecks.filterKeys { it in cameraIds }.values
+            val okCount = camChecks.count { it.verdict == VerdictLevel.OK }
+            val suspectCount = rep.locationIssues.count { it.second.verdict == VerdictLevel.SUSPECT }
+            val mismatchCount = rep.locationIssues.count { it.second.verdict == VerdictLevel.MISMATCH }
+            val unverifiableCount = camChecks.count { it.verdict == VerdictLevel.UNVERIFIABLE }
+            appendLine("- 位置交叉驗證：一致 $okCount、可疑 $suspectCount、不符 $mismatchCount、無法驗證 $unverifiableCount")
             appendLine()
             appendLine("## 安全檢查")
             appendLine()
@@ -91,6 +109,43 @@ internal object Report {
                     .forEach { (t, n) -> appendLine("| ${cell(t)} | $n |") }
             }
 
+            if (rep.locationIssues.isNotEmpty()) {
+                appendLine()
+                appendLine("## 位置可疑")
+                appendLine()
+                appendLine("以下僅回報與產生建議座標，不會自動修改發布資料；確認後可複製 `build/location-fix-suggestions.json` 至 `data/source/overrides.json`。")
+                if (rep.locationIssues.size > MAX_LOCATION_ISSUE_ROWS) {
+                    appendLine("（共 ${rep.locationIssues.size} 筆，僅列出前 $MAX_LOCATION_ISSUE_ROWS 筆）")
+                }
+                appendLine()
+                appendLine("| id | 等級 | 地址 | 公告座標 | 建議座標 | 差距 | 原因 |")
+                appendLine("|---|---|---|---|---|---|---|")
+                rep.locationIssues.take(MAX_LOCATION_ISSUE_ROWS).forEach { (cam, chk) ->
+                    val levelLabel = if (chk.verdict == VerdictLevel.MISMATCH) "不符" else "可疑"
+                    val addr = cell("${cam.city}${cam.district} ${cam.address}".trim())
+                    val pubCoord = osmLink(cam.lat, cam.lon)
+                    val sLat = chk.suggestedLat
+                    val sLon = chk.suggestedLon
+                    val sugCoord = if (sLat != null && sLon != null) osmLink(sLat, sLon) else "—"
+                    val dist = chk.distanceM?.let { "$it m" } ?: "—"
+                    appendLine("| ${cam.id} | $levelLabel | $addr | $pubCoord | $sugCoord | $dist | ${cell(chk.reason)} |")
+                }
+            }
+
+            if (rep.rejectedSuggestions.isNotEmpty()) {
+                appendLine()
+                appendLine("## 被拒絕列的建議座標")
+                appendLine()
+                appendLine("| id | 推算座標 | 說明 |")
+                appendLine("|---|---|---|")
+                rep.rejectedSuggestions.entries.sortedBy { it.key }.forEach { (id, chk) ->
+                    val sLat = chk.suggestedLat
+                    val sLon = chk.suggestedLon
+                    val sugCoord = if (sLat != null && sLon != null) osmLink(sLat, sLon) else "—"
+                    appendLine("| $id | $sugCoord | ${cell(chk.reason)} |")
+                }
+            }
+
             if (rep.unmatchedOverrides.isNotEmpty()) {
                 appendLine()
                 appendLine("## 沒有命中的 overrides")
@@ -128,6 +183,12 @@ internal object Report {
     }
 
     private fun cell(s: String) = s.replace("|", "\\|").replace("\n", " ")
+
+    private fun osmLink(lat: Double, lon: Double): String {
+        val latStr = String.format(Locale.ROOT, "%.6f", lat)
+        val lonStr = String.format(Locale.ROOT, "%.6f", lon)
+        return "[$latStr, $lonStr](https://www.openstreetmap.org/?mlat=$latStr&mlon=$lonStr#map=18/$latStr/$lonStr)"
+    }
 
     private fun csv(s: String) = if (s.any { it == ',' || it == '"' || it == '\n' }) "\"${s.replace("\"", "\"\"")}\"" else s
 }

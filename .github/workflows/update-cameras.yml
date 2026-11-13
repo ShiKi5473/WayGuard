@@ -5,6 +5,12 @@ on:
     # 每週一 03:00（台灣時間 UTC+8）
     - cron: '0 19 * * 0'
   workflow_dispatch:
+    inputs:
+      verify_all:
+        description: '強制全量交叉驗證所有點位座標'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -25,10 +31,26 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # 下載警政署 CSV → 正規化/驗證 → 內容有變才改寫 data/published/。
-      # 依地名推算方向的新點位，會向 OpenStreetMap 查詢所在道路走向，結果快取在
-      # data/generated/road-checks.json；查詢失敗的點位維持雙向提醒，下次再查。
-      # 安全檢查未通過時 exit 1，不會 commit，GitHub 會寄出失敗通知。
-      - name: 抓取並驗證資料
+      # 位置交叉驗證與本機道路走向比對依賴 OpenStreetMap 台灣圖資，設為 continue-on-error
+      # 以免外部圖資暫時無法取得時阻擋每週點位發布；每月第一個週一（或手動勾選 verify_all）
+      # 會執行全量驗證，其餘每週僅增量檢查新增或變動的點位。
+      - name: 抓取 OSM 圖資並執行位置交叉驗證
+        id: verify
+        continue-on-error: true
+        run: |
+          sudo apt-get update && sudo apt-get install -y osmium-tool
+          curl -fsSL --retry 3 -o build/taiwan-latest.osm.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf
+          osmium tags-filter -O -o build/taiwan-filtered.osm.pbf build/taiwan-latest.osm.pbf w/highway r/boundary=administrative
+          osmium export -O -f geojsonseq -o build/taiwan-extract.geojsonseq build/taiwan-filtered.osm.pbf
+          EXTRA=""
+          if [ "$(date +%d)" -le 7 ] || [ "${{ inputs.verify_all }}" = "true" ]; then
+            EXTRA="--verify-all"
+          fi
+          ./gradlew :camera-sync:run --args="--osm-extract build/taiwan-extract.geojsonseq $EXTRA"
+
+      # 若 OSM 圖資步驟失敗，改以既有快取與資料內部檢查完成每週發布。
+      - name: 抓取並驗證資料（無 OSM 圖資備援）
+        if: steps.verify.outcome != 'success'
         run: ./gradlew :camera-sync:run
 
       - name: 報告
@@ -36,7 +58,7 @@ jobs:
         run: |
           if [ -f build/camera-report.md ]; then cat build/camera-report.md >> "$GITHUB_STEP_SUMMARY"; fi
 
-      - name: 保存報告與區間候選
+      - name: 保存報告與建議清單
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -44,6 +66,7 @@ jobs:
           path: |
             build/camera-report.md
             build/section-candidates.csv
+            build/location-fix-suggestions.json
           if-no-files-found: ignore
 
       - name: Commit 新資料

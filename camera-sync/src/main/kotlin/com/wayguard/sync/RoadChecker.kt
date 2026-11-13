@@ -6,11 +6,15 @@ import com.waymap.geo.LatLng
 import kotlin.math.roundToInt
 
 /**
- * Looks up the street each camera stands on (Nominatim reverse) and its direction at
- * the camera. Results feed [com.wayguard.core.dataset.PlaceHeadingRules]; they are
- * cached by camera id, so the weekly run only queries cameras it hasn't seen.
+ * Looks up the street each camera stands on (using local [osm] extract when available,
+ * falling back to Nominatim reverse) and its direction at the camera. Results feed
+ * [com.wayguard.core.dataset.PlaceHeadingRules]; they are cached by camera id, so
+ * the weekly run only queries cameras it hasn't seen or whose coordinates moved.
  */
-internal class RoadChecker(private val nominatim: Nominatim) {
+internal class RoadChecker(
+    private val nominatim: Nominatim,
+    private val osm: OsmExtract? = null,
+) {
 
     /**
      * Checks each (camera id, position). A camera whose lookup failed (network) is
@@ -19,6 +23,22 @@ internal class RoadChecker(private val nominatim: Nominatim) {
     fun check(cameras: List<Pair<String, LatLng>>, now: String): Map<String, RoadCheck> {
         val out = LinkedHashMap<String, RoadCheck>()
         for ((id, pos) in cameras) {
+            if (osm != null && !osm.isEmpty) {
+                val localHit = osm.nearestStreet(pos, MAX_SNAP_M)
+                out[id] = if (localHit == null) {
+                    RoadCheck(bearing = null, road = "", distanceM = null, lat = pos.lat, lon = pos.lon, checkedAt = now)
+                } else {
+                    RoadCheck(
+                        bearing = localHit.bearingDeg,
+                        road = localHit.road,
+                        distanceM = localHit.distanceM.roundToInt(),
+                        lat = pos.lat,
+                        lon = pos.lon,
+                        checkedAt = now,
+                    )
+                }
+                continue
+            }
             val hit = nominatim.reverseStreet(pos) ?: continue
             val nearest = if (hit.category == "highway") Nominatim.nearestOnLines(hit.lines, pos) else null
             val distance = nearest?.let { GeoUtils.haversine(pos, it.first) }

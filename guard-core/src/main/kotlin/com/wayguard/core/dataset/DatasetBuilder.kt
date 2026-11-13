@@ -10,6 +10,9 @@ import com.wayguard.core.parse.NpaRow
 import com.wayguard.core.parse.PlaceTarget
 import com.wayguard.core.parse.RejectedRow
 import com.wayguard.core.validate.CountyBounds
+import com.wayguard.core.validate.LocationCheck
+import com.wayguard.core.validate.LocationVerdict
+import com.wayguard.core.validate.VerdictLevel
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import java.security.MessageDigest
@@ -84,6 +87,10 @@ data class BuildReport(
     val autoSections: List<Section> = emptyList(),
     /** `overrides.json` entries (fix/exclude) that matched no row/camera. */
     val unmatchedOverrides: List<String> = emptyList(),
+    /** Cameras flagged as `SUSPECT` or `MISMATCH` by internal or external location cross-verification. */
+    val locationIssues: List<Pair<SpeedCamera, LocationCheck>> = emptyList(),
+    /** Suggested coordinates for out-of-county rejected rows keyed by row id. */
+    val rejectedSuggestions: Map<String, LocationCheck> = emptyMap(),
 ) {
     /** Cameras still waiting for a road lookup — what camera-sync should check. */
     val needsRoadCheck: List<PlaceDerivation>
@@ -117,6 +124,7 @@ object DatasetBuilder {
         source: String,
         places: List<Place> = emptyList(),
         roadChecks: Map<String, RoadCheck> = emptyMap(),
+        locationChecks: Map<String, LocationCheck> = emptyMap(),
     ): BuildResult {
         val rejected = ArrayList(csvRejected)
         val swapped = ArrayList<Int>()
@@ -252,9 +260,34 @@ object DatasetBuilder {
             (overrides.fix.keys - matchedFixes).forEach { add("fix: $it") }
             (overrides.exclude.distinct() - matchedExcludes).forEach { add("exclude: $it") }
         }
-        val cameras = (kept + overrides.add)
+        val rawCameras = (kept + overrides.add)
             .distinctBy { it.id }
             .sortedWith(compareBy({ it.city }, { it.district }, { it.address }, { it.id }))
+
+        val internalConflicts = LocationVerdict.findInternalConflicts(rawCameras, knownRoads, generatedAt)
+        val locationIssues = ArrayList<Pair<SpeedCamera, LocationCheck>>()
+        val cameras = rawCameras.map { cam ->
+            val external = (locationChecks[cam.id] ?: locationChecks[cam.id.substringBefore("-h")])
+                ?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
+            val internal = internalConflicts[cam.id]
+            val merged = mergeLocationCheck(external, internal)
+            if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
+                val updated = cam.copy(loc = merged.verdict.locTag)
+                locationIssues += updated to merged
+                updated
+            } else {
+                cam
+            }
+        }
+        locationIssues.sortWith(
+            compareByDescending<Pair<SpeedCamera, LocationCheck>> { it.second.verdict.severity }
+                .thenByDescending { it.second.distanceM ?: -1 }
+                .thenBy { it.first.id }
+        )
+        val rejectedSuggestions = rejected.mapNotNull { r ->
+            val id = r.id ?: return@mapNotNull null
+            locationChecks[id]?.takeIf { it.suggestedLat != null && it.suggestedLon != null }?.let { id to it }
+        }.toMap()
 
         // Sections published as one row per direction pair up without hand curation.
         val autoSections = SectionPairing.pair(cameras, sections)
@@ -283,8 +316,30 @@ object DatasetBuilder {
             placeSkipped = placeSkipped,
             autoSections = autoSections,
             unmatchedOverrides = unmatchedOverrides,
+            locationIssues = locationIssues,
+            rejectedSuggestions = rejectedSuggestions,
         )
         return BuildResult(dataset, report)
+    }
+
+    private fun mergeLocationCheck(external: LocationCheck?, internal: LocationCheck?): LocationCheck? {
+        if (external == null) return internal
+        if (internal == null) return external
+        val combined = LocationVerdict.combine(external.verdict, internal.verdict)
+        return when {
+            internal.verdict.severity > external.verdict.severity ->
+                internal.copy(
+                    verdict = combined,
+                    suggestedLat = internal.suggestedLat ?: external.suggestedLat,
+                    suggestedLon = internal.suggestedLon ?: external.suggestedLon,
+                )
+            external.verdict == VerdictLevel.SUSPECT && internal.verdict == VerdictLevel.SUSPECT ->
+                external.copy(
+                    verdict = combined,
+                    reason = listOf(external.reason, internal.reason).filter { it.isNotBlank() }.joinToString("；"),
+                )
+            else -> external.copy(verdict = combined)
+        }
     }
 
     /**

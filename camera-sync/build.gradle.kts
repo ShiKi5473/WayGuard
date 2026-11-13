@@ -27,4 +27,5 @@ tasks.named<JavaExec>("run") {
 
 dependencies {
     implementation(project(":guard-core"))
+    testImplementation("junit:junit:4.13.2")
 }

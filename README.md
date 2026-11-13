@@ -22,7 +22,7 @@ Android 測速照相守衛（Kotlin + Jetpack Compose + MapLibre GL）。地圖�
 | `app/` | Android App：`guard/`（前景服務、TTS、懸浮窗）、`data/`（資料載入與合併）、`sync/`（WorkManager 更新）、`settings/`、`ui/` |
 | `data/source/` | 人工維護：`overrides.json`（修正、排除、新增點位）、`sections.json`（區間起訖點）、`places.json`（方向文字中的地名座標） |
 | `data/published/` | CI 產出：`cameras.json`、`meta.json`。App 也會把這兩個檔案打包成內建快照 |
-| `data/generated/` | CI 自動維護：`road-checks.json`（依地名推算方向的點位所在道路走向，來自 OpenStreetMap） |
+| `data/generated/` | CI 自動維護：`road-checks.json`（道路走向）、`location-checks.json`（位置交叉驗證快取），均來自 OpenStreetMap |
 
 ## 資料更新流程
 
@@ -98,3 +98,4 @@ WayMap 預設從 JitPack 取得（`gradle.properties` 的 `wayMapVersion`）。�
 - 測速點位：內政部警政署「測速執法設置點」（[data.gov.tw/dataset/7320](https://data.gov.tw/dataset/7320)），依政府資料開放授權條款第 1 版使用。
 - 地圖：OpenFreeMap / © OpenStreetMap contributors。
 - `data/source/places.json` 的地名座標：© OpenStreetMap contributors（ODbL），經 Nominatim 查詢後人工確認。
+- `data/generated/location-checks.json` 的位置交叉驗證與 `data/source/overrides.json` 中參考 OpenStreetMap 反推的建議修正座標：© OpenStreetMap contributors（ODbL）；行政區複查結果來自內政部國土測繪中心。

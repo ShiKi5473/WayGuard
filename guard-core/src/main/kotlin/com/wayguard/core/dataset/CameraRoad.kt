@@ -32,9 +32,21 @@ sealed interface CameraRoad {
         private const val KNOWN_BOUNDARY_CHARS = "路街道段巷弄號線縣市區鄉鎮村里鄰與和及、,，()（） 0123456789"
 
         fun of(address: String, directionText: String, knownRoads: Set<String> = emptySet()): CameraRoad {
-            ROAD_BEFORE_TOWARD.find(directionText.filterNot(Char::isWhitespace))?.let {
-                return Known(base(it.groupValues[1]))
+            roadBeforeToward(directionText)?.let { return Known(it) }
+            val roads = roadsInAddress(address, knownRoads)
+            return when (roads.size) {
+                0 -> Unnamed
+                1 -> Known(roads[0])
+                else -> Intersection(roads)
             }
+        }
+
+        /** Road explicitly named as the camera's own road in direction text, e.g. `三民路上往龜山` → `三民路`. */
+        fun roadBeforeToward(directionText: String): String? =
+            ROAD_BEFORE_TOWARD.find(directionText.filterNot(Char::isWhitespace))?.let { base(it.groupValues[1]) }
+
+        /** Ordered, deduplicated base road names appearing anywhere in [address]. */
+        fun roadsInAddress(address: String, knownRoads: Set<String> = emptySet()): List<String> {
             val cleaned = address.trim().replace('台', '臺').replace(TOWARD_IN_ADDRESS, ",")
             val buf = StringBuilder(cleaned)
             val found = ArrayList<Pair<Int, String>>()
@@ -75,12 +87,7 @@ sealed interface CameraRoad {
                 pos += piece.length + 1
             }
 
-            val roads = found.sortedBy { it.first }.map { it.second }.distinct()
-            return when (roads.size) {
-                0 -> Unnamed
-                1 -> Known(roads[0])
-                else -> Intersection(roads)
-            }
+            return found.sortedBy { it.first }.map { it.second }.distinct()
         }
 
         /** `大興西路三段` → `大興西路`, `中正路二段239巷` → `中正路`; 台/臺 unified. */

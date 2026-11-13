@@ -1,6 +1,8 @@
 package com.wayguard.sync
 
 import com.wayguard.core.dataset.BuildResult
+import com.wayguard.core.dataset.CameraFix
+import com.wayguard.core.dataset.CameraRoad
 import com.wayguard.core.dataset.DatasetBuilder
 import com.wayguard.core.dataset.Overrides
 import com.wayguard.core.dataset.Place
@@ -11,6 +13,7 @@ import com.wayguard.core.model.DatasetMeta
 import com.wayguard.core.model.Section
 import com.wayguard.core.parse.NpaCsvParser
 import com.wayguard.core.validate.CountyBounds
+import com.wayguard.core.validate.LocationCheck
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
@@ -59,7 +62,15 @@ data class SyncArgs(
     val places: File = File("data/source/places.json"),
     /** Cache of the road each place-derived camera stands on (machine-maintained). */
     val roadChecks: File = File("data/generated/road-checks.json"),
-    /** Skip the road lookups (unchecked cameras then stay both ways). */
+    /** Local OpenStreetMap GeoJSON/GeoJSONSeq extract of roads and admin boundaries. */
+    val osmExtract: File? = null,
+    /** Cache of per-camera location cross-verification results (machine-maintained). */
+    val locationChecks: File = File("data/generated/location-checks.json"),
+    /** Overrides.fix review snippet for MISMATCH and rejected-row intersection suggestions. */
+    val fixSuggestions: File = File("build/location-fix-suggestions.json"),
+    /** Force re-verifying every camera against [osmExtract] instead of incremental mode. */
+    val verifyAll: Boolean = false,
+    /** Skip network lookups (unchecked cameras stay both ways; NLSC check deferred). */
     val offline: Boolean = false,
     val out: File = File("data/published"),
     val report: File = File("build/camera-report.md"),
@@ -78,8 +89,9 @@ data class SyncArgs(
 ) {
     companion object {
         const val USAGE = "usage: camera-sync [--source URL|FILE] [--sections FILE] [--overrides FILE] " +
-            "[--places FILE] [--road-checks FILE] [--offline] [--out DIR] [--report FILE] [--candidates FILE] " +
-            "[--min-ratio 0.8] [--max-reject 0.3] [--min-known-city 0.8] [--suggest-places]"
+            "[--places FILE] [--road-checks FILE] [--osm-extract FILE] [--location-checks FILE] " +
+            "[--fix-suggestions FILE] [--verify-all] [--offline] [--out DIR] [--report FILE] " +
+            "[--candidates FILE] [--min-ratio 0.8] [--max-reject 0.3] [--min-known-city 0.8] [--suggest-places]"
 
         fun parse(args: Array<String>): SyncArgs {
             var a = SyncArgs()
@@ -92,6 +104,10 @@ data class SyncArgs(
                     "--overrides" -> a.copy(overrides = File(value()))
                     "--places" -> a.copy(places = File(value()))
                     "--road-checks" -> a.copy(roadChecks = File(value()))
+                    "--osm-extract" -> a.copy(osmExtract = File(value()))
+                    "--location-checks" -> a.copy(locationChecks = File(value()))
+                    "--fix-suggestions" -> a.copy(fixSuggestions = File(value()))
+                    "--verify-all" -> a.copy(verifyAll = true)
                     "--offline" -> a.copy(offline = true)
                     "--suggest-places" -> a.copy(suggestPlaces = true)
                     "--out" -> a.copy(out = File(value()))
@@ -123,12 +139,19 @@ fun sync(a: SyncArgs): Int {
     val checksSerializer = MapSerializer(String.serializer(), RoadCheck.serializer())
     val cachedChecks = readJson(a.roadChecks, checksSerializer) ?: emptyMap()
     val checks = LinkedHashMap(cachedChecks)
+    val locSerializer = MapSerializer(String.serializer(), LocationCheck.serializer())
+    val cachedLocChecks = readJson(a.locationChecks, locSerializer) ?: emptyMap()
+    var locChecks = cachedLocChecks
     val now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
     fun build() = DatasetBuilder.build(
-        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks,
+        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks,
     )
     var result = build()
     val nominatim = Nominatim(USER_AGENT)
+    val osm = a.osmExtract?.takeIf { it.isFile }?.let {
+        println("載入 OSM 資料：${it.path}")
+        OsmExtract.load(it)
+    }
 
     if (a.suggestPlaces) {
         val outDir = a.report.absoluteFile.parentFile
@@ -140,8 +163,8 @@ fun sync(a: SyncArgs): Int {
     // Verify destination-derived directions against the road each new camera stands on.
     // Unverified cameras stay both ways, so a failed lookup is safe and retried next run.
     val pending = result.report.needsRoadCheck
-    if (pending.isNotEmpty() && !a.offline) {
-        val found = RoadChecker(nominatim).check(pending.map { it.cameraId to it.pos }, now)
+    if (pending.isNotEmpty() && (!a.offline || (osm != null && !osm.isEmpty))) {
+        val found = RoadChecker(nominatim, osm).check(pending.map { it.cameraId to it.pos }, now)
         println("比對道路走向：待比對 ${pending.size} 個點位，取得 ${found.size} 筆")
         if (found.isNotEmpty()) {
             checks += found
@@ -156,20 +179,51 @@ fun sync(a: SyncArgs): Int {
         a.roadChecks.writeText(prettyJson.encodeToString(checksSerializer, prunedChecks) + "\n")
     }
 
+    // Run three-layer location cross-verification (internal <10m, local OSM, NLSC secondary check).
+    val knownRoads = checks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }.map(CameraRoad::base).toSet()
+    val rowsById = parsed.rows.associateBy(DatasetBuilder::stableId)
+    val nlsc = if (!a.offline) NlscClient() else null
+    val locResult = LocationChecker(osm, nlsc, a.offline).checkAll(
+        cameras = result.dataset.cameras,
+        rejected = result.report.rejected,
+        rowsById = rowsById,
+        existing = cachedLocChecks,
+        now = now,
+        verifyAll = a.verifyAll,
+        knownRoads = knownRoads,
+    )
+    if (locResult.checks != cachedLocChecks) {
+        locChecks = locResult.checks
+        result = build()
+    }
+    if (osm != null && !osm.isEmpty) {
+        println("位置交叉驗證：本輪檢查 ${locResult.checkedCount} 個點位，發現可疑／不符 ${result.report.locationIssues.size} 筆")
+    }
+
     val metaFile = File(a.out, "meta.json")
     val previous = metaFile.takeIf { it.isFile }?.let { runCatching { DatasetIo.decodeMeta(it.readText()) }.getOrNull() }
     val problems = safetyProblems(result, previous, a)
     val unchanged = previous?.version == result.dataset.version
 
     a.report.parentFile?.mkdirs()
-    a.report.writeText(Report.markdown(result, previous, problems, unchanged))
+    a.report.writeText(Report.markdown(result, previous, problems, unchanged, locChecks))
     a.candidates.parentFile?.mkdirs()
     a.candidates.writeText(Report.sectionCandidatesCsv(result))
+    val fixSuggestions = LocationChecker.buildFixSuggestions(result.report.locationIssues, result.report.rejectedSuggestions)
+    if (fixSuggestions.isNotEmpty()) {
+        a.fixSuggestions.parentFile?.mkdirs()
+        val fixSerializer = MapSerializer(String.serializer(), CameraFix.serializer())
+        a.fixSuggestions.writeText(prettyJson.encodeToString(fixSerializer, fixSuggestions) + "\n")
+    }
 
     if (problems.isNotEmpty()) {
         System.err.println("安全檢查未通過，未寫入資料：")
         problems.forEach { System.err.println(" - $it") }
         return 1
+    }
+    if (locResult.changed) {
+        a.locationChecks.parentFile?.mkdirs()
+        a.locationChecks.writeText(prettyJson.encodeToString(locSerializer, locChecks) + "\n")
     }
     if (unchanged) {
         println("資料未變更（version ${result.dataset.version}，${result.dataset.cameras.size} 筆）")
