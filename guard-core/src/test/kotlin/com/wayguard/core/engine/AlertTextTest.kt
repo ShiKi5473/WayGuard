@@ -33,12 +33,26 @@ class AlertTextTest {
 
     @Test
     fun sectionTexts() {
-        val s = Section("s", "x", 25.0, 121.5, 25.02, 121.5, 2250.0, 90)
+        val s = Section("s", "x", 25.0, 121.5, 25.02, 121.5, 2250.0, 90, heading = 0)
         val st = SectionStatus(s, 0.0, 0.0, null, 2250.0, 90.0, false)
         assertEquals("進入區間測速，速限90，全長2.3公里", AlertText.speech(SectionEvent(SectionEventType.ENTER, st)))
         assertEquals(
             "離開區間測速，平均時速84",
             AlertText.speech(SectionEvent(SectionEventType.COMPLETE, st.copy(averageKmh = 84.4))),
+        )
+    }
+
+    @Test
+    fun speechesMergeSameCameraDistanceAndOverspeed() {
+        val specs = AlertText.speeches(
+            listOf(
+                AlertEvent(AlertType.APPROACH, cam, 487.0, 80.0),
+                AlertEvent(AlertType.OVERSPEED, cam, 487.0, 80.0),
+            )
+        )
+        assertEquals(
+            listOf(AlertText.UtteranceSpec("camera:c", "前方500公尺，測速照相，速限60，超速請減速", urgent = true)),
+            specs,
         )
     }
 }

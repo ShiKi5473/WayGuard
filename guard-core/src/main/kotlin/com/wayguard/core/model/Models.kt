@@ -49,7 +49,9 @@ data class SpeedCamera(
 
 /**
  * An average-speed enforcement section, driven from [start] to [end]. Each driving
- * direction is its own entry. Curated by hand in data/source/sections.json.
+ * direction is its own entry. Curated in data/source/sections.json (each entry's extra
+ * `note` field records its evidence and is not published), plus the ones
+ * [com.wayguard.core.dataset.SectionPairing] pairs from the government data.
  */
 @Serializable
 data class Section(
@@ -62,8 +64,8 @@ data class Section(
     /** Road length between the two cameras (what enforcement divides by). */
     val lengthM: Double,
     val limitKmh: Int,
-    /** Travel bearing when passing the start camera; null = don't check. */
-    val heading: Int? = null,
+    /** Travel bearing when passing the start camera. */
+    val heading: Int,
 ) {
     val start: LatLng get() = LatLng(startLat, startLon)
     val end: LatLng get() = LatLng(endLat, endLon)

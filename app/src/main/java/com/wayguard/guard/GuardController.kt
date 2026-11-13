@@ -38,6 +38,6 @@ object GuardController {
 
     fun update(transform: (GuardState) -> GuardState) = _state.update(transform)
 
-    /** Back to idle, keeping the last position for the map. */
-    fun reset() = _state.update { GuardState(position = it.position) }
+    /** Back to idle, keeping the last position and any failure reason to show the user. */
+    fun reset() = _state.update { GuardState(position = it.position, error = it.error) }
 }

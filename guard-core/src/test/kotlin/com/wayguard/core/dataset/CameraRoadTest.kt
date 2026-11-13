@@ -87,4 +87,15 @@ class CameraRoadTest {
         // Unnamed: nothing to compare, the bearing check alone decides.
         assertTrue(PlaceHeadingRules.decide(town, 3000.0, 10, check("台7乙線"), Unnamed) is Outcome.Apply)
     }
+
+    @Test
+    fun roadNamesStartingWithConjunctionCharactersStayIntact() {
+        assertEquals(Known("和平西路"), CameraRoad.of("和平西路一段100號", "往東", setOf("和平西路", "和平路")))
+        assertEquals(Intersection(listOf("和強路", "介壽路")), CameraRoad.of("桃園市八德區和強路與介壽路口", "往南", setOf("和強路")))
+        assertEquals(Intersection(listOf("中正路", "仁愛路")), CameraRoad.of("中正路和仁愛路口", "往北"))
+        assertEquals(
+            Intersection(listOf("振興路", "西勢湖路")),
+            CameraRoad.of("振興路1051之1號前(振興路與西勢湖路口)", "往西勢湖路方向", setOf("振興路", "西勢湖路")),
+        )
+    }
 }

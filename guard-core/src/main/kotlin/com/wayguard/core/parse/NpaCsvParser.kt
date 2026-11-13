@@ -39,15 +39,25 @@ object NpaCsvParser {
     fun parse(text: String): CsvParseResult {
         val rows = ArrayList<NpaRow>()
         val rejected = ArrayList<RejectedRow>()
-        for ((line, fields) in records(text.removePrefix("﻿"))) {
+        for ((line, fields) in records(text.removePrefix("\uFEFF"))) {
             if (fields.all { it.isBlank() }) continue
-            if (fields.first().trim() in HEADER_FIRST_FIELDS) continue
+            if (fields.first().trim() in HEADER_FIRST_FIELDS) {
+                if (!isValidHeader(fields)) {
+                    rejected += RejectedRow(line, "表頭欄位格式異常", fields.joinToString(","))
+                }
+                continue
+            }
             val row = toRow(line, fields)
             if (row != null) rows += row
             else rejected += RejectedRow(line, "欄位數或經緯度位置無法判讀", fields.joinToString(","))
         }
         return CsvParseResult(rows, rejected)
     }
+
+    private fun isValidHeader(fields: List<String>): Boolean =
+        fields.size >= EXPECTED_FIELDS &&
+            fields.any { "lon" in it.lowercase() || "經度" in it } &&
+            fields.any { "lat" in it.lowercase() || "緯度" in it }
 
     /**
      * Maps fields to a row. With exactly 9 fields the layout is positional; otherwise
@@ -89,10 +99,11 @@ object NpaCsvParser {
         val fields = ArrayList<String>()
         val sb = StringBuilder()
         var inQuotes = false
+        var atFieldStart = true
         var line = 1
         var recordLine = 1
         var i = 0
-        fun endField() { fields += sb.toString(); sb.setLength(0) }
+        fun endField() { fields += sb.toString(); sb.setLength(0); atFieldStart = true }
         fun endRecord() {
             endField()
             out += recordLine to fields.toList()
@@ -102,12 +113,13 @@ object NpaCsvParser {
             val c = text[i]
             when {
                 inQuotes && c == '"' && i + 1 < text.length && text[i + 1] == '"' -> { sb.append('"'); i++ }
-                c == '"' -> inQuotes = !inQuotes
+                inQuotes && c == '"' -> inQuotes = false
+                !inQuotes && atFieldStart && c == '"' -> inQuotes = true
                 inQuotes -> { if (c == '\n') line++; sb.append(c) }
                 c == ',' -> endField()
                 c == '\r' -> {}
                 c == '\n' -> { endRecord(); line++; recordLine = line }
-                else -> sb.append(c)
+                else -> { sb.append(c); atFieldStart = false }
             }
             i++
         }

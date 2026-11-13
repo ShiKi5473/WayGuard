@@ -37,7 +37,7 @@ internal class Nominatim(private val userAgent: String) {
         val name: String,
         val category: String,
         val type: String,
-        val line: List<LatLng> = emptyList(),
+        val lines: List<List<LatLng>> = emptyList(),
     )
 
     private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build()
@@ -73,15 +73,15 @@ internal class Nominatim(private val userAgent: String) {
             name = o["name"]?.jsonPrimitive?.contentOrNull.orEmpty(),
             category = o["category"]?.jsonPrimitive?.contentOrNull.orEmpty(),
             type = o["type"]?.jsonPrimitive?.contentOrNull.orEmpty(),
-            line = line(o["geojson"] as? JsonObject),
+            lines = lines(o["geojson"] as? JsonObject),
         )
     }
 
-    private fun line(geo: JsonObject?): List<LatLng> {
+    private fun lines(geo: JsonObject?): List<List<LatLng>> {
         val coords = geo?.get("coordinates") as? JsonArray ?: return emptyList()
         return when (geo["type"]?.jsonPrimitive?.contentOrNull) {
-            "LineString" -> coords.mapNotNull(::toLatLng)
-            "MultiLineString" -> coords.flatMap { it.jsonArray.mapNotNull(::toLatLng) }
+            "LineString" -> listOf(coords.mapNotNull(::toLatLng))
+            "MultiLineString" -> coords.map { it.jsonArray.mapNotNull(::toLatLng) }
             else -> emptyList()
         }
     }
@@ -114,6 +114,10 @@ internal class Nominatim(private val userAgent: String) {
 
     companion object {
         private const val BASE = "https://nominatim.openstreetmap.org"
+
+        /** Nearest point on any of [lines] and the bearing of the segment it lies on. */
+        fun nearestOnLines(lines: List<List<LatLng>>, p: LatLng): Pair<LatLng, Double>? =
+            lines.mapNotNull { nearestOnLine(it, p) }.minByOrNull { GeoUtils.haversine(p, it.first) }
 
         /** Nearest point on a polyline and the bearing of the segment it lies on. */
         fun nearestOnLine(pts: List<LatLng>, p: LatLng): Pair<LatLng, Double>? {

@@ -32,13 +32,14 @@ object DirectionParser {
         "北" to 0, "東北" to 45, "北東" to 45, "東" to 90, "東南" to 135, "南東" to 135,
         "南" to 180, "西南" to 225, "南西" to 225, "西" to 270, "西北" to 315, "北西" to 315,
     )
-    private const val D = "[東西南北]{1,2}"
+    private const val C = "(?:東北|北東|東南|南東|西南|南西|西北|北西|[東西南北])"
+    private const val COMPASS_END = "(?=$|方向|[向行上下])"
 
-    private val PER_HEADING_LIMIT = Regex("($D)向(\\d{2,3})")
-    private val FROM_TO = Regex("($D)[向往]($D)")
-    private val TOWARD = Regex("往($D)")
-    private val HEADING_SUFFIX = Regex("($D)[向行]")
-    private val AXIS_ONLY = Regex("^(南北|北南|東西|西東)向?$")
+    private val PER_HEADING_LIMIT = Regex("($C)向(\\d{2,3})")
+    private val FROM_TO = Regex("($C)[向往]($C)$COMPASS_END")
+    private val TOWARD = Regex("往($C)$COMPASS_END")
+    private val HEADING_SUFFIX = Regex("($C)[向行]")
+    private val AXIS_ONLY = Regex("(南北|北南|東西|西東)(?:方向|向)?$")
     private val PARENS = Regex("\\(.*?\\)")
     private val BOTH_WAYS = listOf("雙向", "多向", "相向")
 
@@ -63,7 +64,7 @@ object DirectionParser {
         // Notes in parentheses carry kinds only; directions come from the text between
         // them. Each segment is read on its own: 南向北(區間測速)北向南(區間測速).
         val segments = s.split(PARENS).filter { it.isNotEmpty() }
-        if (segments.isNotEmpty() && segments.all { AXIS_ONLY.matches(it) }) {
+        if (segments.isNotEmpty() && segments.all { AXIS_ONLY.containsMatchIn(it) }) {
             return ParsedDirection(emptyList(), kinds)
         }
         val headings = linkedSetOf<Int>()
@@ -75,22 +76,18 @@ object DirectionParser {
     /** Headings named by one segment, trying the most specific form first. */
     private fun segmentHeadings(seg: String): Set<Int> {
         val out = linkedSetOf<Int>()
-        // The destination is the part right after 向/往, so fall back to its first char.
-        FROM_TO.findAll(seg).forEach { m -> compass(m.groupValues[2], first = true)?.let(out::add) }
+        FROM_TO.findAll(seg).forEach { m -> compass(m.groupValues[2])?.let(out::add) }
         if (out.isNotEmpty()) return out
-        TOWARD.findAll(seg).forEach { m -> compass(m.groupValues[1], first = true)?.let(out::add) }
-        if (out.isNotEmpty()) return out
+        TOWARD.findAll(seg).forEach { m -> compass(m.groupValues[1])?.let(out::add) }
+        if (out.isNotEmpty() || "往" in seg) return out
         if ("北上" in seg) out += 0
         if ("南下" in seg) out += 180
         if (out.isNotEmpty()) return out
-        // The direction is the part right before 向/行, so fall back to its last char.
-        HEADING_SUFFIX.findAll(seg).forEach { m -> compass(m.groupValues[1], first = false)?.let(out::add) }
+        HEADING_SUFFIX.findAll(seg).forEach { m -> compass(m.groupValues[1])?.let(out::add) }
         return out
     }
 
-    /** Bearing of a 1–2 char direction; an unknown pair falls back to its adjacent char. */
-    private fun compass(d: String, first: Boolean): Int? =
-        COMPASS[d] ?: if (d.length == 2) COMPASS[if (first) d.take(1) else d.takeLast(1)] else null
+    private fun compass(d: String): Int? = COMPASS[d]
 
     /** Half-width parentheses, no whitespace. */
     private fun normalize(raw: String): String =

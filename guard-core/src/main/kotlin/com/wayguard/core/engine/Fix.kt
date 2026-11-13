@@ -19,6 +19,7 @@ data class Fix(
 class HeadingFilter(
     private val minBearingSpeedKmh: Double = 10.0,
     private val minMoveM: Double = 15.0,
+    private val minMoveSpeedKmh: Double = 3.0,
 ) {
     var heading: Double? = null
         private set
@@ -27,6 +28,11 @@ class HeadingFilter(
     fun update(fix: Fix): Double? {
         if (fix.bearing != null && fix.speedKmh >= minBearingSpeedKmh) {
             heading = fix.bearing
+            anchor = fix.pos
+            return heading
+        }
+        if (fix.speedKmh < minMoveSpeedKmh) {
+            // Stationary GPS jitter must not rotate the heading; re-anchor so drift doesn't accumulate.
             anchor = fix.pos
             return heading
         }

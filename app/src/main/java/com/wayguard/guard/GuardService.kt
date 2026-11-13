@@ -20,7 +20,6 @@ import androidx.lifecycle.lifecycleScope
 import com.wayguard.MainActivity
 import com.wayguard.core.engine.AlertEngine
 import com.wayguard.core.engine.AlertText
-import com.wayguard.core.engine.AlertType
 import com.wayguard.core.engine.Fix
 import com.wayguard.core.engine.HeadingFilter
 import com.wayguard.core.engine.SectionEventType
@@ -61,17 +60,28 @@ class GuardService : LifecycleService() {
             refreshNotification(force = true)
         }
         override fun onProviderEnabled(provider: String) {
-            GuardController.update { it.copy(error = null) }
+            GuardController.update { it.copy(error = announcer.ttsError) }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
         createChannel()
-        GuardController.update { GuardState(running = true, position = it.position) }
-        startForeground(NOTIF_ID, buildNotification(GuardController.current), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+        GuardController.update { GuardState(running = true, position = it.position, error = null) }
+        try {
+            startForeground(NOTIF_ID, buildNotification(GuardController.current), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+        } catch (_: SecurityException) {
+            GuardController.update { it.copy(error = "無法啟動前景定位服務（權限不足）") }
+            stopSelf()
+            return
+        }
 
-        announcer = Announcer(this)
+        announcer = Announcer(this) { err ->
+            if (err != null) {
+                GuardController.update { it.copy(error = err) }
+                refreshNotification(force = true)
+            }
+        }
         lm = getSystemService(LocationManager::class.java)
         applySettings(GuardSettingsStore.loadBlocking(this))
 
@@ -170,15 +180,13 @@ class GuardService : LifecycleService() {
         val (sectionEvents, sectionStatus) = sectionTracker.update(fix, heading)
 
         var message: String? = null
-        for (e in result.events) {
-            AlertText.speech(e)?.let {
-                announcer.say(it, urgent = e.type == AlertType.OVERSPEED || e.type == AlertType.NEAR)
-                message = it
-            }
+        for (s in AlertText.speeches(result.events)) {
+            announcer.say(s.text, urgent = s.urgent, key = s.key)
+            message = s.text
         }
         for (e in sectionEvents) {
             AlertText.speech(e)?.let {
-                announcer.say(it, urgent = e.type == SectionEventType.OVER_LIMIT)
+                announcer.say(it, urgent = e.type == SectionEventType.OVER_LIMIT, key = "section:${e.type}")
                 message = it
             }
         }
@@ -192,12 +200,13 @@ class GuardService : LifecycleService() {
                 active = result.active,
                 section = sectionStatus,
                 lastMessage = message ?: it.lastMessage,
-                error = null,
+                error = announcer.ttsError,
             )
         }
         val state = GuardController.current
         val now = SystemClock.elapsedRealtime()
-        if (state.overspeed && settings.beepOnOverspeed && now - lastBeepMs >= BEEP_INTERVAL_MS) {
+        // No beep over speech: the overspeed sentence itself must stay intelligible.
+        if (state.overspeed && settings.beepOnOverspeed && !announcer.isBusy && now - lastBeepMs >= BEEP_INTERVAL_MS) {
             announcer.beep()
             lastBeepMs = now
         }
@@ -211,8 +220,8 @@ class GuardService : LifecycleService() {
     }
 
     override fun onDestroy() {
-        lm.removeUpdates(listener)
-        announcer.shutdown()
+        if (::lm.isInitialized) lm.removeUpdates(listener)
+        if (::announcer.isInitialized) announcer.shutdown()
         overlay?.hide()
         overlay = null
         engine.reset()
@@ -265,8 +274,7 @@ class GuardService : LifecycleService() {
     }
 
     private fun statusLine(s: GuardState): String {
-        s.error?.let { return it }
-        if (!s.gpsOk) return "等待 GPS 定位…"
+        if (!s.gpsOk) return s.error ?: "等待 GPS 定位…"
         val speed = "${s.speedKmh?.roundToInt() ?: 0} km/h"
         val ahead = when {
             s.section != null ->
@@ -277,7 +285,8 @@ class GuardService : LifecycleService() {
             }
             else -> "附近沒有測速點"
         }
-        return "$speed · $ahead"
+        val err = s.error?.let { " · $it" } ?: ""
+        return "$speed · $ahead$err"
     }
 
     companion object {
@@ -291,6 +300,11 @@ class GuardService : LifecycleService() {
         private const val NOTIFY_INTERVAL_MS = 3_000L
 
         fun start(context: Context) {
+            if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                GuardController.update { it.copy(error = "未授予精確定位權限") }
+                return
+            }
+            GuardController.update { it.copy(error = null) }
             context.startForegroundService(Intent(context, GuardService::class.java))
         }
 

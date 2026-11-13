@@ -10,6 +10,7 @@ import com.wayguard.core.model.DatasetJson
 import com.wayguard.core.model.DatasetMeta
 import com.wayguard.core.model.Section
 import com.wayguard.core.parse.NpaCsvParser
+import com.wayguard.core.validate.CountyBounds
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
@@ -67,6 +68,8 @@ data class SyncArgs(
     val minRatio: Double = 0.8,
     /** Fail when more than this fraction of source rows is rejected. */
     val maxRejectRatio: Double = 0.3,
+    /** Fail when fewer than this fraction of accepted cameras match a known Taiwan city/county. */
+    val minKnownCityRatio: Double = 0.8,
     /**
      * Instead of publishing, geocode destination names missing from places.json and
      * write review candidates to `build/place-suggestions.{md,json}`.
@@ -76,7 +79,7 @@ data class SyncArgs(
     companion object {
         const val USAGE = "usage: camera-sync [--source URL|FILE] [--sections FILE] [--overrides FILE] " +
             "[--places FILE] [--road-checks FILE] [--offline] [--out DIR] [--report FILE] [--candidates FILE] " +
-            "[--min-ratio 0.8] [--max-reject 0.3] [--suggest-places]"
+            "[--min-ratio 0.8] [--max-reject 0.3] [--min-known-city 0.8] [--suggest-places]"
 
         fun parse(args: Array<String>): SyncArgs {
             var a = SyncArgs()
@@ -96,6 +99,7 @@ data class SyncArgs(
                     "--candidates" -> a.copy(candidates = File(value()))
                     "--min-ratio" -> a.copy(minRatio = value().toDouble())
                     "--max-reject" -> a.copy(maxRejectRatio = value().toDouble())
+                    "--min-known-city" -> a.copy(minKnownCityRatio = value().toDouble())
                     else -> throw IllegalArgumentException("未知參數：${args[i]}")
                 }
                 i++
@@ -196,6 +200,12 @@ internal fun safetyProblems(r: BuildResult, previous: DatasetMeta?, a: SyncArgs)
     val rejectRatio = if (r.report.sourceRows == 0) 1.0 else r.report.rejected.size.toDouble() / r.report.sourceRows
     if (rejectRatio > a.maxRejectRatio) {
         add("拒絕比例 ${"%.1f".format(rejectRatio * 100)}% 超過 ${(a.maxRejectRatio * 100).toInt()}%")
+    }
+    if (count > 0) {
+        val knownCityRatio = r.dataset.cameras.count { CountyBounds.isKnown(it.city) }.toDouble() / count
+        if (knownCityRatio < a.minKnownCityRatio) {
+            add("可辨識縣市比例 ${"%.1f".format(knownCityRatio * 100)}% 低於 ${(a.minKnownCityRatio * 100).toInt()}%")
+        }
     }
 }
 

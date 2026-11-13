@@ -18,6 +18,7 @@ class DirectionParserTest {
         // Both ways.
         "南北雙向" to any, "東西雙向" to any, "雙向" to any, "南北" to any, "東西向" to any,
         "南北向" to any, "北南雙向" to any, "多向" to any, "南北相向" to any, "雙向測速" to any,
+        "往南北" to any, "往東西向" to any,
         // One way.
         "北上方向" to listOf(0), "南下方向" to listOf(180), "北上" to listOf(0), "南下" to listOf(180),
         "北上車道" to listOf(0), "南下車道" to listOf(180),
@@ -25,6 +26,7 @@ class DirectionParserTest {
         "北向南" to listOf(180), "南向北" to listOf(0), "東向西" to listOf(270), "西向東" to listOf(90),
         "北往南" to listOf(180), "南往北" to listOf(0), "東往西" to listOf(270), "西往東" to listOf(90),
         "往北" to listOf(0), "往南" to listOf(180), "往東" to listOf(90), "往西" to listOf(270),
+        "往南方向" to listOf(180), "往北方向" to listOf(0),
         // Diagonal.
         "東南向西北" to listOf(315), "西北向東南" to listOf(135),
         "東北向西南" to listOf(225), "西南向東北" to listOf(45),
@@ -51,7 +53,10 @@ class DirectionParserTest {
 
     @Test
     fun placeNamesAreNotUnderstoodAndAlertBothWays() {
-        for (text in listOf("往下山", "往市區", "往台北市", "烈嶼往大金(區間測速)", "大金往烈嶼(區間測速)", "", "  ")) {
+        for (text in listOf(
+            "往下山", "往市區", "往台北市", "烈嶼往大金(區間測速)", "大金往烈嶼(區間測速)", "", "  ",
+            "往南崁方向", "往南桃園交流道方向", "往西勢湖路方向", "往南投", "往東勢方向", "往北港方向", "往西螺",
+        )) {
             val p = DirectionParser.parse(text)
             assertFalse("'$text' should not be understood", p.understood)
             assertEquals("'$text'", any, p.headings)

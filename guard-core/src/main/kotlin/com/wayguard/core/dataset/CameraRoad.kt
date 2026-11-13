@@ -17,24 +17,65 @@ sealed interface CameraRoad {
         // A road name: up to 6 chars that aren't separators, then 路/街/大道, then an optional
         // numbered 段. A bare 段 right after (`崎頂下坡路段`, `陽明湖路段`) means "road section",
         // not a road name.
-        private val ROAD = Regex("([^與和及、,，()（）\\s0-9段]{1,6}?$SUFFIX)(?:[一二三四五六七八九十]+段)?(?!段)")
+        private val ROAD = Regex("([^與及、,，()（）\\s0-9段]{1,6}?$SUFFIX)(?:[一二三四五六七八九十]+段)?(?!段)")
         /** `X路上往…` / `X路往…` — the camera road named in the direction text. */
         private val ROAD_BEFORE_TOWARD = Regex("^([^往]{1,8}?$SUFFIX)(?:[一二三四五六七八九十]+段)?上?往")
         /**
          * Administrative prefixes some addresses carry: `大里區國光路` → 國光路. Not when the
          * unit char is part of a road name (`園區一路`, `市府路`).
          */
-        private val ADMIN_PREFIX = Regex("^[\\u4e00-\\u9fff]{1,3}[區鄉鎮市](?![一二三四五六七八九十路街])")
+        private val ADMIN_PREFIX = Regex("^(?:[\\u4e00-\\u9fff]{1,3}[縣市區鄉鎮](?![一二三四五六七八九十路街]))+")
+        /** Split on conjunctions/punctuation; `和` only splits after a road/section/number/placeholder so `和平路` stays intact. */
+        private val SEPARATOR = Regex("[與及、,，()（）]|(?<=[路街道段號巷弄,])和")
+        private val TOWARD_IN_ADDRESS = Regex("往[^、,，()（）\\s]+方向")
+        private val SECTION_SUFFIX = Regex("^[一二三四五六七八九十]+段")
+        private const val KNOWN_BOUNDARY_CHARS = "路街道段巷弄號線縣市區鄉鎮村里鄰與和及、,，()（） 0123456789"
 
-        fun of(address: String, directionText: String): CameraRoad {
+        fun of(address: String, directionText: String, knownRoads: Set<String> = emptySet()): CameraRoad {
             ROAD_BEFORE_TOWARD.find(directionText.filterNot(Char::isWhitespace))?.let {
                 return Known(base(it.groupValues[1]))
             }
-            // Every road named anywhere in the address (`中華路龍壽街口` names two).
-            val roads = address.split(Regex("[與和及、,，()（）]"))
-                .flatMap { piece -> ROAD.findAll(piece.replace(ADMIN_PREFIX, "")).map { it.groupValues[1] } }
+            val cleaned = address.trim().replace('台', '臺').replace(TOWARD_IN_ADDRESS, ",")
+            val buf = StringBuilder(cleaned)
+            val found = ArrayList<Pair<Int, String>>()
+
+            val sortedKnown = knownRoads.asSequence()
                 .map(::base)
+                .filter { it.isNotEmpty() }
                 .distinct()
+                .sortedByDescending { it.length }
+            for (k in sortedKnown) {
+                var from = 0
+                while (true) {
+                    val idx = buf.indexOf(k, from)
+                    if (idx < 0) break
+                    val prevOk = idx == 0 || buf[idx - 1] !in '\u4e00'..'\u9fff' || buf[idx - 1] in KNOWN_BOUNDARY_CHARS
+                    val end = idx + k.length
+                    val nextOk = end >= buf.length || buf[end] !in "路街道"
+                    if (prevOk && nextOk) {
+                        val secLen = SECTION_SUFFIX.find(buf.substring(end))?.value?.length ?: 0
+                        val totalEnd = end + secLen
+                        found += idx to k
+                        for (p in idx until totalEnd) buf[p] = ','
+                        from = totalEnd
+                    } else {
+                        from = idx + 1
+                    }
+                }
+            }
+
+            // Fallback regex over remaining pieces, tracking approximate offset for original order.
+            var pos = 0
+            for (piece in buf.toString().split(SEPARATOR)) {
+                val stripped = piece.replace(ADMIN_PREFIX, "")
+                val stripShift = piece.length - stripped.length
+                for (m in ROAD.findAll(stripped)) {
+                    found += (pos + stripShift + m.range.first) to base(m.groupValues[1])
+                }
+                pos += piece.length + 1
+            }
+
+            val roads = found.sortedBy { it.first }.map { it.second }.distinct()
             return when (roads.size) {
                 0 -> Unnamed
                 1 -> Known(roads[0])

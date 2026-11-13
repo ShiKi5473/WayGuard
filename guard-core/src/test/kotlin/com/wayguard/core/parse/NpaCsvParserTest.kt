@@ -44,4 +44,19 @@ class NpaCsvParserTest {
         assertEquals(4, recs[2].first)
         assertEquals(listOf("last"), recs[2].second)
     }
+
+    @Test
+    fun midFieldQuoteDoesNotSwallowSubsequentRowsAndMalformedHeaderIsRejected() {
+        val csv = """
+            CityName,RegionName,Address,Dept,Branch,Speed,Direct,Note
+            桃園市,中壢區,中正路"100號,局,分,121.22,24.95,往北,50
+            桃園市,蘆竹區,南崁路50號,局,分,121.29,25.04,往南,60
+        """.trimIndent()
+        val r = NpaCsvParser.parse(csv)
+        assertEquals(2, r.rows.size)
+        assertEquals("中正路\"100號", r.rows[0].address)
+        assertEquals("南崁路50號", r.rows[1].address)
+        assertEquals(1, r.rejected.size)
+        assertEquals(1, r.rejected.single().line)
+    }
 }

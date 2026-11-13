@@ -76,12 +76,15 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
     private enum class Stage { APPROACHING, NEAR, DONE }
 
     private class Track(
-        val camera: SpeedCamera,
+        var camera: SpeedCamera,
+        val memberIds: MutableSet<String>,
         var stage: Stage,
         var minDist: Double,
         var lastDist: Double,
         var misses: Int = 0,
+        var offCourse: Boolean = false,
         var overspeed: Boolean = false,
+        var lastOverspeedMs: Long = Long.MIN_VALUE,
     )
 
     private val tracks = HashMap<String, Track>()
@@ -101,27 +104,30 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
         val approach = cfg.approachDistance(fix.speedKmh)
         val moving = fix.speedKmh >= cfg.minSpeedKmh
         val nearby = idx.near(fix.pos, maxOf(cfg.approachFastM, approach) + RELEASE_MARGIN_M)
+            .filter { cam -> cam.kinds.any { it in cfg.enabledKinds } }
+            .sortedBy { GeoUtils.haversine(fix.pos, it.pos) }
         val seen = HashSet<String>(nearby.size)
+        val processedTracks = HashSet<Track>()
+        val newCandidates = ArrayList<Pair<SpeedCamera, Double>>()
 
         for (cam in nearby) {
-            if (cam.kinds.none { it in cfg.enabledKinds }) continue
             seen += cam.id
             val d = GeoUtils.haversine(fix.pos, cam.pos)
             val t = tracks[cam.id]
 
             if (t == null) {
-                if (!moving || heading == null || d > approach) continue
-                if (!isAhead(fix.pos, cam, heading, d, cfg) || !headingMatches(cam, heading, cfg)) continue
-                val near = d <= cfg.nearM
-                val nt = Track(cam, if (near) Stage.NEAR else Stage.APPROACHING, d, d)
-                tracks[cam.id] = nt
-                events += AlertEvent(if (near) AlertType.NEAR else AlertType.APPROACH, cam, d, fix.speedKmh)
-                checkOverspeed(nt, fix, d, cfg, events)
+                if (moving && heading != null && d <= approach &&
+                    isAhead(fix.pos, cam, heading, d, cfg) && headingMatches(cam, heading, cfg)
+                ) {
+                    newCandidates += cam to d
+                }
                 continue
             }
 
+            if (!processedTracks.add(t)) continue
+            val camDist = GeoUtils.haversine(fix.pos, t.camera.pos)
             if (t.stage == Stage.DONE) {
-                t.lastDist = d
+                t.lastDist = camDist
                 continue
             }
             if (!moving) {
@@ -130,48 +136,136 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
                 continue
             }
 
-            val ahead = heading != null && isAhead(fix.pos, cam, heading, d, cfg)
-            val receding = d > t.minDist + PASS_HYSTERESIS_M
-            if (receding && (!ahead || t.minDist <= cfg.nearM)) {
+            val ahead = heading != null && isAhead(fix.pos, t.camera, heading, camDist, cfg)
+            val receding = camDist > t.minDist + PASS_HYSTERESIS_M
+            if (receding && t.minDist <= PASS_DIST_M) {
                 t.stage = Stage.DONE
                 t.overspeed = false
-                events += AlertEvent(AlertType.PASSED, cam, d, fix.speedKmh)
+                events += AlertEvent(AlertType.PASSED, t.camera, camDist, fix.speedKmh)
                 continue
             }
-            if (!ahead && d > CLOSE_M) {
-                // Turned off the road: stop warning without announcing a pass.
+            if (t.offCourse) {
+                val dirOk = ahead && headingMatches(t.camera, heading, cfg)
+                if (dirOk && camDist < t.lastDist) {
+                    t.offCourse = false
+                    t.misses = 0
+                } else {
+                    t.lastDist = camDist
+                    continue
+                }
+            }
+            if (!ahead && camDist > CLOSE_M) {
+                // Temporarily off-course (e.g. turning before the camera or on a hairpin):
+                // pause warnings without marking DONE so returning to the approach resumes tracking.
                 if (++t.misses >= MAX_MISSES) {
-                    t.stage = Stage.DONE
+                    t.offCourse = true
                     t.overspeed = false
+                    t.lastDist = camDist
                     continue
                 }
             } else {
                 t.misses = 0
             }
-            t.minDist = minOf(t.minDist, d)
-            t.lastDist = d
-            if (t.stage == Stage.APPROACHING && d <= cfg.nearM) {
+            t.minDist = minOf(t.minDist, camDist)
+            t.lastDist = camDist
+            if (t.stage == Stage.APPROACHING && camDist <= cfg.nearM) {
                 t.stage = Stage.NEAR
-                events += AlertEvent(AlertType.NEAR, cam, d, fix.speedKmh)
+                events += AlertEvent(AlertType.NEAR, t.camera, camDist, fix.speedKmh)
             }
-            checkOverspeed(t, fix, d, cfg, events)
+            checkOverspeed(t, fix, camDist, cfg, events)
+        }
+
+        // Merge new nearby overlapping cameras within CLUSTER_M into an existing or new track.
+        val unmatched = ArrayList<Pair<SpeedCamera, Double>>()
+        for ((cam, d) in newCandidates) {
+            val host = tracks.values.firstOrNull { tr ->
+                tr.stage != Stage.DONE &&
+                    GeoUtils.haversine(tr.camera.pos, cam.pos) <= CLUSTER_M &&
+                    headingsOverlap(tr.camera, cam, cfg)
+            }
+            if (host != null) {
+                mergeInto(host, cam)
+            } else {
+                unmatched += cam to d
+            }
+        }
+        val clusterUsed = BooleanArray(unmatched.size)
+        for (i in unmatched.indices) {
+            if (clusterUsed[i]) continue
+            val (lead, d) = unmatched[i]
+            if (lead.id in tracks) continue
+            val members = linkedSetOf(lead.id)
+            var mergedCam = lead
+            for (j in i + 1 until unmatched.size) {
+                if (clusterUsed[j]) continue
+                val other = unmatched[j].first
+                if (GeoUtils.haversine(mergedCam.pos, other.pos) <= CLUSTER_M && headingsOverlap(mergedCam, other, cfg)) {
+                    clusterUsed[j] = true
+                    members += other.id
+                    mergedCam = mergeCamera(mergedCam, other)
+                }
+            }
+            for (other in nearby) {
+                if (other.id in tracks || other.id in members) continue
+                if (GeoUtils.haversine(mergedCam.pos, other.pos) <= CLUSTER_M && headingsOverlap(mergedCam, other, cfg)) {
+                    members += other.id
+                    mergedCam = mergeCamera(mergedCam, other)
+                }
+            }
+            val near = d <= cfg.nearM
+            val nt = Track(mergedCam, members, if (near) Stage.NEAR else Stage.APPROACHING, d, d)
+            members.forEach { tracks[it] = nt }
+            events += AlertEvent(if (near) AlertType.NEAR else AlertType.APPROACH, mergedCam, d, fix.speedKmh)
+            checkOverspeed(nt, fix, d, cfg, events)
         }
 
         // Out of the search radius: forget, so the next pass warns again.
         tracks.keys.retainAll(seen)
 
         val active = tracks.values
-            .filter { it.stage != Stage.DONE }
+            .distinct()
+            .filter { it.stage != Stage.DONE && !it.offCourse }
             .minByOrNull { it.lastDist }
             ?.let { ActiveCamera(it.camera, it.lastDist, it.overspeed) }
         return EngineResult(events, active)
     }
 
+    private fun mergeInto(t: Track, other: SpeedCamera) {
+        t.memberIds += other.id
+        tracks[other.id] = t
+        t.camera = mergeCamera(t.camera, other)
+    }
+
+    private fun mergeCamera(base: SpeedCamera, other: SpeedCamera): SpeedCamera = base.copy(
+        limitKmh = listOfNotNull(base.limitKmh, other.limitKmh).minOrNull(),
+        kinds = base.kinds + other.kinds,
+    )
+
+    private fun headingsOverlap(a: SpeedCamera, b: SpeedCamera, cfg: AlertConfig): Boolean {
+        if (a.headings.isEmpty() || b.headings.isEmpty()) return true
+        val tol = maxOf(
+            a.headingToleranceDeg?.toDouble() ?: cfg.headingToleranceDeg,
+            b.headingToleranceDeg?.toDouble() ?: cfg.headingToleranceDeg,
+        )
+        return a.headings.any { ha -> b.headings.any { hb -> GeoUtils.angleDiff(ha.toDouble(), hb.toDouble()) <= tol } }
+    }
+
     private fun checkOverspeed(t: Track, fix: Fix, d: Double, cfg: AlertConfig, events: MutableList<AlertEvent>) {
         val limit = t.camera.limitKmh ?: return
-        val over = fix.speedKmh > limit + cfg.overspeedToleranceKmh
-        if (over && !t.overspeed) events += AlertEvent(AlertType.OVERSPEED, t.camera, d, fix.speedKmh)
-        t.overspeed = over
+        val threshold = limit + cfg.overspeedToleranceKmh
+        if (t.overspeed) {
+            if (fix.speedKmh <= threshold - OVERSPEED_HYSTERESIS_KMH) {
+                t.overspeed = false
+            }
+            return
+        }
+        if (fix.speedKmh > threshold) {
+            t.overspeed = true
+            if (t.lastOverspeedMs == Long.MIN_VALUE || fix.timeMs - t.lastOverspeedMs >= OVERSPEED_COOLDOWN_MS) {
+                t.lastOverspeedMs = fix.timeMs
+                events += AlertEvent(AlertType.OVERSPEED, t.camera, d, fix.speedKmh)
+            }
+        }
     }
 
     private fun isAhead(pos: LatLng, cam: SpeedCamera, heading: Double, d: Double, cfg: AlertConfig): Boolean =
@@ -186,11 +280,19 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
     private companion object {
         /** Closer than this, bearing-to-camera is too noisy to judge "ahead". */
         const val CLOSE_M = 30.0
+        /** Closest approach required before receding counts as having passed the camera. */
+        const val PASS_DIST_M = 50.0
         /** Distance must grow this much past the closest point to count as passed. */
         const val PASS_HYSTERESIS_M = 20.0
-        /** Consecutive "not ahead" fixes before treating the camera as turned away from. */
+        /** Consecutive "not ahead" fixes before pausing warnings until back on approach. */
         const val MAX_MISSES = 3
         /** Extra search radius so tracks can finish before being forgotten. */
         const val RELEASE_MARGIN_M = 200.0
+        /** Merge nearby same-direction cameras within this distance into one alert. */
+        const val CLUSTER_M = 50.0
+        /** Speed must drop this much below limit + tolerance before clearing overspeed state. */
+        const val OVERSPEED_HYSTERESIS_KMH = 3.0
+        /** Minimum interval between overspeed announcements for the same camera track. */
+        const val OVERSPEED_COOLDOWN_MS = 10_000L
     }
 }

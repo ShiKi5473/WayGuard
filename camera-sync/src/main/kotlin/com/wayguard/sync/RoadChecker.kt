@@ -20,14 +20,14 @@ internal class RoadChecker(private val nominatim: Nominatim) {
         val out = LinkedHashMap<String, RoadCheck>()
         for ((id, pos) in cameras) {
             val hit = nominatim.reverseStreet(pos) ?: continue
-            val nearest = if (hit.category == "highway") Nominatim.nearestOnLine(hit.line, pos) else null
+            val nearest = if (hit.category == "highway") Nominatim.nearestOnLines(hit.lines, pos) else null
             val distance = nearest?.let { GeoUtils.haversine(pos, it.first) }
             out[id] = if (nearest == null || distance!! > MAX_SNAP_M) {
                 // A camera far from any mapped street (or a non-street hit) can't be verified.
-                RoadCheck(bearing = null, road = hit.name, distanceM = distance?.roundToInt(), checkedAt = now)
+                RoadCheck(bearing = null, road = hit.name, distanceM = distance?.roundToInt(), lat = pos.lat, lon = pos.lon, checkedAt = now)
             } else {
                 val b = (nearest.second.roundToInt() % 360 + 360) % 360
-                RoadCheck(bearing = b, road = hit.name, distanceM = distance.roundToInt(), checkedAt = now)
+                RoadCheck(bearing = b, road = hit.name, distanceM = distance.roundToInt(), lat = pos.lat, lon = pos.lon, checkedAt = now)
             }
         }
         return out

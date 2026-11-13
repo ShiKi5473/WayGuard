@@ -18,4 +18,4 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - name: Test and build
-        run: ./gradlew :guard-core:test :app:testDebugUnitTest :app:assembleDebug
+        run: ./gradlew :guard-core:test :camera-sync:build :app:testDebugUnitTest :app:assembleDebug

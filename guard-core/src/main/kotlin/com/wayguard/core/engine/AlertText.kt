@@ -19,6 +19,8 @@ object AlertText {
     /** Distance rounded to the nearest 50 m — what a driver can act on. */
     fun roundedDistance(m: Double): Int = ((m / 50.0).roundToInt() * 50).coerceAtLeast(50)
 
+    data class UtteranceSpec(val key: String, val text: String, val urgent: Boolean)
+
     /** Text to speak for [e], or null when the event is shown but not spoken. */
     fun speech(e: AlertEvent): String? {
         val c = e.camera
@@ -29,6 +31,38 @@ object AlertText {
             AlertType.OVERSPEED -> c.limitKmh?.let { "超速，速限$it，請減速" }
             AlertType.PASSED -> null
         }
+    }
+
+    /**
+     * Converts events from a single fix into spoken utterances, merging a camera's
+     * distance warning and overspeed warning into one urgent sentence so overspeed
+     * does not drown out the distance announcement.
+     */
+    fun speeches(events: List<AlertEvent>): List<UtteranceSpec> {
+        val overspeedByCam = events.filter { it.type == AlertType.OVERSPEED }.map { it.camera.id }.toSet()
+        val consumedOverspeed = HashSet<String>()
+        val out = ArrayList<UtteranceSpec>(events.size)
+
+        for (e in events) {
+            val c = e.camera
+            when (e.type) {
+                AlertType.APPROACH, AlertType.NEAR -> {
+                    val base = speech(e) ?: continue
+                    if (c.id in overspeedByCam && consumedOverspeed.add(c.id)) {
+                        out += UtteranceSpec("camera:${c.id}", "$base，超速請減速", urgent = true)
+                    } else {
+                        out += UtteranceSpec("camera:${c.id}", base, urgent = e.type == AlertType.NEAR)
+                    }
+                }
+                AlertType.OVERSPEED -> {
+                    if (c.id !in consumedOverspeed) {
+                        speech(e)?.let { out += UtteranceSpec("overspeed", it, urgent = true) }
+                    }
+                }
+                AlertType.PASSED -> {}
+            }
+        }
+        return out
     }
 
     fun speech(e: SectionEvent): String? {

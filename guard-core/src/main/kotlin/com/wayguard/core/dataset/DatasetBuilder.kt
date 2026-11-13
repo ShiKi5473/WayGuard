@@ -80,6 +80,10 @@ data class BuildReport(
     val unmatchedPlaces: Map<PlaceRef, List<LatLng>> = emptyMap(),
     /** Known destinations whose direction was not trusted (kept both ways), with [PlaceDerivation.skipReason]. */
     val placeSkipped: List<PlaceDerivation> = emptyList(),
+    /** Sections paired automatically from per-direction 區間測速 rows ([SectionPairing]). */
+    val autoSections: List<Section> = emptyList(),
+    /** `overrides.json` entries (fix/exclude) that matched no row/camera. */
+    val unmatchedOverrides: List<String> = emptyList(),
 ) {
     /** Cameras still waiting for a road lookup — what camera-sync should check. */
     val needsRoadCheck: List<PlaceDerivation>
@@ -122,6 +126,8 @@ object DatasetBuilder {
         val placeSkipped = ArrayList<PlaceDerivation>()
         val unmatchedPlaces = LinkedHashMap<PlaceRef, MutableList<LatLng>>()
         val directory = PlaceDirectory(places)
+        val knownRoads = roadChecks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }.map(CameraRoad::base).toSet()
+        val matchedFixes = LinkedHashSet<String>()
         var missingLimit = 0
         var fixed = 0
 
@@ -136,6 +142,7 @@ object DatasetBuilder {
             val city = CountyBounds.normalizeCity(row.city)
             val coords = validCoords(row, city)
             val fix = overrides.fix[baseId]
+            if (fix != null) matchedFixes += baseId
             // A fix may correct just one coordinate of a rejected row; the other is kept as published.
             val lat = fix?.lat ?: coords?.first ?: row.lat.toDoubleOrNull()?.takeIf { fix != null }
             val lon = fix?.lon ?: coords?.second ?: row.lon.toDoubleOrNull()?.takeIf { fix != null }
@@ -166,9 +173,12 @@ object DatasetBuilder {
                     val pos = LatLng(lat, lon)
                     val d = GeoUtils.haversine(pos, place.pos)
                     val h = (GeoUtils.bearing(pos, place.pos).roundToInt() % 360 + 360) % 360
-                    val check = roadChecks[baseId]
+                    val check = roadChecks[baseId]?.takeIf {
+                        (it.lat == null || kotlin.math.abs(it.lat - lat) <= 1e-5) &&
+                            (it.lon == null || kotlin.math.abs(it.lon - lon) <= 1e-5)
+                    }
                     val derivation = PlaceDerivation(baseId, pos, row.direct, place, h, d, road = check)
-                    val cameraRoad = CameraRoad.of(row.address, row.direct)
+                    val cameraRoad = CameraRoad.of(row.address, row.direct, knownRoads)
                     when (val o = PlaceHeadingRules.decide(place, d, h, check, cameraRoad)) {
                         is PlaceHeadingRules.Outcome.Apply -> {
                             headings = listOf(o.heading)
@@ -201,7 +211,16 @@ object DatasetBuilder {
                 base.copy(id = "$baseId-h$h", headings = listOf(h), limitKmh = fix?.limitKmh ?: l)
             }
             for (c in cameras) {
-                if (byId.putIfAbsent(c.id, c) != null) duplicates++
+                val existing = byId[c.id]
+                if (existing == null) {
+                    byId[c.id] = c
+                } else {
+                    duplicates++
+                    byId[c.id] = existing.copy(
+                        kinds = existing.kinds + c.kinds,
+                        limitKmh = listOfNotNull(existing.limitKmh, c.limitKmh).minOrNull(),
+                    )
+                }
             }
         }
 
@@ -214,23 +233,39 @@ object DatasetBuilder {
             if (prev == null) bySpot[key] = c
             else {
                 duplicates++
-                bySpot[key] = prev.copy(kinds = prev.kinds + c.kinds, limitKmh = prev.limitKmh ?: c.limitKmh)
+                bySpot[key] = prev.copy(
+                    kinds = prev.kinds + c.kinds,
+                    limitKmh = listOfNotNull(prev.limitKmh, c.limitKmh).minOrNull(),
+                )
             }
         }
 
         val excludedIds = overrides.exclude.toSet()
-        val kept = bySpot.values.filter { it.id !in excludedIds }
+        val matchedExcludes = LinkedHashSet<String>()
+        val kept = bySpot.values.filter { cam ->
+            val drop = cam.id in excludedIds
+            if (drop) matchedExcludes += cam.id
+            !drop
+        }
         val excluded = bySpot.size - kept.size
+        val unmatchedOverrides = buildList {
+            (overrides.fix.keys - matchedFixes).forEach { add("fix: $it") }
+            (overrides.exclude.distinct() - matchedExcludes).forEach { add("exclude: $it") }
+        }
         val cameras = (kept + overrides.add)
             .distinctBy { it.id }
             .sortedWith(compareBy({ it.city }, { it.district }, { it.address }, { it.id }))
 
+        // Sections published as one row per direction pair up without hand curation.
+        val autoSections = SectionPairing.pair(cameras, sections)
+        val allSections = (sections + autoSections).sortedBy { it.id }
+
         val dataset = CameraDataset(
-            version = contentVersion(cameras, sections),
+            version = contentVersion(cameras, allSections),
             generatedAt = generatedAt,
             source = source,
             cameras = cameras,
-            sections = sections.sortedBy { it.id },
+            sections = allSections,
         )
         val report = BuildReport(
             sourceRows = rows.size + csvRejected.size,
@@ -246,6 +281,8 @@ object DatasetBuilder {
             placeDerived = placeDerived,
             unmatchedPlaces = unmatchedPlaces,
             placeSkipped = placeSkipped,
+            autoSections = autoSections,
+            unmatchedOverrides = unmatchedOverrides,
         )
         return BuildResult(dataset, report)
     }

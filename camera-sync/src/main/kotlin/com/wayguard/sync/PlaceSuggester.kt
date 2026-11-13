@@ -119,7 +119,7 @@ internal class PlaceSuggester(private val nominatim: Nominatim) {
         for (q in queries) {
             val nearest = nominatim.search(q, Nominatim.Box.around(center, 0.05), geometry = true)
                 .filter { it.category == "highway" }
-                .mapNotNull { h -> Nominatim.nearestOnLine(h.line, center)?.let { h.label to it.first } }
+                .mapNotNull { h -> Nominatim.nearestOnLines(h.lines, center)?.let { h.label to it.first } }
                 .minByOrNull { GeoUtils.haversine(center, it.second) }
             if (nearest != null) {
                 return toSuggestion(ref, cams, "道路最近點", q, nearest.second, nearest.first, scopeDistrict = true, road = true)

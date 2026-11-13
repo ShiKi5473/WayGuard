@@ -4,6 +4,7 @@ import com.wayguard.core.model.CameraKind
 import com.wayguard.core.model.DatasetIo
 import com.wayguard.core.model.Section
 import com.wayguard.core.parse.NpaCsvParser
+import com.wayguard.core.parse.NpaRow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
@@ -110,5 +111,33 @@ class DatasetBuilderTest {
         assertEquals(ds, DatasetIo.decode(text))
         // One camera per line keeps git diffs readable.
         assertEquals(ds.cameras.size, text.lines().count { it.startsWith("{\"id\":\"npa-") })
+    }
+
+    @Test
+    fun reportsUnmatchedOverridesAndInvalidatesMovedRoadCheckAndTakesLowestDuplicateLimit() {
+        val r = DatasetBuilder.build(
+            rows = listOf(
+                NpaRow(2, "桃園市", "蘆竹區", "中正路10號", "局", "分", "121.29", "25.04", "往市區", "60"),
+                NpaRow(3, "桃園市", "蘆竹區", "中正路12號", "局", "分", "121.290001", "25.040001", "往北", "70"),
+                NpaRow(4, "桃園市", "蘆竹區", "中正路14號", "局", "分", "121.290001", "25.040001", "往北", "50"),
+            ),
+            csvRejected = emptyList(),
+            sections = emptyList(),
+            overrides = Overrides(
+                exclude = listOf("npa-gone"),
+                fix = mapOf("npa-missing" to CameraFix(lat = 25.0, note = "test")),
+            ),
+            generatedAt = "2026-11-10T00:00:00Z",
+            source = "test",
+            places = listOf(Place("市區", city = "桃園市", district = "蘆竹區", lat = 25.05, lon = 121.30)),
+            roadChecks = mapOf(
+                DatasetBuilder.stableId(NpaRow(2, "桃園市", "蘆竹區", "中正路10號", "局", "分", "121.29", "25.04", "往市區", "60")) to
+                    RoadCheck(bearing = 0, road = "中正路", distanceM = 5, checkedAt = "t", lat = 25.045, lon = 121.29),
+            ),
+        )
+        assertEquals(listOf("fix: npa-missing", "exclude: npa-gone"), r.report.unmatchedOverrides)
+        assertEquals(SkipReason.NOT_CHECKED, r.report.placeSkipped.single().skipReason)
+        val merged = r.dataset.cameras.single { it.headings == listOf(0) }
+        assertEquals(50, merged.limitKmh)
     }
 }

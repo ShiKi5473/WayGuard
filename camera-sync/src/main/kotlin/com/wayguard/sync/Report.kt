@@ -27,8 +27,9 @@ internal object Report {
             appendLine("- 缺速限：${rep.missingLimit}")
             appendLine("- 依地名推算方向：採用 ${rep.placeDerived.size}、未採用 ${rep.placeSkipped.size}（其中待比對道路 ${rep.needsRoadCheck.size}）")
             appendLine("- 未判讀方向（視為雙向提醒）：${rep.unknownDirections.values.sum()}")
-            appendLine("- overrides：修正 ${rep.fixed}、排除 ${rep.excluded}、新增 ${rep.added}")
-            appendLine("- 區間測速：已整理 ${ds.sections.size} 個區間；候選列 ${rep.sectionCandidates.size}（見 section-candidates.csv）")
+            val unmatched = if (rep.unmatchedOverrides.isEmpty()) "" else "（未命中 ${rep.unmatchedOverrides.size}）"
+            appendLine("- overrides：修正 ${rep.fixed}、排除 ${rep.excluded}、新增 ${rep.added}$unmatched")
+            appendLine("- 區間測速：共 ${ds.sections.size} 個區間（人工整理 ${ds.sections.size - rep.autoSections.size}、自動配對 ${rep.autoSections.size}）；候選列 ${rep.sectionCandidates.size}（見 section-candidates.csv）")
             appendLine()
             appendLine("## 安全檢查")
             appendLine()
@@ -90,6 +91,11 @@ internal object Report {
                     .forEach { (t, n) -> appendLine("| ${cell(t)} | $n |") }
             }
 
+            if (rep.unmatchedOverrides.isNotEmpty()) {
+                appendLine()
+                appendLine("## 沒有命中的 overrides")
+                rep.unmatchedOverrides.forEach { appendLine("- `$it`") }
+            }
             if (rep.rejected.isNotEmpty()) {
                 appendLine()
                 appendLine("## 拒絕的列")

@@ -16,6 +16,9 @@ data class RoadCheck(
     val distanceM: Int? = null,
     /** ISO-8601 time of the lookup. */
     val checkedAt: String,
+    /** Camera coordinates when this check was fetched; null in older cache entries. */
+    val lat: Double? = null,
+    val lon: Double? = null,
 )
 
 /** Why a destination-derived direction was not applied (the camera then alerts both ways). */
