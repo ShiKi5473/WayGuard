@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -39,19 +39,21 @@ jobs:
         continue-on-error: true
         run: |
           sudo apt-get update && sudo apt-get install -y osmium-tool
-          curl -fsSL --retry 3 -o build/taiwan-latest.osm.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf
-          osmium tags-filter -O -o build/taiwan-filtered.osm.pbf build/taiwan-latest.osm.pbf w/highway r/boundary=administrative
-          osmium export -O -f geojsonseq -o build/taiwan-extract.geojsonseq build/taiwan-filtered.osm.pbf
+          curl -fsSL --retry 3 -o /tmp/taiwan-latest.osm.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf
+          osmium tags-filter -O -o /tmp/taiwan-filtered.osm.pbf /tmp/taiwan-latest.osm.pbf w/highway r/route=road r/boundary=administrative
+          osmium export -O -f geojsonseq -o /tmp/taiwan-extract.geojsonseq /tmp/taiwan-filtered.osm.pbf
           EXTRA=""
           if [ "$(date +%d)" -le 7 ] || [ "${{ inputs.verify_all }}" = "true" ]; then
             EXTRA="--verify-all"
           fi
-          ./gradlew :camera-sync:run --args="--osm-extract build/taiwan-extract.geojsonseq $EXTRA"
+          ./gradlew :camera-sync:run --args="--osm-extract /tmp/taiwan-extract.geojsonseq $EXTRA"
 
       # 若 OSM 圖資步驟失敗，改以既有快取與資料內部檢查完成每週發布。
       - name: 抓取並驗證資料（無 OSM 圖資備援）
         if: steps.verify.outcome != 'success'
-        run: ./gradlew :camera-sync:run
+        run: |
+          echo "> ⚠️ 本次 OSM 圖資驗證步驟未完成，已改用既有快取與資料內部檢查完成發布。" >> "$GITHUB_STEP_SUMMARY"
+          ./gradlew :camera-sync:run
 
       - name: 報告
         if: always()

@@ -325,6 +325,7 @@ object DatasetBuilder {
     private fun mergeLocationCheck(external: LocationCheck?, internal: LocationCheck?): LocationCheck? {
         if (external == null) return internal
         if (internal == null) return external
+        if (external.method == "internal") return internal
         val combined = LocationVerdict.combine(external.verdict, internal.verdict)
         return when {
             internal.verdict.severity > external.verdict.severity ->
@@ -336,7 +337,7 @@ object DatasetBuilder {
             external.verdict == VerdictLevel.SUSPECT && internal.verdict == VerdictLevel.SUSPECT ->
                 external.copy(
                     verdict = combined,
-                    reason = listOf(external.reason, internal.reason).filter { it.isNotBlank() }.joinToString("；"),
+                    reason = listOf(external.reason, internal.reason).filter { it.isNotBlank() }.distinct().joinToString("；"),
                 )
             else -> external.copy(verdict = combined)
         }

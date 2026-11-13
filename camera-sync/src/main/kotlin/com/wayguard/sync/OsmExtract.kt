@@ -250,6 +250,7 @@ internal class OsmExtract private constructor(
     }
 
     companion object {
+        private val DISTRICT_CITY_PREFIX = Regex("^[\\u4e00-\\u9fff]{2,3}[縣市](?=.+[區鄉鎮市]$)")
         private const val CELL_DEG = 0.01
         private const val METERS_PER_DEG_LAT = 111_320.0
         private const val INTERSECTION_SNAP_M = 25.0
@@ -306,7 +307,8 @@ internal class OsmExtract private constructor(
                 val coords = geom["coordinates"] as? JsonArray ?: continue
 
                 val highway = props["highway"]?.jsonPrimitive?.contentOrNull
-                if (highway != null) {
+                val route = props["route"]?.jsonPrimitive?.contentOrNull
+                if (highway != null || route == "road") {
                     val primaryRaw = props["name"]?.jsonPrimitive?.contentOrNull
                         ?: props["name:zh"]?.jsonPrimitive?.contentOrNull
                         ?: ""
@@ -322,7 +324,10 @@ internal class OsmExtract private constructor(
                         ?.toSet()
                         ?: emptySet()
                     if (baseNames.isEmpty() && routeRefs.isEmpty()) continue
-                    val isMotorway = highway == "motorway" || highway == "motorway_link"
+                    val network = props["network"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                    val isMotorway = highway == "motorway" || highway == "motorway_link" ||
+                        network == "TW:freeway" ||
+                        rawNames.any { "國道" in it || "高速公路" in it }
                     val primaryName = CameraRoad.base(primaryRaw).ifBlank { baseNames.firstOrNull().orEmpty() }
 
                     val lineParts = when (geomType) {
@@ -355,11 +360,14 @@ internal class OsmExtract private constructor(
                         ?: continue
                     val normName = CountyBounds.normalizeCity(rawName)
                     if (normName.isBlank()) continue
+                    val districtName = normName.replace(DISTRICT_CITY_PREFIX, "")
+                    val isDistrict = adminLevel in setOf(7, 8) && districtName.isNotEmpty() && districtName.last() in "區鄉鎮市"
                     val targetList = when {
                         adminLevel in setOf(4, 5, 6) && CountyBounds.isKnown(normName) -> cityBoundaries
-                        adminLevel in setOf(7, 8) -> districtBoundaries
+                        isDistrict -> districtBoundaries
                         else -> null
                     } ?: continue
+                    val storedName = if (targetList === districtBoundaries) districtName else normName
 
                     val ringsList = when (geomType) {
                         "Polygon" -> listOf(coords)
@@ -371,7 +379,7 @@ internal class OsmExtract private constructor(
                         if (rings.isEmpty()) continue
                         val outer = rings.first()
                         targetList += AdminPolygon(
-                            name = normName,
+                            name = storedName,
                             bbox = bboxOf(outer),
                             outer = outer,
                             holes = rings.drop(1),

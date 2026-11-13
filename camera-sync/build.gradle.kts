@@ -21,6 +21,7 @@ application {
 // Relative paths in --args (data/…, build/…) resolve against the repository root.
 tasks.named<JavaExec>("run") {
     workingDir = rootDir
+    maxHeapSize = "2g"
     // Chinese report lines must not be mangled by the platform console encoding (Windows).
     jvmArgs("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8")
 }
