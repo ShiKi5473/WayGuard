@@ -76,6 +76,12 @@ data class SyncArgs(
     val tgosUpload: File = File("build/tgos-upload.csv"),
     /** Optional highway/freeway milepost CSV (WGS84 or TWD97) for km interpolation. */
     val mileposts: File? = null,
+    /** TGOS QueryAddr AppID (optional; falls back to TGOS_APP_ID env var). */
+    val tgosAppId: String? = null,
+    /** TGOS QueryAddr APIKey (optional; falls back to TGOS_API_KEY env var). */
+    val tgosApiKey: String? = null,
+    /** TGOS QueryAddr Referer URL (optional; falls back to TGOS_REFERER env var or default). */
+    val tgosReferer: String? = null,
     /** Force re-verifying every camera against [osmExtract] instead of incremental mode. */
     val verifyAll: Boolean = false,
     /** Skip network lookups (unchecked cameras stay both ways; NLSC check deferred). */
@@ -119,6 +125,9 @@ data class SyncArgs(
                     "--tgos-result" -> a.copy(tgosResult = File(value()))
                     "--tgos-upload" -> a.copy(tgosUpload = File(value()))
                     "--mileposts" -> a.copy(mileposts = File(value()))
+                    "--tgos-app-id" -> a.copy(tgosAppId = value())
+                    "--tgos-api-key" -> a.copy(tgosApiKey = value())
+                    "--tgos-referer" -> a.copy(tgosReferer = value())
                     "--verify-all" -> a.copy(verifyAll = true)
                     "--offline" -> a.copy(offline = true)
                     "--suggest-places" -> a.copy(suggestPlaces = true)
@@ -197,9 +206,17 @@ fun sync(a: SyncArgs): Int {
         .map(CameraRoad::base).toSet() + extraKnownRoads
     val rowsById = parsed.rows.associateBy(DatasetBuilder::stableId)
     val nlsc = if (!a.offline) NlscClient() else null
+    val appId = a.tgosAppId ?: System.getenv("TGOS_APP_ID")
+    val apiKey = a.tgosApiKey ?: System.getenv("TGOS_API_KEY")
+    val referer = a.tgosReferer ?: System.getenv("TGOS_REFERER") ?: TgosClient.DEFAULT_REFERER
+    val tgos = if (!a.offline && !appId.isNullOrBlank() && !apiKey.isNullOrBlank()) {
+        TgosClient(appId, apiKey, referer)
+    } else {
+        null
+    }
     val milepostIndex = a.mileposts?.takeIf { it.isFile }?.let { MilepostIndex.fromCsv(it.readText()) }
     val tgosResults = a.tgosResult?.takeIf { it.isFile }?.let { TgosCsv.parseResults(it.readText()) }.orEmpty()
-    val locResult = LocationChecker(osm, nlsc, a.offline, milepostIndex, tgosResults).checkAll(
+    val locResult = LocationChecker(osm, nlsc, a.offline, milepostIndex, tgosResults, tgos).checkAll(
         cameras = result.dataset.cameras,
         rejected = result.report.rejected,
         rowsById = rowsById,

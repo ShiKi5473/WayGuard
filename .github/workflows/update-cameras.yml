@@ -37,6 +37,9 @@ jobs:
       - name: 抓取 OSM 圖資並執行位置交叉驗證
         id: verify
         continue-on-error: true
+        env:
+          TGOS_APP_ID: ${{ secrets.TGOS_APP_ID }}
+          TGOS_API_KEY: ${{ secrets.TGOS_API_KEY }}
         run: |
           sudo apt-get update && sudo apt-get install -y osmium-tool
           curl -fsSL --retry 3 -o /tmp/taiwan-latest.osm.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf

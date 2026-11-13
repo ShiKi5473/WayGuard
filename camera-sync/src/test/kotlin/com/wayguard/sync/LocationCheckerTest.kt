@@ -208,5 +208,44 @@ class LocationCheckerTest {
         )
         assertEquals(listOf("cam-pending"), upload.map { it.id })
     }
+
+    @Test
+    fun tgosClientParsesXmlWrappedJsonAndVerifiesHouseNumberCamerasOnline() {
+        val xmlWrapped = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <string xmlns="http://tempuri.org/">{&quot;AddressList&quot;:[{&quot;FULL_ADDR&quot;:&quot;桃園市中壢區中山路120號&quot;,&quot;X&quot;:121.230,&quot;Y&quot;:24.960}]}</string>
+        """.trimIndent()
+        val parsed = TgosClient.parseQueryAddrResponse("cam-1", xmlWrapped)
+        assertNotNull(parsed)
+        assertEquals(24.960, parsed!!.pos.lat, 1e-6)
+        assertEquals(121.230, parsed.pos.lon, 1e-6)
+        assertEquals("桃園市中壢區中山路120號", parsed.matchedAddress)
+
+        var calls = 0
+        val fakeTgos = TgosClient(
+            appId = "test-app",
+            apiKey = "test-key",
+            minIntervalMs = 0L,
+            fetcher = { _, form ->
+                calls++
+                assertTrue(form.contains("oAPPId=test-app"))
+                assertTrue(form.contains("oSRS=EPSG%3A4326"))
+                """{"AddressList":[{"FULL_ADDR":"桃園市中壢區中山路120號","X":"121.224","Y":"24.960"}]}"""
+            },
+        )
+        val cam = SpeedCamera("cam-120", 24.960, 121.2242, city = "桃園市", district = "中壢區", address = "中山路120號前")
+        val onlineRes = LocationChecker(osm, offline = false, tgos = fakeTgos)
+            .checkAll(listOf(cam), emptyList(), emptyMap(), emptyMap(), "2026-11-13T00:00:00Z", verifyAll = true)
+        val chk = onlineRes.checks.getValue("cam-120")
+        assertEquals(VerdictLevel.OK, chk.verdict)
+        assertEquals("tgos", chk.method)
+        assertNull(chk.suggestedLat)
+        assertEquals(1, calls)
+
+        // Incremental second run skips re-querying TGOS once prev.method == "tgos" and verdict == OK
+        LocationChecker(osm, offline = false, tgos = fakeTgos)
+            .checkAll(listOf(cam), emptyList(), emptyMap(), onlineRes.checks, "2026-11-20T00:00:00Z", verifyAll = false)
+        assertEquals(1, calls)
+    }
 }
 

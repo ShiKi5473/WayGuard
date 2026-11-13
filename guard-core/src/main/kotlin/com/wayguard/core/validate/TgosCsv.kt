@@ -127,7 +127,7 @@ object TgosCsv {
         return out
     }
 
-    internal fun toWgs84(x: Double, y: Double, isPenghu: Boolean = false): LatLng? = when {
+    fun toWgs84(x: Double, y: Double, isPenghu: Boolean = false): LatLng? = when {
         // Already WGS84 lon/lat
         x in 118.0..123.0 && y in 21.0..26.5 -> LatLng(y, x)
         // TWD97 TM2 meters (typically X ~100,000..400,000, Y ~2,400,000..2,850,000)

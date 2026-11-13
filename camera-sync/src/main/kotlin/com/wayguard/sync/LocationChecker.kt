@@ -34,6 +34,7 @@ internal class LocationChecker(
     private val offline: Boolean = false,
     private val mileposts: MilepostIndex? = null,
     private val tgosResults: Map<String, TgosHit> = emptyMap(),
+    private val tgos: TgosClient? = null,
 ) {
     data class RunResult(
         val checks: Map<String, LocationCheck>,
@@ -54,7 +55,8 @@ internal class LocationChecker(
             CameraKind.MOBILE !in it.kinds && CameraKind.CUSTOM !in it.kinds
         }
         val activeMileposts = mileposts?.takeUnless { it.isEmpty() } ?: osm?.mileposts?.takeUnless { it.isEmpty() }
-        val hasExternalSources = (osm != null && !osm.isEmpty) || tgosResults.isNotEmpty() || activeMileposts != null
+        val hasTgosApi = tgos != null && !offline
+        val hasExternalSources = (osm != null && !osm.isEmpty) || tgosResults.isNotEmpty() || activeMileposts != null || hasTgosApi
         val internal = LocationVerdict.findInternalConflicts(governmentCameras, knownRoads, now)
         val out = LinkedHashMap<String, LocationCheck>()
         var checkedCount = 0
@@ -62,7 +64,12 @@ internal class LocationChecker(
         for (cam in governmentCameras) {
             val prev = existing[cam.id]?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
             val hasTgos = cam.id in tgosResults
-            val extCheck = if (hasExternalSources && (verifyAll || prev == null || prev.method == "internal" || hasTgos)) {
+            val needsTgosApi = hasTgosApi && prev?.method != "tgos" &&
+                AddressParser.parse(cam.address, cam.city, cam.directionText, knownRoads).kind == AddressKind.HOUSE_NUMBER
+            val extCheck = if (
+                hasExternalSources &&
+                (verifyAll || prev == null || prev.method == "internal" || prev.verdict != VerdictLevel.OK || hasTgos || needsTgosApi)
+            ) {
                 checkedCount++
                 verifyCamera(cam, osm, activeMileposts, prev?.roadAxis, knownRoads, now)
             } else {
@@ -177,7 +184,12 @@ internal class LocationChecker(
                     v
                 }
 
-                val tgosHit = tgosResults[cam.id]
+                val tgosHit = tgosResults[cam.id] ?: if (!offline && parsed.kind == AddressKind.HOUSE_NUMBER) {
+                    val cleaned = TgosCsv.cleanAddressForTgos(cam.city, cam.district, cam.address)
+                    tgos?.query(cam.id, cleaned)
+                } else {
+                    null
+                }
                 if (tgosHit != null) {
                     // Notice: only conclusion & rounded distance are kept; TGOS coords stay out of public outputs.
                     val tgosDist = GeoUtils.haversine(cam.pos, tgosHit.pos)

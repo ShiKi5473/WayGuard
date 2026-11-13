@@ -98,4 +98,23 @@ class CameraRoadTest {
             CameraRoad.of("振興路1051之1號前(振興路與西勢湖路口)", "往西勢湖路方向", setOf("振興路", "西勢湖路")),
         )
     }
+
+    @Test
+    fun osmDictionaryPollutionAndRoadStartingWithLuStayClean() {
+        val pollutedDict = setOf(
+            "40", "101", "6-1", "臺中", "大坑", "公館", "番路", "3巷", "東明橋", "道路", "機車道",
+            "蘆興南路", "中科路", "科雅東路", "斗苑路", "路平路",
+        )
+        assertEquals(Known("蘆興南路"), CameraRoad.of("蘆興南路408號旁", "往南崁", pollutedDict))
+        assertEquals(
+            Intersection(listOf("中科路", "科雅東路")),
+            CameraRoad.of("臺中市西屯區中科路段近科雅東路口(快車道)", "往東", pollutedDict),
+        )
+        assertEquals("路平路", CameraRoad.base("路平路"))
+        assertEquals(
+            Intersection(listOf("斗苑路", "路平路")),
+            CameraRoad.of("芳苑鄉斗苑路頂後段與路平路口", "往東", pollutedDict),
+        )
+        assertEquals(Unnamed, CameraRoad.of("東勢鄉153線與158甲線縣道路口", "往北", pollutedDict))
+    }
 }

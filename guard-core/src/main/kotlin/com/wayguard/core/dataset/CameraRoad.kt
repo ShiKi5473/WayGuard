@@ -46,8 +46,10 @@ sealed interface CameraRoad {
             "高速公路", "快速道路", "快速公路", "堤外道路", "防汛道路",
             "高架道路", "高架聯絡道", "機慢車專用道", "專用道", "聯絡道",
             "便道", "匝道", "地下道", "車行地下道", "人行道", "產業道路",
+            "道路", "公路", "車道", "慢車道", "快車道", "機車道",
         )
         private val GENERIC_ROAD_RE = Regex(GENERIC_ROADS.sortedByDescending { it.length }.joinToString("|"))
+        private val VALID_KNOWN_ROAD = Regex("^[^0-9\\s與及、,，()（）]{1,8}$SUFFIX$")
 
         fun of(address: String, directionText: String, knownRoads: Set<String> = emptySet()): CameraRoad {
             roadBeforeToward(directionText)?.let { return Known(it) }
@@ -73,6 +75,8 @@ sealed interface CameraRoad {
                 cleaned = withoutRelParens
             }
             cleaned = cleaned
+                .replace(ADMIN_PREFIX, "")
+                .replace(Regex("(?<=[路街道段號巷弄線,，(（])近"), ",")
                 .replace(ARABIC_ROAD_DIGIT) { m -> CN_DIGITS[m.value[0]]?.toString() ?: m.value }
                 .replace("路路口", "路口")
                 .replace("街街口", "街口")
@@ -84,7 +88,7 @@ sealed interface CameraRoad {
 
             val sortedKnown = knownRoads.asSequence()
                 .map(::base)
-                .filter { it.length >= 2 && it !in GENERIC_ROADS }
+                .filter { VALID_KNOWN_ROAD.matches(it) && !isLane(it) && it !in GENERIC_ROADS }
                 .distinct()
                 .sortedByDescending { it.length }
             for (k in sortedKnown) {
@@ -127,7 +131,7 @@ sealed interface CameraRoad {
         /** `大興西路三段` → `大興西路`, `中正路二段239巷` → `中正路`; 台/臺 unified. */
         fun base(name: String): String {
             val n = name.trim().replace('台', '臺')
-            val end = Regex(SUFFIX).find(n)?.range?.last ?: return n
+            val end = Regex(".+?$SUFFIX").find(n)?.range?.last ?: return n
             return n.substring(0, end + 1)
         }
 
