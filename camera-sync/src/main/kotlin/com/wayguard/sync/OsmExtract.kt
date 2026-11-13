@@ -106,7 +106,7 @@ internal class OsmExtract private constructor(
 
     /** Shortest distance (m) from [pos] to any road segment matching [baseRoadName] within [searchRadiusM]. */
     fun distanceToRoad(pos: LatLng, baseRoadName: String, searchRadiusM: Double = 500.0): Double? {
-        val target = CameraRoad.base(baseRoadName)
+        val target = indexName(baseRoadName)
         if (target.isBlank()) return null
         val matching = roadsByName[target] ?: return null
         var best: Double? = null
@@ -124,7 +124,7 @@ internal class OsmExtract private constructor(
 
     /** Distance (m) within [city]'s bounds to the nearest segment of [baseRoadName], or null if not in extract. */
     fun distanceToRoadInCity(pos: LatLng, baseRoadName: String, city: String): Double? {
-        val target = CameraRoad.base(baseRoadName)
+        val target = indexName(baseRoadName)
         val matching = roadsByName[target] ?: return null
         val box = CountyBounds.of(city)
         var best: Double? = null
@@ -143,7 +143,7 @@ internal class OsmExtract private constructor(
         city: String,
         maxDistM: Double = LocationVerdict.ROAD_AXIS_MAX_DIST_M,
     ): RoadHit? {
-        val target = CameraRoad.base(baseRoadName)
+        val target = indexName(baseRoadName)
         if (target.isBlank()) return null
         val matching = roadsByName[target] ?: return null
         val box = CountyBounds.of(city)
@@ -163,7 +163,7 @@ internal class OsmExtract private constructor(
 
     /** True when at least one road segment in OSM carries [baseRoadName] (optionally within [box]). */
     fun hasRoad(baseRoadName: String, box: BBox? = null): Boolean {
-        val matching = roadsByName[CameraRoad.base(baseRoadName)] ?: return false
+        val matching = roadsByName[indexName(baseRoadName)] ?: return false
         if (box == null) return matching.isNotEmpty()
         return matching.any { overlaps(it.bbox, box) }
     }
@@ -210,8 +210,8 @@ internal class OsmExtract private constructor(
         city: String,
         district: String,
     ): List<LatLng> {
-        val baseA = CameraRoad.base(roadA)
-        val baseB = CameraRoad.base(roadB)
+        val baseA = indexName(roadA)
+        val baseB = indexName(roadB)
         if (baseA.isBlank() || baseB.isBlank() || baseA == baseB) return emptyList()
         val box = CountyBounds.of(city)
         val listA = roadsByName[baseA].orEmpty().filter { overlaps(it.bbox, box) }
@@ -292,6 +292,21 @@ internal class OsmExtract private constructor(
         private fun cellOf(deg: Double): Int = floor(deg / CELL_DEG).toInt()
         private fun cellKey(la: Int, lo: Int): Long = (la.toLong() shl 32) or (lo.toLong() and 0xFFFFFFFFL)
 
+        /**
+         * Key under which an OSM way name is indexed in `roadsByName`.
+         *
+         * Through roads collapse to their base name (`大興西路三段` → `大興西路`). Lanes that hang
+         * off a named road (`豐勢路九房巷`, `中正路二段239巷`) keep their full name instead of being
+         * truncated into the parent road — otherwise an alley 20 m away would pass as "on 豐勢路"
+         * and skew distance checks, roadAxis and intersection candidates. Standalone lane names
+         * (`枋坪巷`) are unaffected because their base name is already the full name.
+         */
+        internal fun indexName(raw: String): String {
+            val normalized = raw.trim().replace('台', '臺')
+            val base = CameraRoad.base(normalized)
+            return if (CameraRoad.isLane(normalized) && base != normalized) normalized else base
+        }
+
         fun load(file: File): OsmExtract {
             if (!file.isFile) return fromFeatures(emptySequence())
             return file.bufferedReader(Charsets.UTF_8).use { reader ->
@@ -367,7 +382,7 @@ internal class OsmExtract private constructor(
                         props["name:zh"]?.jsonPrimitive?.contentOrNull,
                         props["alt_name"]?.jsonPrimitive?.contentOrNull,
                     ).flatMap { it.split(';', '、') }
-                    val baseNames = rawNames.map(CameraRoad::base).filter { it.isNotBlank() }.toSet()
+                    val baseNames = rawNames.map(::indexName).filter { it.isNotBlank() }.toSet()
                     val routeRefs = props["ref"]?.jsonPrimitive?.contentOrNull
                         ?.split(';', '/', ',')
                         ?.mapNotNull { AddressParser.canonicalRouteRef(it.trim()) }
@@ -378,7 +393,7 @@ internal class OsmExtract private constructor(
                     val isMotorway = highway == "motorway" || highway == "motorway_link" ||
                         network == "TW:freeway" ||
                         rawNames.any { "國道" in it || "高速公路" in it }
-                    val primaryName = CameraRoad.base(primaryRaw).ifBlank { baseNames.firstOrNull().orEmpty() }
+                    val primaryName = indexName(primaryRaw).ifBlank { baseNames.firstOrNull().orEmpty() }
 
                     val lineParts = when (geomType) {
                         "LineString" -> listOf(toLatLngList(coords))

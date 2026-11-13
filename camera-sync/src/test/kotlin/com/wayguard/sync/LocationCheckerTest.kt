@@ -71,6 +71,33 @@ class LocationCheckerTest {
     }
 
     @Test
+    fun subordinateLanesAreNotMergedIntoParentRoadIndex() {
+        assertEquals("豐勢路", OsmExtract.indexName("豐勢路"))
+        assertEquals("大興西路", OsmExtract.indexName("大興西路三段"))
+        assertEquals("豐勢路九房巷", OsmExtract.indexName("豐勢路九房巷"))
+        assertEquals("中正路二段239巷", OsmExtract.indexName("中正路二段239巷"))
+        assertEquals("枋坪巷", OsmExtract.indexName("枋坪巷"))
+        assertEquals("臺中路12弄", OsmExtract.indexName("台中路12弄"))
+
+        // 豐勢路 at lat 24.2740; alley 豐勢路九房巷 ~11 m away at lat 24.2741; standalone 枋坪巷.
+        val extract = OsmExtract.fromText(
+            listOf(
+                """{"type":"Feature","properties":{"highway":"primary","name":"豐勢路"},"geometry":{"type":"LineString","coordinates":[[120.780,24.2740],[120.790,24.2740]]}}""",
+                """{"type":"Feature","properties":{"highway":"service","name":"豐勢路九房巷"},"geometry":{"type":"LineString","coordinates":[[120.780,24.2760],[120.790,24.2760]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"枋坪巷"},"geometry":{"type":"LineString","coordinates":[[120.785,24.270],[120.785,24.280]]}}""",
+            ).joinToString("\n") { "\u001e$it" },
+        )
+        // Point sits on the alley (lat 24.2760), ~222 m from the real 豐勢路.
+        val onAlley = LatLng(24.2760, 120.783)
+        val dParent = extract.distanceToRoad(onAlley, "豐勢路")!!
+        assertTrue("alley must not count as 豐勢路, got $dParent", dParent > 200.0)
+        assertTrue(extract.distanceToRoad(onAlley, "豐勢路九房巷")!! < 1.0)
+        assertTrue(extract.distanceToRoad(LatLng(24.275, 120.785), "枋坪巷")!! < 1.0)
+        assertTrue("豐勢路九房巷" in extract.knownRoadNames)
+        assertTrue("枋坪巷" in extract.knownRoadNames)
+    }
+
+    @Test
     fun localRoadCheckerReplacesNominatimWhenOsmExtractIsLoaded() {
         val checker = RoadChecker(Nominatim("test"), osm)
         val checks = checker.check(listOf("cam-1" to LatLng(24.960, 121.217)), "2026-11-13T00:00:00Z")
