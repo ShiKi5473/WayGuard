@@ -195,4 +195,30 @@ class AlertEngineTest {
         val driftEast = GeoUtils.destinationPoint(north, 25.0, 90.0)
         assertEquals(0.0, filter.update(Fix(driftEast, 1.0, null, 3000L))!!, 1.0)
     }
+
+    @Test
+    fun roadAxisFiltersCrossStreetTrafficWhenEnabledAndCanBeDisabled() {
+        val nAxisCam = camera(emptyList()).copy(roadAxis = 0)
+        // Driving east (90°) right toward the camera on a cross street: suppressed when roadAxisFilterEnabled = true
+        val westStart = GeoUtils.destinationPoint(camPos, 1200.0, 270.0)
+        assertTrue(run(engine(nAxisCam), drive(westStart, 90.0, 60.0, 100)).isEmpty())
+
+        // Driving north (0°) or south (180°) along the camera's own road: alerts normally
+        assertEquals(
+            listOf(AlertType.APPROACH, AlertType.NEAR, AlertType.PASSED),
+            types(run(engine(nAxisCam), drive(origin, 0.0, 60.0, 150))),
+        )
+        val northStart = GeoUtils.destinationPoint(camPos, 1200.0, 0.0)
+        assertEquals(
+            listOf(AlertType.APPROACH, AlertType.NEAR, AlertType.PASSED),
+            types(run(engine(nAxisCam), drive(northStart, 180.0, 60.0, 150))),
+        )
+
+        // When disabled in settings, eastbound approach alerts as plain bidirectional
+        val noAxisFilter = AlertConfig(roadAxisFilterEnabled = false)
+        assertEquals(
+            listOf(AlertType.APPROACH, AlertType.NEAR, AlertType.PASSED),
+            types(run(engine(nAxisCam, config = noAxisFilter), drive(westStart, 90.0, 60.0, 100))),
+        )
+    }
 }

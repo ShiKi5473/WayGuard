@@ -97,5 +97,68 @@ class AddressParserTest {
         assertEquals(AddressKind.HOUSE_NUMBER, parsed.kind)
         assertEquals(listOf("和平西路"), parsed.roads)
     }
+
+    @Test
+    fun stripsRouteAndKmPrefixesHandlesArabicDigitsAndFiltersGenericRoads() {
+        val yi9 = AddressParser.parse("宜9線3k+100m中央路三段南下", "宜蘭縣")
+        assertEquals(AddressKind.ROAD_ONLY, yi9.kind)
+        assertEquals(listOf("中央路"), yi9.roads)
+
+        val prov2e = AddressParser.parse("台2戊線12k+215m移山路北上", "宜蘭縣")
+        assertEquals(listOf("移山路"), prov2e.roads)
+
+        val ramp = AddressParser.parse("台68線東大路匝道口", "新竹市")
+        assertEquals(AddressKind.ROAD_ONLY, ramp.kind)
+        assertEquals(listOf("東大路"), ramp.roads)
+        assertTrue(ramp.isRampOrSpan)
+
+        val ramp62 = AddressParser.parse("台62線下明燈路3段匝道（往瑞芳方向）", "新北市")
+        assertEquals(AddressKind.ROAD_ONLY, ramp62.kind)
+        assertEquals(listOf("明燈路"), ramp62.roads)
+
+        val prov17 = AddressParser.parse("臺17線152.6公里大潭寮路口", "臺南市")
+        assertEquals(listOf("大潭寮路"), prov17.roads)
+
+        val exp65 = AddressParser.parse("台65線快速公路7公里（往新莊）", "新北市")
+        assertEquals(AddressKind.PROVINCIAL_KM, exp65.kind)
+        assertEquals("65", exp65.routeRef)
+        assertTrue(exp65.roads.isEmpty())
+
+        val kh = AddressParser.parse("東亞南路、平和2路路口", "高雄市")
+        assertEquals(AddressKind.INTERSECTION, kh.kind)
+        assertEquals(listOf("東亞南路", "平和二路"), kh.roads)
+
+        val fwRamp = AddressParser.parse("高速公路接金福路之高架聯絡道北上（離金福路出口500公尺處)", "高雄市")
+        assertEquals(listOf("金福路"), fwRamp.roads)
+
+        val levee = AddressParser.parse("八德街與堤外道路（往鶯歌方向）", "新北市")
+        assertEquals(AddressKind.ROAD_ONLY, levee.kind)
+        assertEquals(listOf("八德街"), levee.roads)
+
+        val flood = AddressParser.parse("公道五路四段、防汛道路", "新竹市")
+        assertEquals(AddressKind.ROAD_ONLY, flood.kind)
+        assertEquals(listOf("公道五路"), flood.roads)
+
+        val moto = AddressParser.parse("三商街高速公路口機慢車專用道往南415公尺處", "高雄市")
+        assertEquals(AddressKind.ROAD_ONLY, moto.kind)
+        assertEquals(listOf("三商街"), moto.roads)
+        assertEquals(415.0, moto.offsetMeters!!, 1e-6)
+    }
+
+    @Test
+    fun stripsRelativeParenthesesAndExtractsIntersectionOffset() {
+        val span = AddressParser.parse("太平區環中東路三段(育才路與樹孝路67巷間)", "臺中市")
+        assertEquals(AddressKind.ROAD_ONLY, span.kind)
+        assertEquals(listOf("環中東路"), span.roads)
+
+        val nanxing = AddressParser.parse("南星路段(沿海路以北700公尺處)", "高雄市")
+        assertEquals(AddressKind.OTHER, nanxing.kind)
+        assertTrue(nanxing.roads.isEmpty())
+
+        val offset = AddressParser.parse("同盟三路與十全三路口往西220公尺處", "高雄市")
+        assertEquals(AddressKind.INTERSECTION, offset.kind)
+        assertEquals(listOf("同盟三路", "十全三路"), offset.roads)
+        assertEquals(220.0, offset.offsetMeters!!, 1e-6)
+    }
 }
 

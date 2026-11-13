@@ -1,6 +1,7 @@
 package com.wayguard.sync
 
 import com.wayguard.core.dataset.CameraFix
+import com.wayguard.core.dataset.CameraRoad
 import com.wayguard.core.model.CameraKind
 import com.wayguard.core.model.SpeedCamera
 import com.wayguard.core.parse.AddressKind
@@ -10,22 +11,29 @@ import com.wayguard.core.parse.RejectedRow
 import com.wayguard.core.validate.CountyBounds
 import com.wayguard.core.validate.LocationCheck
 import com.wayguard.core.validate.LocationVerdict
+import com.wayguard.core.validate.MilepostIndex
+import com.wayguard.core.validate.TgosCsv
+import com.wayguard.core.validate.TgosHit
+import com.wayguard.core.validate.TgosRow
 import com.wayguard.core.validate.VerdictLevel
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * Three-layer location cross-verification for speed cameras:
+ * Multi-layer location cross-verification for speed cameras:
  * 1. Data-internal conflict check (< 10 m apart with different road names / routes).
- * 2. Local OSM road/intersection/route distance + local OSM administrative boundaries.
- * 3. Secondary NLSC API check on local suspect/mismatch points and suggested coordinates.
+ * 2. Local OSM road/intersection/route distance + highway milepost interpolation + OSM admin boundaries.
+ * 3. Secondary NLSC API check on local suspect/mismatch points + optional TGOS batch house-number check.
  */
 internal class LocationChecker(
     private val osm: OsmExtract?,
     private val nlsc: NlscClient? = null,
     private val offline: Boolean = false,
+    private val mileposts: MilepostIndex? = null,
+    private val tgosResults: Map<String, TgosHit> = emptyMap(),
 ) {
     data class RunResult(
         val checks: Map<String, LocationCheck>,
@@ -45,15 +53,18 @@ internal class LocationChecker(
         val governmentCameras = cameras.filter {
             CameraKind.MOBILE !in it.kinds && CameraKind.CUSTOM !in it.kinds
         }
+        val activeMileposts = mileposts?.takeUnless { it.isEmpty() } ?: osm?.mileposts?.takeUnless { it.isEmpty() }
+        val hasExternalSources = (osm != null && !osm.isEmpty) || tgosResults.isNotEmpty() || activeMileposts != null
         val internal = LocationVerdict.findInternalConflicts(governmentCameras, knownRoads, now)
         val out = LinkedHashMap<String, LocationCheck>()
         var checkedCount = 0
 
         for (cam in governmentCameras) {
             val prev = existing[cam.id]?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
-            val extCheck = if (osm != null && !osm.isEmpty && (verifyAll || prev == null || prev.method == "internal")) {
+            val hasTgos = cam.id in tgosResults
+            val extCheck = if (hasExternalSources && (verifyAll || prev == null || prev.method == "internal" || hasTgos)) {
                 checkedCount++
-                verifyWithOsm(cam, osm, knownRoads, now)
+                verifyCamera(cam, osm, activeMileposts, prev?.roadAxis, knownRoads, now)
             } else {
                 prev
             }
@@ -69,8 +80,8 @@ internal class LocationChecker(
             val id = rej.id ?: continue
             val row = rowsById[id] ?: continue
             val prev = existing[id]
-            if (osm != null && !osm.isEmpty && (verifyAll || prev == null)) {
-                suggestRejected(id, row, osm, now)?.let { out[id] = it }
+            if (hasExternalSources && (verifyAll || prev == null)) {
+                suggestRejected(id, row, osm, activeMileposts, knownRoads, now)?.let { out[id] = it }
             } else if (prev != null) {
                 out[id] = prev
             }
@@ -85,9 +96,11 @@ internal class LocationChecker(
         return RunResult(sortedOut, checkedCount, changed)
     }
 
-    private fun verifyWithOsm(
+    private fun verifyCamera(
         cam: SpeedCamera,
-        osm: OsmExtract,
+        osm: OsmExtract?,
+        mileposts: MilepostIndex?,
+        prevRoadAxis: Int?,
         knownRoads: Set<String>,
         now: String,
     ): LocationCheck {
@@ -98,68 +111,127 @@ internal class LocationChecker(
         var rawDistM: Double? = null
         var suggested: LatLng? = null
 
+        var intersectionPair = parsed.roads.take(2)
         val roadVerdict: VerdictLevel = when (parsed.kind) {
             AddressKind.INTERSECTION -> {
                 method = "intersection"
-                val rA = parsed.roads[0]
-                val rB = parsed.roads[1]
-                val dA = osm.distanceToRoadInCity(cam.pos, rA, cam.city)
-                val dB = osm.distanceToRoadInCity(cam.pos, rB, cam.city)
-                when {
-                    dA != null && dB != null -> {
-                        val maxD = max(dA, dB)
-                        rawDistM = maxD
-                        val v = LocationVerdict.forIntersection(maxD)
-                        if (v != VerdictLevel.OK) {
-                            reasons += "距路口道路最遠 ${maxD.roundToInt()} m（$rA ${dA.roundToInt()} m、$rB ${dB.roundToInt()} m）"
-                        }
-                        v
-                    }
-                    dA != null || dB != null -> {
-                        val foundName = if (dA != null) rA else rB
-                        val foundD = dA ?: dB!!
-                        rawDistM = foundD
-                        when {
-                            foundD > LocationVerdict.INTERSECTION_SUSPECT_M -> {
-                                reasons += "距 $foundName ${foundD.roundToInt()} m"
-                                VerdictLevel.MISMATCH
+                if (osm == null || osm.isEmpty) {
+                    VerdictLevel.UNVERIFIABLE
+                } else {
+                    val chosen = pickIntersectionPair(cam.pos, cam.address, cam.city, parsed.roads, osm)
+                    intersectionPair = listOf(chosen.first, chosen.second)
+                    val dA = chosen.third.first
+                    val dB = chosen.third.second
+                    val rA = chosen.first
+                    val rB = chosen.second
+                    when {
+                        dA != null && dB != null -> {
+                            val minD = min(dA, dB)
+                            val maxD = max(dA, dB)
+                            val effectiveMaxD = if (parsed.offsetMeters != null && minD <= LocationVerdict.ROAD_OK_M) {
+                                (maxD - parsed.offsetMeters).coerceAtLeast(minD)
+                            } else {
+                                maxD
                             }
-                            foundD > LocationVerdict.ROAD_SUSPECT_M -> {
-                                reasons += "距 $foundName ${foundD.roundToInt()} m"
-                                VerdictLevel.SUSPECT
+                            rawDistM = maxD
+                            val v = LocationVerdict.forIntersection(effectiveMaxD)
+                            if (v != VerdictLevel.OK) {
+                                reasons += "距路口道路最遠 ${maxD.roundToInt()} m（$rA ${dA.roundToInt()} m、$rB ${dB.roundToInt()} m）"
                             }
-                            else -> VerdictLevel.UNVERIFIABLE
+                            v
                         }
+                        dA != null || dB != null -> {
+                            val foundName = if (dA != null) rA else rB
+                            val foundD = dA ?: dB!!
+                            rawDistM = foundD
+                            when {
+                                foundD > LocationVerdict.INTERSECTION_SUSPECT_M -> {
+                                    reasons += "距 $foundName ${foundD.roundToInt()} m"
+                                    VerdictLevel.MISMATCH
+                                }
+                                foundD > LocationVerdict.ROAD_SUSPECT_M -> {
+                                    reasons += "距 $foundName ${foundD.roundToInt()} m"
+                                    VerdictLevel.SUSPECT
+                                }
+                                else -> VerdictLevel.UNVERIFIABLE
+                            }
+                        }
+                        else -> VerdictLevel.UNVERIFIABLE
                     }
-                    else -> VerdictLevel.UNVERIFIABLE
                 }
             }
             AddressKind.HOUSE_NUMBER, AddressKind.ROAD_ONLY -> {
-                method = "road"
                 val roadName = parsed.roads.first()
-                val d = osm.distanceToRoadInCity(cam.pos, roadName, cam.city)
-                    ?: parsed.routeRef?.let { osm.distanceToRoute(cam.pos, it, isFreeway = false) }
-                if (d == null) {
+                val osmDist = osm?.let {
+                    it.distanceToRoadInCity(cam.pos, roadName, cam.city)
+                        ?: parsed.routeRef?.let { ref -> it.distanceToRoute(cam.pos, ref, isFreeway = false) }
+                }
+                val osmVerdict = if (osmDist == null) {
                     VerdictLevel.UNVERIFIABLE
                 } else {
-                    rawDistM = d
-                    val v = LocationVerdict.forRoad(d)
-                    if (v != VerdictLevel.OK) reasons += "距 $roadName ${d.roundToInt()} m"
+                    method = "road"
+                    rawDistM = osmDist
+                    val v = LocationVerdict.forRoad(osmDist)
+                    if (v != VerdictLevel.OK) reasons += "距 $roadName ${osmDist.roundToInt()} m"
                     v
+                }
+
+                val tgosHit = tgosResults[cam.id]
+                if (tgosHit != null) {
+                    // Notice: only conclusion & rounded distance are kept; TGOS coords stay out of public outputs.
+                    val tgosDist = GeoUtils.haversine(cam.pos, tgosHit.pos)
+                    val tgosVerdict = LocationVerdict.forTgos(tgosDist)
+                    method = "tgos"
+                    rawDistM = tgosDist
+                    if (tgosVerdict != VerdictLevel.OK) {
+                        reasons += "距 TGOS 門牌位置 ${tgosDist.roundToInt()} m"
+                    }
+                    LocationVerdict.combine(osmVerdict, tgosVerdict)
+                } else {
+                    osmVerdict
                 }
             }
             AddressKind.FREEWAY_KM, AddressKind.PROVINCIAL_KM -> {
                 method = "route"
                 val ref = parsed.routeRef
-                val d = if (ref != null) osm.distanceToRoute(cam.pos, ref, parsed.isFreeway) else null
-                if (d == null) {
+                val osmDist = if (ref != null && osm != null && !osm.isEmpty) {
+                    osm.distanceToRoute(cam.pos, ref, parsed.isFreeway)
+                } else {
+                    null
+                }
+                val osmRouteVerdict = if (osmDist == null) {
                     VerdictLevel.UNVERIFIABLE
                 } else {
-                    rawDistM = d
-                    val v = LocationVerdict.forRoad(d)
+                    rawDistM = osmDist
+                    val v = if (parsed.isRampOrSpan) {
+                        LocationVerdict.forIntersection(osmDist)
+                    } else {
+                        LocationVerdict.forRoad(osmDist)
+                    }
                     val label = if (parsed.isFreeway) "國道${ref}號" else "${ref}線"
-                    if (v != VerdictLevel.OK) reasons += "距 $label ${d.roundToInt()} m"
+                    if (v != VerdictLevel.OK) reasons += "距 $label ${osmDist.roundToInt()} m"
                     v
+                }
+
+                val mpPos = if (ref != null && parsed.km != null) {
+                    mileposts?.interpolate(ref, parsed.isFreeway, parsed.km)
+                } else {
+                    null
+                }
+                if (mpPos != null) {
+                    val mpDist = GeoUtils.haversine(cam.pos, mpPos)
+                    val mpVerdict = LocationVerdict.forMilepost(mpDist)
+                    if (osmDist == null) method = "milepost"
+                    if (mpVerdict != VerdictLevel.OK) {
+                        reasons += "距里程內插點 ${mpDist.roundToInt()} m"
+                        rawDistM = mpDist
+                    }
+                    if (mpVerdict == VerdictLevel.MISMATCH) {
+                        suggested = mpPos
+                    }
+                    LocationVerdict.combine(osmRouteVerdict, mpVerdict)
+                } else {
+                    osmRouteVerdict
                 }
             }
             AddressKind.OTHER -> VerdictLevel.UNVERIFIABLE
@@ -168,7 +240,7 @@ internal class LocationChecker(
         // Layer 2b: Admin district check (local OSM boundary first; NLSC secondary check on flags).
         var adminVerdict = VerdictLevel.UNVERIFIABLE
         var nlscPending = false
-        if (!AddressParser.isRouteCity(cam.city) && CountyBounds.isKnown(cam.city)) {
+        if (osm != null && !osm.isEmpty && !AddressParser.isRouteCity(cam.city) && CountyBounds.isKnown(cam.city)) {
             val hit = osm.adminAt(cam.pos)
             adminVerdict = LocationVerdict.forAdmin(
                 expectedCity = cam.city,
@@ -209,17 +281,20 @@ internal class LocationChecker(
 
         val combined = LocationVerdict.combine(roadVerdict, adminVerdict)
 
-        // Reverse-locate unambiguous intersection candidate only when flagged.
-        if (parsed.kind == AddressKind.INTERSECTION &&
-            (combined == VerdictLevel.SUSPECT || combined == VerdictLevel.MISMATCH) &&
-            parsed.roads.size >= 2
+        // Reverse-locate unambiguous intersection candidate only when flagged MISMATCH.
+        if (osm != null && !osm.isEmpty &&
+            parsed.kind == AddressKind.INTERSECTION &&
+            combined == VerdictLevel.MISMATCH &&
+            intersectionPair.size >= 2
         ) {
-            val candidates = osm.findIntersectionCandidates(parsed.roads[0], parsed.roads[1], cam.city, cam.district)
+            val candidates = osm.findIntersectionCandidates(
+                intersectionPair[0], intersectionPair[1], cam.city, cam.district,
+            )
             if (candidates.size == 1) {
                 val cand = candidates.single()
                 val nlscAgrees = if (!offline && nlsc != null && CountyBounds.isKnown(cam.city)) {
                     val nh = nlsc.query(cand.lat, cand.lon)
-                    nh == null || LocationVerdict.forAdmin(cam.city, cam.district, nh.city, nh.district) != VerdictLevel.MISMATCH
+                    nh == null || LocationVerdict.forAdmin(cam.city, cam.district, nh.city, nh.district) == VerdictLevel.OK
                 } else {
                     true
                 }
@@ -232,6 +307,15 @@ internal class LocationChecker(
             }
         }
 
+        // Compute stabilized roadAxis (0..170 deg) for single-road cameras within 25 m of OSM centerline.
+        val camRoad = CameraRoad.of(cam.address, cam.directionText, knownRoads)
+        val roadAxis = if (osm != null && !osm.isEmpty && camRoad is CameraRoad.Known) {
+            osm.nearestMatchingRoad(cam.pos, camRoad.base, cam.city, LocationVerdict.ROAD_AXIS_MAX_DIST_M)
+                ?.let { hit -> LocationVerdict.stabilizeRoadAxis(hit.bearingDeg, prevRoadAxis) }
+        } else {
+            null
+        }
+
         return LocationCheck(
             verdict = combined,
             method = method,
@@ -242,36 +326,92 @@ internal class LocationChecker(
             checkedAt = now,
             lat = cam.lat,
             lon = cam.lon,
+            roadAxis = roadAxis,
         )
+    }
+
+    private fun pickIntersectionPair(
+        pos: LatLng,
+        address: String,
+        city: String,
+        roads: List<String>,
+        osm: OsmExtract,
+    ): Triple<String, String, Pair<Double?, Double?>> {
+        if ("至" in address && roads.size >= 3) {
+            val pairs = listOf(roads[0] to roads[1], roads[roads.size - 2] to roads.last())
+            var best: Triple<String, String, Pair<Double?, Double?>>? = null
+            var bestScore = Double.POSITIVE_INFINITY
+            for ((a, b) in pairs) {
+                val da = osm.distanceToRoadInCity(pos, a, city)
+                val db = osm.distanceToRoadInCity(pos, b, city)
+                val score = when {
+                    da != null && db != null -> max(da, db)
+                    da != null -> da + 10_000.0
+                    db != null -> db + 10_000.0
+                    else -> Double.POSITIVE_INFINITY
+                }
+                if (best == null || score < bestScore) {
+                    best = Triple(a, b, da to db)
+                    bestScore = score
+                }
+            }
+            if (best != null) return best
+        }
+        val rA = roads[0]
+        val rB = roads[1]
+        return Triple(rA, rB, osm.distanceToRoadInCity(pos, rA, city) to osm.distanceToRoadInCity(pos, rB, city))
     }
 
     private fun suggestRejected(
         id: String,
         row: NpaRow,
-        osm: OsmExtract,
+        osm: OsmExtract?,
+        mileposts: MilepostIndex?,
+        knownRoads: Set<String>,
         now: String,
     ): LocationCheck? {
         val city = CountyBounds.normalizeCity(row.city)
-        val parsed = AddressParser.parse(row.address, city, row.direct)
-        if (parsed.kind != AddressKind.INTERSECTION || parsed.roads.size < 2) return null
+        val parsed = AddressParser.parse(row.address, city, row.direct, knownRoads)
         val district = row.region.trim().removePrefix("福建省").removePrefix(city).removePrefix(city.replace('臺', '台'))
-        val candidates = osm.findIntersectionCandidates(parsed.roads[0], parsed.roads[1], city, district)
-        if (candidates.size != 1) return null
-        val cand = candidates.single()
-        if (!offline && nlsc != null && CountyBounds.isKnown(city)) {
-            val nh = nlsc.query(cand.lat, cand.lon)
-            if (nh != null && LocationVerdict.forAdmin(city, district, nh.city, nh.district) == VerdictLevel.MISMATCH) {
-                return null
+
+        if (parsed.kind == AddressKind.INTERSECTION && parsed.roads.size >= 2 && osm != null && !osm.isEmpty) {
+            val candidates = osm.findIntersectionCandidates(parsed.roads[0], parsed.roads[1], city, district)
+            if (candidates.size == 1) {
+                val cand = candidates.single()
+                val ok = if (!offline && nlsc != null && CountyBounds.isKnown(city)) {
+                    val nh = nlsc.query(cand.lat, cand.lon)
+                    nh == null || LocationVerdict.forAdmin(city, district, nh.city, nh.district) == VerdictLevel.OK
+                } else {
+                    true
+                }
+                if (ok) {
+                    return LocationCheck(
+                        verdict = VerdictLevel.MISMATCH,
+                        method = "intersection",
+                        suggestedLat = round6(cand.lat),
+                        suggestedLon = round6(cand.lon),
+                        reason = "被拒絕列反推路口座標（${parsed.roads[0]} × ${parsed.roads[1]}）",
+                        checkedAt = now,
+                    )
+                }
             }
         }
-        return LocationCheck(
-            verdict = VerdictLevel.MISMATCH,
-            method = "intersection",
-            suggestedLat = round6(cand.lat),
-            suggestedLon = round6(cand.lon),
-            reason = "被拒絕列反推路口座標（${parsed.roads[0]} × ${parsed.roads[1]}）",
-            checkedAt = now,
-        )
+
+        if ((parsed.kind == AddressKind.FREEWAY_KM || parsed.kind == AddressKind.PROVINCIAL_KM) &&
+            parsed.routeRef != null && parsed.km != null && mileposts != null
+        ) {
+            val mpPos = mileposts.interpolate(parsed.routeRef, parsed.isFreeway, parsed.km) ?: return null
+            val label = if (parsed.isFreeway) "國道${parsed.routeRef}號" else "${parsed.routeRef}線"
+            return LocationCheck(
+                verdict = VerdictLevel.MISMATCH,
+                method = "milepost",
+                suggestedLat = round6(mpPos.lat),
+                suggestedLon = round6(mpPos.lon),
+                reason = "被拒絕列反推里程座標（$label ${parsed.km}K）",
+                checkedAt = now,
+            )
+        }
+        return null
     }
 
     private fun merge(external: LocationCheck?, internal: LocationCheck?): LocationCheck? {
@@ -285,6 +425,7 @@ internal class LocationChecker(
                     verdict = combined,
                     suggestedLat = internal.suggestedLat ?: external.suggestedLat,
                     suggestedLon = internal.suggestedLon ?: external.suggestedLon,
+                    roadAxis = external.roadAxis,
                 )
             external.verdict == VerdictLevel.SUSPECT && internal.verdict == VerdictLevel.SUSPECT ->
                 external.copy(
@@ -296,6 +437,35 @@ internal class LocationChecker(
     }
 
     companion object {
+        /** Exports house-number cameras without an active TGOS check to CSV for batch TGOS upload. */
+        fun buildTgosUploadRows(
+            cameras: List<SpeedCamera>,
+            rejected: List<RejectedRow>,
+            rowsById: Map<String, NpaRow>,
+            checks: Map<String, LocationCheck>,
+            knownRoads: Set<String> = emptySet(),
+        ): List<TgosRow> {
+            val out = ArrayList<TgosRow>()
+            for (cam in cameras) {
+                if (CameraKind.MOBILE in cam.kinds || CameraKind.CUSTOM in cam.kinds) continue
+                val parsed = AddressParser.parse(cam.address, cam.city, cam.directionText, knownRoads)
+                if (parsed.kind != AddressKind.HOUSE_NUMBER) continue
+                val prev = checks[cam.id]?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
+                if (prev?.method == "tgos") continue
+                val cleaned = TgosCsv.cleanAddressForTgos(cam.city, cam.district, cam.address)
+                if (cleaned.isNotBlank()) out += TgosRow(cam.id, cleaned)
+            }
+            for (rej in rejected) {
+                val id = rej.id ?: continue
+                val row = rowsById[id] ?: continue
+                val parsed = AddressParser.parse(row.address, row.city, row.direct, knownRoads)
+                if (parsed.kind != AddressKind.HOUSE_NUMBER) continue
+                val cleaned = TgosCsv.cleanAddressForTgos(row.city, row.region, row.address)
+                if (cleaned.isNotBlank()) out += TgosRow(id, cleaned)
+            }
+            return out.sortedBy { it.id }
+        }
+
         /** Builds an `overrides.json`-compatible `fix` map for MISMATCH and rejected points that have a unique suggestion. */
         fun buildFixSuggestions(
             issues: List<Pair<SpeedCamera, LocationCheck>>,

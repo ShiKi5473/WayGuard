@@ -125,6 +125,7 @@ object DatasetBuilder {
         places: List<Place> = emptyList(),
         roadChecks: Map<String, RoadCheck> = emptyMap(),
         locationChecks: Map<String, LocationCheck> = emptyMap(),
+        extraKnownRoads: Set<String> = emptySet(),
     ): BuildResult {
         val rejected = ArrayList(csvRejected)
         val swapped = ArrayList<Int>()
@@ -134,7 +135,8 @@ object DatasetBuilder {
         val placeSkipped = ArrayList<PlaceDerivation>()
         val unmatchedPlaces = LinkedHashMap<PlaceRef, MutableList<LatLng>>()
         val directory = PlaceDirectory(places)
-        val knownRoads = roadChecks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }.map(CameraRoad::base).toSet()
+        val knownRoads = roadChecks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }
+            .map(CameraRoad::base).toSet() + extraKnownRoads.map(CameraRoad::base)
         val matchedFixes = LinkedHashSet<String>()
         var missingLimit = 0
         var fixed = 0
@@ -267,17 +269,26 @@ object DatasetBuilder {
         val internalConflicts = LocationVerdict.findInternalConflicts(rawCameras, knownRoads, generatedAt)
         val locationIssues = ArrayList<Pair<SpeedCamera, LocationCheck>>()
         val cameras = rawCameras.map { cam ->
-            val external = (locationChecks[cam.id] ?: locationChecks[cam.id.substringBefore("-h")])
+            val baseId = cam.id.substringBefore("-h")
+            val external = (locationChecks[cam.id] ?: locationChecks[baseId])
                 ?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
             val internal = internalConflicts[cam.id]
             val merged = mergeLocationCheck(external, internal)
-            if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
-                val updated = cam.copy(loc = merged.verdict.locTag)
-                locationIssues += updated to merged
-                updated
+            val locTag = if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
+                merged.verdict.locTag
+            } else {
+                null
+            }
+            val axis = cam.roadAxis ?: computeRoadAxis(cam, baseId, external, roadChecks, knownRoads)
+            val updated = if (locTag != cam.loc || axis != cam.roadAxis) {
+                cam.copy(loc = locTag ?: cam.loc, roadAxis = axis)
             } else {
                 cam
             }
+            if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
+                locationIssues += updated to merged
+            }
+            updated
         }
         locationIssues.sortWith(
             compareByDescending<Pair<SpeedCamera, LocationCheck>> { it.second.verdict.severity }
@@ -320,6 +331,27 @@ object DatasetBuilder {
             rejectedSuggestions = rejectedSuggestions,
         )
         return BuildResult(dataset, report)
+    }
+
+    private fun computeRoadAxis(
+        cam: SpeedCamera,
+        baseId: String,
+        external: LocationCheck?,
+        roadChecks: Map<String, RoadCheck>,
+        knownRoads: Set<String>,
+    ): Int? {
+        val camRoad = CameraRoad.of(cam.address, cam.directionText, knownRoads)
+        if (camRoad !is CameraRoad.Known) return null
+        external?.roadAxis?.let { return it }
+        val rc = roadChecks[baseId]?.takeIf {
+            (it.lat == null || kotlin.math.abs(it.lat - cam.lat) <= 1e-5) &&
+                (it.lon == null || kotlin.math.abs(it.lon - cam.lon) <= 1e-5)
+        } ?: return null
+        val bearing = rc.bearing ?: return null
+        val dist = rc.distanceM ?: return null
+        if (dist > LocationVerdict.ROAD_AXIS_MAX_DIST_M || rc.road.isBlank()) return null
+        if (CameraRoad.base(rc.road) != camRoad.base) return null
+        return LocationVerdict.quantizeRoadAxis(bearing)
     }
 
     private fun mergeLocationCheck(external: LocationCheck?, internal: LocationCheck?): LocationCheck? {

@@ -45,6 +45,8 @@ data class SpeedCamera(
     val headingToleranceDeg: Int? = null,
     /** Location cross-verification flag (`"suspect"` or `"mismatch"`); null when OK or unverified. */
     val loc: String? = null,
+    /** Road axis bearing (0–170°, rounded to 10°) for single-road cameras within 25 m of OSM centerline. */
+    val roadAxis: Int? = null,
 ) {
     val pos: LatLng get() = LatLng(lat, lon)
 }

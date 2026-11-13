@@ -14,6 +14,8 @@ import com.wayguard.core.model.Section
 import com.wayguard.core.parse.NpaCsvParser
 import com.wayguard.core.validate.CountyBounds
 import com.wayguard.core.validate.LocationCheck
+import com.wayguard.core.validate.MilepostIndex
+import com.wayguard.core.validate.TgosCsv
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
@@ -68,6 +70,12 @@ data class SyncArgs(
     val locationChecks: File = File("data/generated/location-checks.json"),
     /** Overrides.fix review snippet for MISMATCH and rejected-row intersection suggestions. */
     val fixSuggestions: File = File("build/location-fix-suggestions.json"),
+    /** Optional TGOS batch geocoding result CSV for house-number verification. */
+    val tgosResult: File? = null,
+    /** Pending house-number addresses exported for TGOS batch upload. */
+    val tgosUpload: File = File("build/tgos-upload.csv"),
+    /** Optional highway/freeway milepost CSV (WGS84 or TWD97) for km interpolation. */
+    val mileposts: File? = null,
     /** Force re-verifying every camera against [osmExtract] instead of incremental mode. */
     val verifyAll: Boolean = false,
     /** Skip network lookups (unchecked cameras stay both ways; NLSC check deferred). */
@@ -90,7 +98,8 @@ data class SyncArgs(
     companion object {
         const val USAGE = "usage: camera-sync [--source URL|FILE] [--sections FILE] [--overrides FILE] " +
             "[--places FILE] [--road-checks FILE] [--osm-extract FILE] [--location-checks FILE] " +
-            "[--fix-suggestions FILE] [--verify-all] [--offline] [--out DIR] [--report FILE] " +
+            "[--fix-suggestions FILE] [--tgos-result FILE] [--tgos-upload FILE] [--mileposts FILE] " +
+            "[--verify-all] [--offline] [--out DIR] [--report FILE] " +
             "[--candidates FILE] [--min-ratio 0.8] [--max-reject 0.3] [--min-known-city 0.8] [--suggest-places]"
 
         fun parse(args: Array<String>): SyncArgs {
@@ -107,6 +116,9 @@ data class SyncArgs(
                     "--osm-extract" -> a.copy(osmExtract = File(value()))
                     "--location-checks" -> a.copy(locationChecks = File(value()))
                     "--fix-suggestions" -> a.copy(fixSuggestions = File(value()))
+                    "--tgos-result" -> a.copy(tgosResult = File(value()))
+                    "--tgos-upload" -> a.copy(tgosUpload = File(value()))
+                    "--mileposts" -> a.copy(mileposts = File(value()))
                     "--verify-all" -> a.copy(verifyAll = true)
                     "--offline" -> a.copy(offline = true)
                     "--suggest-places" -> a.copy(suggestPlaces = true)
@@ -143,15 +155,16 @@ fun sync(a: SyncArgs): Int {
     val cachedLocChecks = readJson(a.locationChecks, locSerializer) ?: emptyMap()
     var locChecks = cachedLocChecks
     val now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
-    fun build() = DatasetBuilder.build(
-        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks,
-    )
-    var result = build()
-    val nominatim = Nominatim(USER_AGENT)
     val osm = a.osmExtract?.takeIf { it.isFile }?.let {
         println("載入 OSM 資料：${it.path}")
         OsmExtract.load(it)
     }
+    val extraKnownRoads = osm?.knownRoadNames.orEmpty()
+    fun build() = DatasetBuilder.build(
+        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks, extraKnownRoads,
+    )
+    var result = build()
+    val nominatim = Nominatim(USER_AGENT)
 
     if (a.suggestPlaces) {
         val outDir = a.report.absoluteFile.parentFile
@@ -179,11 +192,14 @@ fun sync(a: SyncArgs): Int {
         a.roadChecks.writeText(prettyJson.encodeToString(checksSerializer, prunedChecks) + "\n")
     }
 
-    // Run three-layer location cross-verification (internal <10m, local OSM, NLSC secondary check).
-    val knownRoads = checks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }.map(CameraRoad::base).toSet()
+    // Run multi-layer location cross-verification (internal <10m, local OSM, mileposts, NLSC secondary check, TGOS).
+    val knownRoads = checks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }
+        .map(CameraRoad::base).toSet() + extraKnownRoads
     val rowsById = parsed.rows.associateBy(DatasetBuilder::stableId)
     val nlsc = if (!a.offline) NlscClient() else null
-    val locResult = LocationChecker(osm, nlsc, a.offline).checkAll(
+    val milepostIndex = a.mileposts?.takeIf { it.isFile }?.let { MilepostIndex.fromCsv(it.readText()) }
+    val tgosResults = a.tgosResult?.takeIf { it.isFile }?.let { TgosCsv.parseResults(it.readText()) }.orEmpty()
+    val locResult = LocationChecker(osm, nlsc, a.offline, milepostIndex, tgosResults).checkAll(
         cameras = result.dataset.cameras,
         rejected = result.report.rejected,
         rowsById = rowsById,
@@ -198,6 +214,17 @@ fun sync(a: SyncArgs): Int {
     }
     if (osm != null && !osm.isEmpty) {
         println("位置交叉驗證：本輪檢查 ${locResult.checkedCount} 個點位，發現可疑／不符 ${result.report.locationIssues.size} 筆")
+    }
+    val tgosUploadRows = LocationChecker.buildTgosUploadRows(
+        cameras = result.dataset.cameras,
+        rejected = result.report.rejected,
+        rowsById = rowsById,
+        checks = locChecks,
+        knownRoads = knownRoads,
+    )
+    if (tgosUploadRows.isNotEmpty()) {
+        a.tgosUpload.parentFile?.mkdirs()
+        a.tgosUpload.writeText(TgosCsv.formatUploadCsv(tgosUploadRows))
     }
 
     val metaFile = File(a.out, "meta.json")

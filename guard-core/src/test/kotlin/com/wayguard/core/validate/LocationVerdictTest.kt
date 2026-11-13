@@ -1,6 +1,8 @@
 package com.wayguard.core.validate
 
 import com.wayguard.core.model.SpeedCamera
+import com.waymap.geo.GeoUtils
+import com.waymap.geo.LatLng
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -82,6 +84,75 @@ class LocationVerdictTest {
         val b = a.copy(checkedAt = "2026-11-08T00:00:00Z")
         assertTrue(a.sameConclusion(b))
         assertFalse(a.sameConclusion(a.copy(distanceM = 130)))
+        assertFalse(a.sameConclusion(a.copy(roadAxis = 90)))
+    }
+
+    @Test
+    fun tgosAndMilepostThresholdsAndRoadAxisQuantization() {
+        assertEquals(VerdictLevel.OK, LocationVerdict.forTgos(100.0))
+        assertEquals(VerdictLevel.SUSPECT, LocationVerdict.forTgos(100.1))
+        assertEquals(VerdictLevel.SUSPECT, LocationVerdict.forTgos(300.0))
+        assertEquals(VerdictLevel.MISMATCH, LocationVerdict.forTgos(300.1))
+
+        assertEquals(VerdictLevel.OK, LocationVerdict.forMilepost(200.0))
+        assertEquals(VerdictLevel.SUSPECT, LocationVerdict.forMilepost(200.1))
+        assertEquals(VerdictLevel.SUSPECT, LocationVerdict.forMilepost(1000.0))
+        assertEquals(VerdictLevel.MISMATCH, LocationVerdict.forMilepost(1000.1))
+
+        assertEquals(0, LocationVerdict.quantizeRoadAxis(356))
+        assertEquals(0, LocationVerdict.quantizeRoadAxis(184))
+        assertEquals(90, LocationVerdict.quantizeRoadAxis(268))
+        assertEquals(170, LocationVerdict.quantizeRoadAxis(174))
+
+        // Hysteresis keeps previous axis when bearing shifts by < 15°
+        assertEquals(90, LocationVerdict.stabilizeRoadAxis(102, 90))
+        assertEquals(110, LocationVerdict.stabilizeRoadAxis(108, 90))
+    }
+
+    @Test
+    fun tgosCsvCleansAddressesConvertsTwd97AndParsesResults() {
+        val cleaned = TgosCsv.cleanAddressForTgos("臺中市", "大里區", "大里區國光路一段72號前（北向）")
+        assertEquals("臺中市大里區國光路一段72號", cleaned)
+
+        val csv = TgosCsv.formatUploadCsv(listOf(TgosRow("npa-1", cleaned)))
+        assertTrue(csv.contains("id,address"))
+        assertTrue(csv.contains("npa-1,臺中市大里區國光路一段72號"))
+
+        // Taipei 101 TWD97 TM2 (X=306969.38, Y=2769659.58) -> (25.033976, 121.564538)
+        val wgs = TgosCsv.twd97ToWgs84(306969.38, 2769659.58)
+        assertTrue(GeoUtils.haversine(wgs, LatLng(25.033976, 121.564538)) < 1.0)
+
+        val resultCsv = """
+            id,橫坐標,縱坐標,比對地址
+            npa-1,306969.38,2769659.58,臺北市信義區市府路45號
+            npa-2,120.680000,24.150000,臺中市北區三民路100號
+        """.trimIndent()
+        val parsed = TgosCsv.parseResults(resultCsv)
+        assertEquals(2, parsed.size)
+        assertEquals(25.033976, parsed.getValue("npa-1").pos.lat, 1e-4)
+        assertEquals(24.150000, parsed.getValue("npa-2").pos.lat, 1e-5)
+    }
+
+    @Test
+    fun milepostIndexParsesCsvAndInterpolatesLinearly() {
+        val csv = """
+            路線編號,里程,經度,緯度
+            台14線,10K+000,120.7000,24.0000
+            台14線,12K+000,120.7200,24.0000
+            國道1號,50.0,121.2000,24.9500
+            國道1號,52.0,121.2000,24.9700
+        """.trimIndent()
+        val index = MilepostIndex.fromCsv(csv)
+        val p14 = index.interpolate("14", isFreeway = false, km = 11.0)!!
+        assertEquals(24.0000, p14.lat, 1e-5)
+        assertEquals(120.7100, p14.lon, 1e-5)
+
+        val fw1 = index.interpolate("1", isFreeway = true, km = 51.5)!!
+        assertEquals(24.9650, fw1.lat, 1e-5)
+        assertEquals(121.2000, fw1.lon, 1e-5)
+
+        // Gap exceeding maxBracketKm returns null
+        assertNull(index.interpolate("14", isFreeway = false, km = 20.0))
     }
 }
 

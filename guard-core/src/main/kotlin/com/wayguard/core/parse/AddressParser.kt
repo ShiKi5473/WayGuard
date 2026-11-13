@@ -31,6 +31,8 @@ data class ParsedAddress(
     val isFreeway: Boolean = false,
     val km: Double? = null,
     val houseNumber: String? = null,
+    val offsetMeters: Double? = null,
+    val isRampOrSpan: Boolean = false,
 )
 
 /**
@@ -48,11 +50,13 @@ object AddressParser {
     private val PROVINCIAL_NUM_RE = Regex("臺\\s*(\\d+)\\s*([甲乙丙丁己]?)\\s*(?:線|快速公路|快速道路)?")
     private val PROVINCIAL_CN_RE = Regex("臺\\s*([一二三四五六七八九十]+)\\s*([甲乙丙丁己]?)\\s*線")
     private val COUNTY_NUM_RE = Regex("(?:縣道|市道)?\\s*(\\d{2,3})\\s*([甲乙丙丁]?)\\s*(?:線|縣道|市道)")
-    private val TOWNSHIP_NUM_RE = Regex("(?:澎|北|桃|竹|苗|中|投|彰|雲|嘉|南|高|屏|宜|花|東|金|連)\\s*(\\d+)\\s*(?:號|線)?")
+    private val TOWNSHIP_NUM_RE = Regex("(?<![以往向東西南北])(?:澎|北|桃|竹|苗|中|投|彰|雲|嘉|南|高|屏|宜|花|東|金|連)\\s*(\\d{1,3})\\s*(?:號|線|鄉道|區道)")
     private val ROUTE_CITY_RE = Regex("^(?:國道|臺\\d|台\\d).*")
 
     private val KM_RE = Regex("(\\d+(?:\\.\\d+)?)\\s*(?:[kK]|公里)(?:\\s*\\+\\s*(\\d+)\\s*[mM]?)?")
     private val HOUSE_RE = Regex("(\\d+(?:[之\\-]\\d+)?)\\s*號")
+    private val OFFSET_RE = Regex("(?:往[東西南北]|以[東西南北]|離[^\\s,，()（）]+?)\\s*約?\\s*(\\d+(?:\\.\\d+)?)\\s*公尺")
+    private val RAMP_OR_SPAN_RE = Regex("(?:匝道|交流道|系統交流道|至)")
 
     fun parse(
         address: String,
@@ -77,6 +81,8 @@ object AddressParser {
         } else {
             null
         }
+        val offsetMeters = OFFSET_RE.find(norm)?.groupValues?.get(1)?.toDoubleOrNull()
+        val isRampOrSpan = RAMP_OR_SPAN_RE.containsMatchIn(norm)
 
         val kind = when {
             roads.size >= 2 -> AddressKind.INTERSECTION
@@ -93,6 +99,8 @@ object AddressParser {
             isFreeway = isFreeway,
             km = km,
             houseNumber = house,
+            offsetMeters = offsetMeters,
+            isRampOrSpan = isRampOrSpan,
         )
     }
 
@@ -113,7 +121,9 @@ object AddressParser {
     fun canonicalRouteRef(rawRef: String): String? {
         val norm = normalizeText(rawRef).replace("號", "").replace("線", "")
             .replace("國道", "").replace("省道", "").replace("縣道", "").replace("市道", "")
+            .replace("鄉道", "").replace("區道", "")
             .replace("臺", "").replace(" ", "")
+            .replace(Regex("^(?:澎|北|桃|竹|苗|中|投|彰|雲|嘉|南|高|屏|宜|花|東|金|連)(?=\\d)"), "")
         if (norm.isEmpty()) return null
         val m = Regex("^([一二三四五六七八九十]+|\\d+)([甲乙丙丁己]?)$").find(norm) ?: return null
         val num = parseCnOrInt(m.groupValues[1]) ?: return null

@@ -92,6 +92,7 @@ fun SettingsScreen(
                 SwitchRow("闖紅燈照相", settings.alertRedLight) { v -> save { it.copy(alertRedLight = v) } }
                 SwitchRow("區間測速", settings.alertSection) { v -> save { it.copy(alertSection = v) } }
                 SwitchRow("自訂點位／流動測速", settings.alertUser) { v -> save { it.copy(alertUser = v) } }
+                SwitchRow("過濾橫向交叉路點位（依道路走向）", settings.roadAxisFilter) { v -> save { it.copy(roadAxisFilter = v) } }
                 SwitchRow("語音播報", settings.voiceEnabled) { v -> save { it.copy(voiceEnabled = v) } }
             }
 

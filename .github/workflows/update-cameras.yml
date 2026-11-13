@@ -40,7 +40,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y osmium-tool
           curl -fsSL --retry 3 -o /tmp/taiwan-latest.osm.pbf https://download.geofabrik.de/asia/taiwan-latest.osm.pbf
-          osmium tags-filter -O -o /tmp/taiwan-filtered.osm.pbf /tmp/taiwan-latest.osm.pbf w/highway r/route=road r/boundary=administrative
+          osmium tags-filter -O -o /tmp/taiwan-filtered.osm.pbf /tmp/taiwan-latest.osm.pbf w/highway r/route=road r/boundary=administrative n/highway=milestone
           osmium export -O -f geojsonseq -o /tmp/taiwan-extract.geojsonseq /tmp/taiwan-filtered.osm.pbf
           EXTRA=""
           if [ "$(date +%d)" -le 7 ] || [ "${{ inputs.verify_all }}" = "true" ]; then
@@ -69,6 +69,7 @@ jobs:
             build/camera-report.md
             build/section-candidates.csv
             build/location-fix-suggestions.json
+            build/tgos-upload.csv
           if-no-files-found: ignore
 
       - name: Commit 新資料

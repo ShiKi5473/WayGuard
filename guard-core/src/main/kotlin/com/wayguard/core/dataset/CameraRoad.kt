@@ -25,11 +25,29 @@ sealed interface CameraRoad {
          * unit char is part of a road name (`園區一路`, `市府路`).
          */
         private val ADMIN_PREFIX = Regex("^(?:[\\u4e00-\\u9fff]{1,3}[縣市區鄉鎮](?![一二三四五六七八九十路街]))+")
-        /** Split on conjunctions/punctuation; `和` only splits after a road/section/number/placeholder so `和平路` stays intact. */
-        private val SEPARATOR = Regex("[與及、,，()（）]|(?<=[路街道段號巷弄,])和")
+        /** Split on conjunctions/punctuation; `和`/`接` only split after a road/section/number/placeholder so `和平路` stays intact. */
+        private val SEPARATOR = Regex("[與及、,，()（）]|(?<=[路街道段號巷弄線,])(?:和|接)")
         private val TOWARD_IN_ADDRESS = Regex("往[^、,，()（）\\s]+方向")
         private val SECTION_SUFFIX = Regex("^[一二三四五六七八九十]+段")
         private const val KNOWN_BOUNDARY_CHARS = "路街道段巷弄號線縣市區鄉鎮村里鄰與和及、,，()（） 0123456789"
+        private val RELATIVE_PARENS = Regex("[(（][^()（）]*(?:以[東西南北]|往[東西南北]|\\d+\\s*(?:公尺|[mM])|間|中段|[-~～至])[^()（）]*[)）]")
+        private val ARABIC_ROAD_DIGIT = Regex("(?<=[\\u4e00-\\u9fff])[1-9](?=[路街段])")
+        private val CN_DIGITS = mapOf(
+            '1' to '一', '2' to '二', '3' to '三', '4' to '四', '5' to '五',
+            '6' to '六', '7' to '七', '8' to '八', '9' to '九',
+        )
+        private val ROUTE_MARKER = Regex(
+            "(?:國道\\s*(?:[一二三四五六七八九十]+|\\d+)\\s*[甲乙丙丁]?\\s*號?|" +
+                "(?:國道|省道|縣道|市道|鄉道|區道|[臺澎北桃竹苗中投彰雲嘉南高屏宜花東金連])?\\s*" +
+                "(?:[一二三四五六七八九十]+|\\d+)\\s*[甲乙丙丁戊己已]?\\s*(?:線|鄉道|區道|縣道|市道)(?:快速公路|快速道路|公路)?(?:[上下])?)",
+        )
+        private val KM_MARKER = Regex("\\d+(?:\\.\\d+)?\\s*(?:[kK]\\s*\\+\\s*\\d+\\s*[mM]?|[kK]|公里|公尺|[mM])")
+        private val GENERIC_ROADS = setOf(
+            "高速公路", "快速道路", "快速公路", "堤外道路", "防汛道路",
+            "高架道路", "高架聯絡道", "機慢車專用道", "專用道", "聯絡道",
+            "便道", "匝道", "地下道", "車行地下道", "人行道", "產業道路",
+        )
+        private val GENERIC_ROAD_RE = Regex(GENERIC_ROADS.sortedByDescending { it.length }.joinToString("|"))
 
         fun of(address: String, directionText: String, knownRoads: Set<String> = emptySet()): CameraRoad {
             roadBeforeToward(directionText)?.let { return Known(it) }
@@ -47,13 +65,26 @@ sealed interface CameraRoad {
 
         /** Ordered, deduplicated base road names appearing anywhere in [address]. */
         fun roadsInAddress(address: String, knownRoads: Set<String> = emptySet()): List<String> {
-            val cleaned = address.trim().replace('台', '臺').replace(TOWARD_IN_ADDRESS, ",")
+            var cleaned = address.trim()
+                .replace('台', '臺')
+                .replace(TOWARD_IN_ADDRESS, ",")
+            val withoutRelParens = cleaned.replace(RELATIVE_PARENS, ",")
+            if (Regex(SUFFIX).containsMatchIn(withoutRelParens)) {
+                cleaned = withoutRelParens
+            }
+            cleaned = cleaned
+                .replace(ARABIC_ROAD_DIGIT) { m -> CN_DIGITS[m.value[0]]?.toString() ?: m.value }
+                .replace("路路口", "路口")
+                .replace("街街口", "街口")
+                .replace(ROUTE_MARKER, ",")
+                .replace(KM_MARKER, ",")
+                .replace(GENERIC_ROAD_RE, ",")
             val buf = StringBuilder(cleaned)
             val found = ArrayList<Pair<Int, String>>()
 
             val sortedKnown = knownRoads.asSequence()
                 .map(::base)
-                .filter { it.isNotEmpty() }
+                .filter { it.length >= 2 && it !in GENERIC_ROADS }
                 .distinct()
                 .sortedByDescending { it.length }
             for (k in sortedKnown) {
@@ -82,7 +113,10 @@ sealed interface CameraRoad {
                 val stripped = piece.replace(ADMIN_PREFIX, "")
                 val stripShift = piece.length - stripped.length
                 for (m in ROAD.findAll(stripped)) {
-                    found += (pos + stripShift + m.range.first) to base(m.groupValues[1])
+                    val road = base(m.groupValues[1])
+                    if (road.length >= 2 && road !in GENERIC_ROADS) {
+                        found += (pos + stripShift + m.range.first) to road
+                    }
                 }
                 pos += piece.length + 1
             }

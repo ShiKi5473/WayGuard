@@ -5,6 +5,8 @@ import com.wayguard.core.model.SpeedCamera
 import com.wayguard.core.parse.NpaRow
 import com.wayguard.core.parse.RejectedRow
 import com.wayguard.core.validate.LocationCheck
+import com.wayguard.core.validate.MilepostIndex
+import com.wayguard.core.validate.TgosCsv
 import com.wayguard.core.validate.VerdictLevel
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
@@ -152,6 +154,59 @@ class LocationCheckerTest {
         val onlineRes = LocationChecker(osm, nlsc = nlscConfirm, offline = false)
             .checkAll(listOf(suspectCam), emptyList(), emptyMap(), emptyMap(), "t", verifyAll = true)
         assertEquals(VerdictLevel.OK, onlineRes.checks.getValue("cam-dist").verdict)
+    }
+
+    @Test
+    fun phase2OffsetSpanTgosMilepostAndRoadAxisWorkTogether() {
+        // 1. Offset intersection (~220m east on 中山路 from 中正路口): tolerated by offsetMeters -> OK
+        val offsetPos = GeoUtils.destinationPoint(LatLng(24.960, 121.220), 220.0, 90.0)
+        val offsetCam = SpeedCamera("cam-offset", offsetPos.lat, offsetPos.lon, city = "桃園市", district = "中壢區", address = "中山路與中正路口往東220公尺處")
+
+        // 2. House number with TGOS hit > 300m -> MISMATCH without exposing TGOS coords in suggestedLat/Lon
+        val houseCam = SpeedCamera("cam-house", 24.960, 121.223, city = "桃園市", district = "中壢區", address = "中山路100號前")
+        val pendingHouse = SpeedCamera("cam-pending", 24.960, 121.224, city = "桃園市", district = "中壢區", address = "中山路120號前")
+        val tgosHits = TgosCsv.parseResults("id,lon,lat,address\ncam-house,121.230,24.960,桃園市中壢區中山路100號\n")
+
+        // 3. Single-road camera within 25 m -> computes roadAxis = 90° (east-west 中山路)
+        val mpIndex = MilepostIndex.fromCsv("路線,里程,lon,lat\n國道1號,50.0,121.210,24.970\n國道1號,52.0,121.230,24.970\n")
+        val fwCam = SpeedCamera("cam-fw-mp", 24.970, 121.220, city = "國道一號", address = "國道一號北向51公里")
+
+        // 4. Suspect intersection (120m from crossing) does NOT receive suggestedLat/Lon (reserved for MISMATCH only)
+        val suspectPos = GeoUtils.destinationPoint(LatLng(24.960, 121.220), 120.0, 90.0)
+        val suspectInter = SpeedCamera("cam-sus", suspectPos.lat, suspectPos.lon, city = "桃園市", district = "中壢區", address = "中山路與中正路口")
+
+        val checker = LocationChecker(osm, offline = true, mileposts = mpIndex, tgosResults = tgosHits)
+        val res = checker.checkAll(
+            cameras = listOf(offsetCam, houseCam, pendingHouse, fwCam, suspectInter),
+            rejected = emptyList(),
+            rowsById = emptyMap(),
+            existing = emptyMap(),
+            now = "2026-11-13T00:00:00Z",
+            verifyAll = true,
+        )
+
+        assertEquals(VerdictLevel.OK, res.checks.getValue("cam-offset").verdict)
+        val houseChk = res.checks.getValue("cam-house")
+        assertEquals(VerdictLevel.MISMATCH, houseChk.verdict)
+        assertEquals("tgos", houseChk.method)
+        assertNull(houseChk.suggestedLat)
+        assertEquals(90, houseChk.roadAxis)
+        assertEquals(90, res.checks.getValue("cam-pending").roadAxis)
+
+        assertEquals(VerdictLevel.OK, res.checks.getValue("cam-fw-mp").verdict)
+
+        val susChk = res.checks.getValue("cam-sus")
+        assertEquals(VerdictLevel.SUSPECT, susChk.verdict)
+        assertNull(susChk.suggestedLat)
+
+        // Upload CSV skips cam-house (already has method=tgos) and includes cam-pending
+        val upload = LocationChecker.buildTgosUploadRows(
+            listOf(offsetCam, houseCam, pendingHouse, fwCam, suspectInter),
+            emptyList(),
+            emptyMap(),
+            res.checks,
+        )
+        assertEquals(listOf("cam-pending"), upload.map { it.id })
     }
 }
 

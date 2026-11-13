@@ -41,6 +41,8 @@ data class LocationCheck(
     /** Camera coordinates when this check ran; invalidated if the published coords change. */
     val lat: Double? = null,
     val lon: Double? = null,
+    /** Stabilized road axis (0–170°, rounded to 10°) when single-road camera sits <= 25 m from its OSM road. */
+    val roadAxis: Int? = null,
 ) {
     fun matchesPosition(camLat: Double, camLon: Double): Boolean =
         (lat == null || abs(lat - camLat) <= 1e-5) && (lon == null || abs(lon - camLon) <= 1e-5)
@@ -53,6 +55,7 @@ data class LocationCheck(
             suggestedLat == other.suggestedLat &&
             suggestedLon == other.suggestedLon &&
             reason == other.reason &&
+            roadAxis == other.roadAxis &&
             matchesPosition(other.lat ?: Double.NaN, other.lon ?: Double.NaN)
 }
 
@@ -63,10 +66,32 @@ object LocationVerdict {
     const val INTERSECTION_SUSPECT_M = 300.0
     const val ROAD_OK_M = 30.0
     const val ROAD_SUSPECT_M = 150.0
+    const val TGOS_OK_M = 100.0
+    const val TGOS_SUSPECT_M = 300.0
+    const val MILEPOST_OK_M = 200.0
+    const val MILEPOST_SUSPECT_M = 1000.0
+    const val ROAD_AXIS_MAX_DIST_M = 25.0
+    const val ROAD_AXIS_HYSTERESIS_DEG = 15
     const val ADMIN_BORDER_TOLERANCE_M = 200.0
     const val INTERNAL_CONFLICT_M = 10.0
 
     fun roundDistance10m(meters: Double): Int = ((meters / 10.0).roundToInt()) * 10
+
+    fun quantizeRoadAxis(bearingDeg: Int): Int =
+        ((((bearingDeg % 180) + 180) % 180 + 5) / 10 * 10) % 180
+
+    fun axisDiffDeg(a: Int, b: Int): Int {
+        val d = abs((((a - b) % 180) + 180) % 180)
+        return if (d > 90) 180 - d else d
+    }
+
+    fun stabilizeRoadAxis(rawBearingDeg: Int, previousAxis: Int?): Int {
+        val rawMod = ((rawBearingDeg % 180) + 180) % 180
+        if (previousAxis != null && axisDiffDeg(rawMod, previousAxis) < ROAD_AXIS_HYSTERESIS_DEG) {
+            return previousAxis
+        }
+        return quantizeRoadAxis(rawBearingDeg)
+    }
 
     fun forIntersection(maxRoadDistM: Double): VerdictLevel = when {
         maxRoadDistM <= INTERSECTION_OK_M -> VerdictLevel.OK
@@ -77,6 +102,18 @@ object LocationVerdict {
     fun forRoad(distM: Double): VerdictLevel = when {
         distM <= ROAD_OK_M -> VerdictLevel.OK
         distM <= ROAD_SUSPECT_M -> VerdictLevel.SUSPECT
+        else -> VerdictLevel.MISMATCH
+    }
+
+    fun forTgos(distM: Double): VerdictLevel = when {
+        distM <= TGOS_OK_M -> VerdictLevel.OK
+        distM <= TGOS_SUSPECT_M -> VerdictLevel.SUSPECT
+        else -> VerdictLevel.MISMATCH
+    }
+
+    fun forMilepost(distM: Double): VerdictLevel = when {
+        distM <= MILEPOST_OK_M -> VerdictLevel.OK
+        distM <= MILEPOST_SUSPECT_M -> VerdictLevel.SUSPECT
         else -> VerdictLevel.MISMATCH
     }
 

@@ -3,6 +3,7 @@ package com.wayguard.core.engine
 import com.wayguard.core.index.GridIndex
 import com.wayguard.core.model.CameraKind
 import com.wayguard.core.model.SpeedCamera
+import com.wayguard.core.validate.LocationVerdict
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 
@@ -28,6 +29,10 @@ data class AlertConfig(
     /** Overspeed = speed > limit + this. */
     val overspeedToleranceKmh: Int = 0,
     val enabledKinds: Set<CameraKind> = CameraKind.entries.toSet(),
+    /** Filter bidirectional single-road cameras using [SpeedCamera.roadAxis] to suppress cross-street false alerts. */
+    val roadAxisFilterEnabled: Boolean = true,
+    /** Travel bearing must lie within ± this of [SpeedCamera.roadAxis] (either direction). */
+    val roadAxisToleranceDeg: Double = 50.0,
 ) {
     fun approachDistance(speedKmh: Double): Double = when {
         speedKmh < 50 -> approachSlowM
@@ -239,9 +244,15 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
     private fun mergeCamera(base: SpeedCamera, other: SpeedCamera): SpeedCamera = base.copy(
         limitKmh = listOfNotNull(base.limitKmh, other.limitKmh).minOrNull(),
         kinds = base.kinds + other.kinds,
+        roadAxis = base.roadAxis ?: other.roadAxis,
     )
 
     private fun headingsOverlap(a: SpeedCamera, b: SpeedCamera, cfg: AlertConfig): Boolean {
+        if (a.roadAxis != null && b.roadAxis != null &&
+            LocationVerdict.axisDiffDeg(a.roadAxis, b.roadAxis) > cfg.roadAxisToleranceDeg
+        ) {
+            return false
+        }
         if (a.headings.isEmpty() || b.headings.isEmpty()) return true
         val tol = maxOf(
             a.headingToleranceDeg?.toDouble() ?: cfg.headingToleranceDeg,
@@ -272,7 +283,14 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
         d <= CLOSE_M || GeoUtils.angleDiff(GeoUtils.bearing(pos, cam.pos), heading) <= cfg.aheadToleranceDeg
 
     private fun headingMatches(cam: SpeedCamera, heading: Double, cfg: AlertConfig): Boolean {
-        if (cam.headings.isEmpty()) return true
+        if (cam.headings.isEmpty()) {
+            val axis = cam.roadAxis
+            if (cfg.roadAxisFilterEnabled && axis != null) {
+                return GeoUtils.angleDiff(axis.toDouble(), heading) <= cfg.roadAxisToleranceDeg ||
+                    GeoUtils.angleDiff(((axis + 180) % 360).toDouble(), heading) <= cfg.roadAxisToleranceDeg
+            }
+            return true
+        }
         val tolerance = cam.headingToleranceDeg?.toDouble() ?: cfg.headingToleranceDeg
         return cam.headings.any { GeoUtils.angleDiff(it.toDouble(), heading) <= tolerance }
     }

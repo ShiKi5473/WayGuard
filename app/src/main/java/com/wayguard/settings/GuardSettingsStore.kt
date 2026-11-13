@@ -34,6 +34,8 @@ data class GuardSettings(
     val alertSection: Boolean = true,
     /** User-added (mobile / custom) points. */
     val alertUser: Boolean = true,
+    /** Filter bidirectional single-road cameras by travel heading vs road axis (±50°). */
+    val roadAxisFilter: Boolean = true,
     // ---- output ----
     val voiceEnabled: Boolean = true,
     val beepOnOverspeed: Boolean = true,
@@ -62,6 +64,7 @@ data class GuardSettings(
             if (alertSection) add(CameraKind.SECTION)
             if (alertUser) { add(CameraKind.MOBILE); add(CameraKind.CUSTOM) }
         },
+        roadAxisFilterEnabled = roadAxisFilter,
     )
 }
 
@@ -77,6 +80,7 @@ object GuardSettingsStore {
         val alertRedLight = booleanPreferencesKey("alert_red_light")
         val alertSection = booleanPreferencesKey("alert_section")
         val alertUser = booleanPreferencesKey("alert_user")
+        val roadAxisFilter = booleanPreferencesKey("road_axis_filter")
         val voiceEnabled = booleanPreferencesKey("voice_enabled")
         val beepOnOverspeed = booleanPreferencesKey("beep_on_overspeed")
         val overlayEnabled = booleanPreferencesKey("overlay_enabled")
@@ -100,6 +104,7 @@ object GuardSettingsStore {
             alertRedLight = p[Keys.alertRedLight] ?: d.alertRedLight,
             alertSection = p[Keys.alertSection] ?: d.alertSection,
             alertUser = p[Keys.alertUser] ?: d.alertUser,
+            roadAxisFilter = p[Keys.roadAxisFilter] ?: d.roadAxisFilter,
             voiceEnabled = p[Keys.voiceEnabled] ?: d.voiceEnabled,
             beepOnOverspeed = p[Keys.beepOnOverspeed] ?: d.beepOnOverspeed,
             overlayEnabled = p[Keys.overlayEnabled] ?: d.overlayEnabled,
@@ -122,6 +127,7 @@ object GuardSettingsStore {
         p[Keys.alertRedLight] = s.alertRedLight
         p[Keys.alertSection] = s.alertSection
         p[Keys.alertUser] = s.alertUser
+        p[Keys.roadAxisFilter] = s.roadAxisFilter
         p[Keys.voiceEnabled] = s.voiceEnabled
         p[Keys.beepOnOverspeed] = s.beepOnOverspeed
         p[Keys.overlayEnabled] = s.overlayEnabled

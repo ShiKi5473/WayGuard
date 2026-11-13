@@ -5,6 +5,9 @@ import com.wayguard.core.model.DatasetJson
 import com.wayguard.core.parse.AddressParser
 import com.wayguard.core.validate.BBox
 import com.wayguard.core.validate.CountyBounds
+import com.wayguard.core.validate.LocationVerdict
+import com.wayguard.core.validate.MilepostIndex
+import com.wayguard.core.validate.MilepostMarker
 import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import java.io.File
@@ -31,7 +34,9 @@ internal class OsmExtract private constructor(
     private val roadsByName: Map<String, List<RoadPolyline>>,
     private val cityBoundaries: List<AdminPolygon>,
     private val districtBoundaries: List<AdminPolygon>,
+    val mileposts: MilepostIndex = MilepostIndex(emptyList()),
 ) {
+    val knownRoadNames: Set<String> get() = roadsByName.keys
     data class RoadHit(val road: String, val distanceM: Double, val bearingDeg: Int)
 
     data class AdminHit(
@@ -131,6 +136,31 @@ internal class OsmExtract private constructor(
         return best
     }
 
+    /** Shortest distance (m) and bearing to the nearest segment matching [baseRoadName] within [maxDistM]. */
+    fun nearestMatchingRoad(
+        pos: LatLng,
+        baseRoadName: String,
+        city: String,
+        maxDistM: Double = LocationVerdict.ROAD_AXIS_MAX_DIST_M,
+    ): RoadHit? {
+        val target = CameraRoad.base(baseRoadName)
+        if (target.isBlank()) return null
+        val matching = roadsByName[target] ?: return null
+        val box = CountyBounds.of(city)
+        var bestHit: RoadHit? = null
+        var bestDist = maxDistM
+        for (poly in matching) {
+            if (!overlaps(poly.bbox, box)) continue
+            val nearest = nearestPointAndBearing(poly.points, pos) ?: continue
+            if (nearest.second <= bestDist) {
+                bestDist = nearest.second
+                val b = ((nearest.third.roundToInt() % 360) + 360) % 360
+                bestHit = RoadHit(poly.primaryName, nearest.second, b)
+            }
+        }
+        return bestHit
+    }
+
     /** True when at least one road segment in OSM carries [baseRoadName] (optionally within [box]). */
     fun hasRoad(baseRoadName: String, box: BBox? = null): Boolean {
         val matching = roadsByName[CameraRoad.base(baseRoadName)] ?: return false
@@ -214,17 +244,20 @@ internal class OsmExtract private constructor(
             }
         }
         val clustered = clusterPoints(rawHits, CLUSTER_RADIUS_M)
-        if (clustered.size <= 1 || district.isBlank() || districtBoundaries.isEmpty()) return clustered
+        if (clustered.isEmpty() || district.isBlank() || districtBoundaries.isEmpty()) return clustered
 
         val normCity = CountyBounds.normalizeCity(city)
         val normDist = CountyBounds.normalizeCity(district)
-        val filtered = clustered.filter { pt ->
+        val targetDistPolys = districtBoundaries.filter { CountyBounds.normalizeCity(it.name) == normDist }
+        if (targetDistPolys.isEmpty()) return clustered
+
+        return clustered.filter { pt ->
             val hit = adminAt(pt)
-            val distOk = hit.district != null && CountyBounds.normalizeCity(hit.district) == normDist
             val cityOk = normCity.isEmpty() || hit.city == null || CountyBounds.normalizeCity(hit.city) == normCity
-            distOk && cityOk
+            if (!cityOk) return@filter false
+            val distOk = hit.district != null && CountyBounds.normalizeCity(hit.district) == normDist
+            distOk || targetDistPolys.any { it.distanceToBorderM(pt) <= LocationVerdict.ADMIN_BORDER_TOLERANCE_M }
         }
-        return filtered.ifEmpty { clustered }
     }
 
     private fun nearbyRoads(center: LatLng, radiusM: Double): Set<RoadPolyline> {
@@ -254,7 +287,7 @@ internal class OsmExtract private constructor(
         private const val CELL_DEG = 0.01
         private const val METERS_PER_DEG_LAT = 111_320.0
         private const val INTERSECTION_SNAP_M = 25.0
-        private const val CLUSTER_RADIUS_M = 50.0
+        private const val CLUSTER_RADIUS_M = 100.0
 
         private fun cellOf(deg: Double): Int = floor(deg / CELL_DEG).toInt()
         private fun cellKey(la: Int, lo: Int): Long = (la.toLong() shl 32) or (lo.toLong() and 0xFFFFFFFFL)
@@ -299,6 +332,7 @@ internal class OsmExtract private constructor(
             val roadsByName = HashMap<String, MutableList<RoadPolyline>>()
             val cityBoundaries = ArrayList<AdminPolygon>()
             val districtBoundaries = ArrayList<AdminPolygon>()
+            val milestoneMarkers = ArrayList<MilepostMarker>()
 
             for (f in features) {
                 val props = f["properties"] as? JsonObject ?: continue
@@ -308,6 +342,22 @@ internal class OsmExtract private constructor(
 
                 val highway = props["highway"]?.jsonPrimitive?.contentOrNull
                 val route = props["route"]?.jsonPrimitive?.contentOrNull
+                if (highway == "milestone" && geomType == "Point") {
+                    val lon = coords.getOrNull(0)?.jsonPrimitive?.doubleOrNull
+                    val lat = coords.getOrNull(1)?.jsonPrimitive?.doubleOrNull
+                    val rawRef = props["ref"]?.jsonPrimitive?.contentOrNull
+                    val rawDist = props["distance"]?.jsonPrimitive?.contentOrNull
+                    if (lon != null && lat != null && rawRef != null && rawDist != null) {
+                        val ref = AddressParser.canonicalRouteRef(rawRef)
+                        val km = MilepostIndex.parseKmToken(rawDist)
+                        if (ref != null && km != null) {
+                            val network = props["network"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                            val isFreeway = network == "TW:freeway" || "國道" in rawRef
+                            milestoneMarkers += MilepostMarker(ref, isFreeway, km, LatLng(lat, lon))
+                        }
+                    }
+                    continue
+                }
                 if (highway != null || route == "road") {
                     val primaryRaw = props["name"]?.jsonPrimitive?.contentOrNull
                         ?: props["name:zh"]?.jsonPrimitive?.contentOrNull
@@ -388,7 +438,13 @@ internal class OsmExtract private constructor(
                 }
             }
 
-            return OsmExtract(roadCells, roadsByName, cityBoundaries, districtBoundaries)
+            return OsmExtract(
+                roadCells,
+                roadsByName,
+                cityBoundaries,
+                districtBoundaries,
+                MilepostIndex(milestoneMarkers),
+            )
         }
 
         private fun toLatLngList(arr: JsonArray): List<LatLng> =
