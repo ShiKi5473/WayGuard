@@ -24,9 +24,11 @@ import com.wayguard.core.engine.Fix
 import com.wayguard.core.engine.HeadingFilter
 import com.wayguard.core.engine.SectionEventType
 import com.wayguard.core.engine.SectionTracker
+import com.wayguard.core.trip.TripRecorder
 import com.wayguard.data.CameraRepository
 import com.wayguard.settings.GuardSettings
 import com.wayguard.settings.GuardSettingsStore
+import com.wayguard.trip.TripStore
 import com.waymap.geo.LatLng
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -45,6 +47,7 @@ class GuardService : LifecycleService() {
     private val engine = AlertEngine()
     private val sectionTracker = SectionTracker()
     private val headingFilter = HeadingFilter()
+    private var tripRecorder: TripRecorder? = null
     private var overlay: OverlayController? = null
     private var settings = GuardSettings()
 
@@ -83,7 +86,9 @@ class GuardService : LifecycleService() {
             }
         }
         lm = getSystemService(LocationManager::class.java)
-        applySettings(GuardSettingsStore.loadBlocking(this))
+        val initial = GuardSettingsStore.loadBlocking(this)
+        TripStore.init(this, initial.tripRetentionDays)
+        applySettings(initial)
 
         lifecycleScope.launch {
             CameraRepository.state.collect {
@@ -92,6 +97,12 @@ class GuardService : LifecycleService() {
             }
         }
         lifecycleScope.launch { GuardSettingsStore.flow(this@GuardService).collect(::applySettings) }
+        lifecycleScope.launch {
+            while (isActive) {
+                delay(TRIP_FLUSH_INTERVAL_MS)
+                flushTripBuffer()
+            }
+        }
         lifecycleScope.launch {
             // GPS watchdog: flag a lost fix (tunnel, indoors) so the UI doesn't show stale data.
             while (isActive) {
@@ -136,6 +147,14 @@ class GuardService : LifecycleService() {
         if (cfg != engine.config) engine.config = cfg
         sectionTracker.overspeedToleranceKmh = s.overspeedToleranceKmh
         announcer.voiceEnabled = s.voiceEnabled
+        TripStore.updateRetentionDays(s.tripRetentionDays)
+        if (s.tripRecordingEnabled) {
+            val rec = tripRecorder ?: TripRecorder(autoSplitMinutes = s.tripAutoSplitMinutes).also { tripRecorder = it }
+            rec.autoSplitMinutes = s.tripAutoSplitMinutes
+        } else {
+            finishCurrentTrip()
+            tripRecorder = null
+        }
         if (s.overlayEnabled) {
             val o = overlay ?: OverlayController(this) { x, y ->
                 lifecycleScope.launch {
@@ -179,6 +198,14 @@ class GuardService : LifecycleService() {
         val result = engine.update(fix, heading)
         val (sectionEvents, sectionStatus) = sectionTracker.update(fix, heading)
 
+        tripRecorder?.let { rec ->
+            val wallMs = if (loc.time > 0L) loc.time else System.currentTimeMillis()
+            val accM = if (loc.hasAccuracy()) loc.accuracy else null
+            rec.recordFix(wallMs, fix, accM, result.events, sectionEvents)?.let { splitCompleted ->
+                TripStore.finalizeTripAsync(splitCompleted)
+            }
+        }
+
         var message: String? = null
         for (s in AlertText.speeches(result.events)) {
             announcer.say(s.text, urgent = s.urgent, key = s.key)
@@ -220,6 +247,8 @@ class GuardService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        finishCurrentTrip()
+        tripRecorder = null
         if (::lm.isInitialized) lm.removeUpdates(listener)
         if (::announcer.isInitialized) announcer.shutdown()
         overlay?.hide()
@@ -228,6 +257,22 @@ class GuardService : LifecycleService() {
         sectionTracker.reset()
         GuardController.reset()
         super.onDestroy()
+    }
+
+    private fun flushTripBuffer() {
+        val (id, lines) = tripRecorder?.drainPendingLines() ?: return
+        TripStore.appendLinesAsync(id, lines)
+    }
+
+    private fun finishCurrentTrip() {
+        val rec = tripRecorder ?: return
+        val activeId = rec.currentTripId
+        val completed = rec.finish(System.currentTimeMillis())
+        if (completed != null) {
+            TripStore.finalizeTripAsync(completed)
+        } else if (activeId != null) {
+            TripStore.discardActiveFileAsync(activeId)
+        }
     }
 
     // ---------------- notification ----------------
@@ -298,6 +343,7 @@ class GuardService : LifecycleService() {
         private const val GPS_STALE_MS = 5_000L
         private const val BEEP_INTERVAL_MS = 3_000L
         private const val NOTIFY_INTERVAL_MS = 3_000L
+        private const val TRIP_FLUSH_INTERVAL_MS = 10_000L
 
         fun start(context: Context) {
             if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

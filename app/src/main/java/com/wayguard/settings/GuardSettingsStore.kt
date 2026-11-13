@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.wayguard.core.engine.AlertConfig
 import com.wayguard.core.model.CameraKind
@@ -49,6 +50,17 @@ data class GuardSettings(
     val syncWifiOnly: Boolean = false,
     /** Wall-clock ms of the last successful update check; 0 = never. */
     val lastSyncCheckMs: Long = 0L,
+    // ---- app updates ----
+    val appAutoUpdate: Boolean = false,
+    val appUpdateWifiOnly: Boolean = true,
+    /** Wall-clock ms of the last successful GitHub release check; 0 = never. */
+    val lastAppUpdateCheckMs: Long = 0L,
+    /** Version string skipped by the user (e.g. "0.2.0"); empty if none. */
+    val skippedAppVersion: String = "",
+    // ---- trip recording ----
+    val tripRecordingEnabled: Boolean = true,
+    val tripRetentionDays: Int = 90,
+    val tripAutoSplitMinutes: Int = 15,
     // ---- misc UI state ----
     val setupDismissed: Boolean = false,
 ) {
@@ -89,6 +101,13 @@ object GuardSettingsStore {
         val overlayY = intPreferencesKey("overlay_y")
         val syncWifiOnly = booleanPreferencesKey("sync_wifi_only")
         val lastSyncCheckMs = longPreferencesKey("last_sync_check_ms")
+        val appAutoUpdate = booleanPreferencesKey("app_auto_update")
+        val appUpdateWifiOnly = booleanPreferencesKey("app_update_wifi_only")
+        val lastAppUpdateCheckMs = longPreferencesKey("last_app_update_check_ms")
+        val skippedAppVersion = stringPreferencesKey("skipped_app_version")
+        val tripRecordingEnabled = booleanPreferencesKey("trip_recording_enabled")
+        val tripRetentionDays = intPreferencesKey("trip_retention_days")
+        val tripAutoSplitMinutes = intPreferencesKey("trip_auto_split_minutes")
         val setupDismissed = booleanPreferencesKey("setup_dismissed")
     }
 
@@ -113,6 +132,13 @@ object GuardSettingsStore {
             overlayY = p[Keys.overlayY] ?: d.overlayY,
             syncWifiOnly = p[Keys.syncWifiOnly] ?: d.syncWifiOnly,
             lastSyncCheckMs = p[Keys.lastSyncCheckMs] ?: d.lastSyncCheckMs,
+            appAutoUpdate = p[Keys.appAutoUpdate] ?: d.appAutoUpdate,
+            appUpdateWifiOnly = p[Keys.appUpdateWifiOnly] ?: d.appUpdateWifiOnly,
+            lastAppUpdateCheckMs = p[Keys.lastAppUpdateCheckMs] ?: d.lastAppUpdateCheckMs,
+            skippedAppVersion = p[Keys.skippedAppVersion] ?: d.skippedAppVersion,
+            tripRecordingEnabled = p[Keys.tripRecordingEnabled] ?: d.tripRecordingEnabled,
+            tripRetentionDays = p[Keys.tripRetentionDays] ?: d.tripRetentionDays,
+            tripAutoSplitMinutes = p[Keys.tripAutoSplitMinutes] ?: d.tripAutoSplitMinutes,
             setupDismissed = p[Keys.setupDismissed] ?: d.setupDismissed,
         )
     }
@@ -136,6 +162,13 @@ object GuardSettingsStore {
         p[Keys.overlayY] = s.overlayY
         p[Keys.syncWifiOnly] = s.syncWifiOnly
         p[Keys.lastSyncCheckMs] = s.lastSyncCheckMs
+        p[Keys.appAutoUpdate] = s.appAutoUpdate
+        p[Keys.appUpdateWifiOnly] = s.appUpdateWifiOnly
+        p[Keys.lastAppUpdateCheckMs] = s.lastAppUpdateCheckMs
+        p[Keys.skippedAppVersion] = s.skippedAppVersion
+        p[Keys.tripRecordingEnabled] = s.tripRecordingEnabled
+        p[Keys.tripRetentionDays] = s.tripRetentionDays
+        p[Keys.tripAutoSplitMinutes] = s.tripAutoSplitMinutes
         p[Keys.setupDismissed] = s.setupDismissed
     }
 

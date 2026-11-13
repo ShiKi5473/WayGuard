@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -35,9 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.wayguard.BuildConfig
 import com.wayguard.data.CameraData
 import com.wayguard.data.DataOrigin
 import com.wayguard.settings.GuardSettings
+import com.wayguard.update.AppUpdateState
+import com.wayguard.update.InstallPauseReason
 import kotlin.math.roundToInt
 
 /**
@@ -50,8 +54,10 @@ fun SettingsScreen(
     settings: GuardSettings,
     data: CameraData,
     perms: Permissions,
+    guardRunning: Boolean,
     syncing: Boolean,
     syncMessage: String?,
+    appUpdate: AppUpdateState,
     actions: MainActions,
     onBack: () -> Unit,
 ) {
@@ -105,6 +111,18 @@ fun SettingsScreen(
                 PercentSlider("不透明度", settings.overlayAlpha) { v -> save { it.copy(overlayAlpha = v) } }
             }
 
+            Group("旅程記錄") {
+                SwitchRow("守衛時自動記錄行駛軌跡與測速事件", settings.tripRecordingEnabled) { v ->
+                    save { it.copy(tripRecordingEnabled = v) }
+                }
+                IntSlider("停車超過此時間自動分段", settings.tripAutoSplitMinutes, 5..60, 5, "分鐘") { v ->
+                    save { it.copy(tripAutoSplitMinutes = v) }
+                }
+                IntSlider("本機保留天數", settings.tripRetentionDays, 30..365, 15, "天") { v ->
+                    save { it.copy(tripRetentionDays = v) }
+                }
+            }
+
             Group("測速點資料") {
                 val ds = data.dataset
                 if (ds == null) {
@@ -124,6 +142,105 @@ fun SettingsScreen(
                 }
                 syncMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 SwitchRow("僅在 Wi-Fi 下自動更新（每週）", settings.syncWifiOnly) { v -> save { it.copy(syncWifiOnly = v) } }
+            }
+
+            Group("App 更新") {
+                Text("目前版本：v${BuildConfig.VERSION_NAME}（${BuildConfig.VERSION_CODE}）")
+                Text("上次檢查更新：${formatEpochLocal(settings.lastAppUpdateCheckMs)}")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(onClick = actions.onCheckAppUpdate, enabled = !appUpdate.isBusy) {
+                        Text("檢查更新")
+                    }
+                    when (appUpdate) {
+                        is AppUpdateState.Checking, is AppUpdateState.Verifying, is AppUpdateState.Installing -> {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        }
+                        is AppUpdateState.Downloading -> {
+                            OutlinedButton(onClick = actions.onCancelAppUpdate) { Text("取消下載") }
+                        }
+                        is AppUpdateState.Available -> {
+                            OutlinedButton(onClick = { actions.onDownloadAppUpdate(appUpdate.release) }) {
+                                Text("下載 v${appUpdate.release.version}")
+                            }
+                        }
+                        is AppUpdateState.ReadyToInstall -> {
+                            if (!perms.installPackages) {
+                                OutlinedButton(onClick = actions.onOpenInstallSettings) { Text("授權安裝") }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { actions.onInstallAppUpdate(appUpdate.release, appUpdate.apkFile) },
+                                    enabled = !guardRunning,
+                                ) { Text("立即安裝") }
+                            }
+                        }
+                        is AppUpdateState.PendingUserAction -> {
+                            OutlinedButton(onClick = { actions.onRelaunchAppUpdateConfirm(appUpdate.confirmIntent) }) {
+                                Text("確認安裝")
+                            }
+                        }
+                        AppUpdateState.Idle, is AppUpdateState.UpToDate, is AppUpdateState.Failed -> Unit
+                    }
+                }
+                if (appUpdate is AppUpdateState.Downloading) {
+                    val total = appUpdate.totalBytes
+                    val downloaded = appUpdate.downloadedBytes
+                    if (total > 0L) {
+                        val fraction = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                        val pct = ((downloaded * 100L) / total).coerceIn(0L, 100L)
+                        LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+                        Text(
+                            "正在下載 v${appUpdate.release.version}：$pct%（${formatBytes(downloaded)} / ${formatBytes(total)}）",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    } else {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text(
+                            "正在下載 v${appUpdate.release.version}：已下載 ${formatBytes(downloaded)}",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+                val statusText = when (appUpdate) {
+                    AppUpdateState.Idle -> null
+                    AppUpdateState.Checking -> "正在檢查 GitHub 最新版本…"
+                    is AppUpdateState.UpToDate -> "目前已是最新版本（v${appUpdate.currentVersion}）"
+                    is AppUpdateState.Available -> "發現新版本 v${appUpdate.release.version}"
+                    is AppUpdateState.Downloading -> null
+                    is AppUpdateState.Verifying -> "正在驗證更新檔與簽章…"
+                    is AppUpdateState.ReadyToInstall -> when {
+                        guardRunning || appUpdate.reason == InstallPauseReason.GUARDING_ACTIVE ->
+                            "v${appUpdate.release.version} 已下載完成，請先停止守衛再安裝"
+                        !perms.installPackages || appUpdate.reason == InstallPauseReason.PERMISSION_REQUIRED ->
+                            "v${appUpdate.release.version} 已下載完成，請允許「安裝未知應用程式」權限"
+                        else -> "v${appUpdate.release.version} 已下載完成，可立即安裝"
+                    }
+                    is AppUpdateState.Installing -> "正在啟動安裝程序…"
+                    is AppUpdateState.PendingUserAction -> "請在系統安裝確認視窗中完成更新"
+                    is AppUpdateState.Failed -> "更新失敗：${appUpdate.message}"
+                }
+                statusText?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+
+                SwitchRow("自動更新 App（檢查並自動下載安裝）", settings.appAutoUpdate) { v ->
+                    save { it.copy(appAutoUpdate = v) }
+                }
+                if (settings.appAutoUpdate) {
+                    SwitchRow("僅在 Wi-Fi 下自動下載更新", settings.appUpdateWifiOnly) { v ->
+                        save { it.copy(appUpdateWifiOnly = v) }
+                    }
+                    if (!perms.installPackages) {
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "尚未開啟「安裝未知應用程式」權限，自動下載後仍需手動授權才能完成更新。",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = actions.onOpenInstallSettings) { Text("授權") }
+                        }
+                    }
+                }
             }
 
             Group("誤報標記") {

@@ -1,13 +1,22 @@
 package com.wayguard.ui
 
+import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -16,14 +25,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.wayguard.BuildConfig
 import com.wayguard.core.engine.AlertText
 import com.wayguard.core.model.CameraKind
 import com.wayguard.core.model.SpeedCamera
+import com.wayguard.update.AppUpdateState
+import com.wayguard.update.AvailableUpdate
+import com.wayguard.update.InstallPauseReason
 import com.waymap.geo.LatLng
+import java.io.File
 import java.util.UUID
 import kotlin.math.roundToInt
 
@@ -142,4 +157,204 @@ fun AddCameraDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
+}
+
+/** GitHub release check / download / self-install prompt. */
+@Composable
+fun AppUpdateDialog(
+    state: AppUpdateState,
+    guardRunning: Boolean,
+    autoUpdateEnabled: Boolean,
+    hasInstallPermission: Boolean,
+    onDownload: (AvailableUpdate) -> Unit,
+    onInstall: (AvailableUpdate, File) -> Unit,
+    onCancelDownload: () -> Unit,
+    onOpenInstallSettings: () -> Unit,
+    onRelaunchConfirm: (Intent) -> Unit,
+    onEnableAutoUpdate: (Boolean) -> Unit,
+    onSkipVersion: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    when (state) {
+        is AppUpdateState.Available -> {
+            if (!state.showPrompt) return
+            val rel = state.release
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("發現新版本 v${rel.version}") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("目前版本：v${BuildConfig.VERSION_NAME} → 最新版本：v${rel.version}", fontWeight = FontWeight.Bold)
+                        if (rel.sizeBytes > 0L) {
+                            Text("安裝檔大小：${formatBytes(rel.sizeBytes)}", style = MaterialTheme.typography.bodySmall)
+                        }
+                        if (rel.notes.isNotBlank()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 200.dp)
+                                    .verticalScroll(rememberScrollState()),
+                            ) {
+                                Text(rel.notes, style = MaterialTheme.typography.bodySmall)
+                            }
+                        } else {
+                            Text("可從 GitHub Releases 下載新版 APK 並更新 App。", style = MaterialTheme.typography.bodySmall)
+                        }
+                        if (!autoUpdateEnabled) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onEnableAutoUpdate(true) },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(checked = false, onCheckedChange = { onEnableAutoUpdate(it) })
+                                Text("之後自動檢查並更新 App", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { onDownload(rel) }) { Text("下載並更新") }
+                },
+                dismissButton = {
+                    Row {
+                        TextButton(onClick = { onSkipVersion(rel.version) }) { Text("略過此版") }
+                        TextButton(onClick = onDismiss) { Text("稍後再說") }
+                    }
+                },
+            )
+        }
+
+        is AppUpdateState.Downloading -> {
+            if (!state.showPrompt) return
+            val total = state.totalBytes
+            val downloaded = state.downloadedBytes
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("正在下載更新 v${state.release.version}") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (total > 0L) {
+                            val fraction = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                            val pct = ((downloaded * 100L) / total).coerceIn(0L, 100L)
+                            LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+                            Text("$pct%（${formatBytes(downloaded)} / ${formatBytes(total)}）", style = MaterialTheme.typography.bodySmall)
+                        } else {
+                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            Text("已下載 ${formatBytes(downloaded)}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = onDismiss) { Text("背景下載") }
+                },
+                dismissButton = {
+                    TextButton(onClick = onCancelDownload) { Text("取消下載") }
+                },
+            )
+        }
+
+        is AppUpdateState.Verifying -> {
+            if (!state.showPrompt) return
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("正在驗證更新檔") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text("正在驗證 SHA-256 雜湊與 APK 簽章…", style = MaterialTheme.typography.bodySmall)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = onDismiss) { Text("背景處理") }
+                },
+            )
+        }
+
+        is AppUpdateState.ReadyToInstall -> {
+            if (!state.showPrompt) return
+            val needsPerm = !hasInstallPermission || state.reason == InstallPauseReason.PERMISSION_REQUIRED
+            val guardBlocked = guardRunning || state.reason == InstallPauseReason.GUARDING_ACTIVE
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("準備安裝 v${state.release.version}") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("更新檔已下載並通過驗證。")
+                        when {
+                            guardBlocked -> Text("測速守衛執行中，請先停止守衛後再進行安裝。", color = MaterialTheme.colorScheme.error)
+                            needsPerm -> Text("需要允許「安裝未知應用程式」權限才能更新，授權後返回 App 即可自動安裝。")
+                            else -> Text("點擊「立即安裝」即可開始更新。")
+                        }
+                    }
+                },
+                confirmButton = {
+                    when {
+                        guardBlocked -> TextButton(onClick = {}, enabled = false) { Text("守衛中無法安裝") }
+                        needsPerm -> TextButton(onClick = onOpenInstallSettings) { Text("前往授權") }
+                        else -> TextButton(onClick = { onInstall(state.release, state.apkFile) }) { Text("立即安裝") }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onDismiss) { Text("稍後安裝") }
+                },
+            )
+        }
+
+        is AppUpdateState.Installing -> {
+            if (!state.showPrompt) return
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("正在安裝 v${state.release.version}") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Text("正在呼叫系統安裝程序…", style = MaterialTheme.typography.bodySmall)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = onDismiss) { Text("關閉") }
+                },
+            )
+        }
+
+        is AppUpdateState.PendingUserAction -> {
+            if (!state.showPrompt) return
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("確認更新 v${state.release.version}") },
+                text = { Text("請在系統跳出的確認視窗中點擊「更新」以完成安裝；若未看到視窗可點擊下方按鈕重新開啟。") },
+                confirmButton = {
+                    TextButton(onClick = { onRelaunchConfirm(state.confirmIntent) }) { Text("開啟安裝視窗") }
+                },
+                dismissButton = {
+                    TextButton(onClick = onDismiss) { Text("關閉") }
+                },
+            )
+        }
+
+        is AppUpdateState.Failed -> {
+            if (!state.showPrompt) return
+            val rel = state.release
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text("更新失敗") },
+                text = { Text(state.message) },
+                confirmButton = {
+                    if (rel != null) {
+                        TextButton(onClick = { onDownload(rel) }) { Text("重試") }
+                    } else {
+                        TextButton(onClick = onDismiss) { Text("確定") }
+                    }
+                },
+                dismissButton = {
+                    if (rel != null) {
+                        TextButton(onClick = onDismiss) { Text("關閉") }
+                    }
+                },
+            )
+        }
+
+        AppUpdateState.Idle, AppUpdateState.Checking, is AppUpdateState.UpToDate -> Unit
+    }
 }

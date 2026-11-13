@@ -10,6 +10,7 @@ Android 測速照相守衛（Kotlin + Jetpack Compose + MapLibre GL）。地圖�
 - **區間測速**：通過起點後即時顯示平均速度，以及「剩餘路段建議車速」；平均超過速限時警示。
 - **懸浮視窗**：可疊在導航 App 上，顯示車速、速限和距離，可拖曳，點一下回到 App。
 - **自訂點位／誤報標記**：長按地圖可新增流動測速或自訂提醒點；點一下點位可標記為誤報／已拆除。這些資料只存在本機。
+- **App 版本更新**：在設定頁可點擊「檢查更新」比對 GitHub Releases 最新版本、從 GitHub 下載 APK 並於驗證 SHA-256 與簽章後更新 App；亦可開啟「自動更新」（支援僅在 Wi-Fi 下背景下載）。
 
 > 提醒僅供參考，實際設置以現場為準；請遵守速限、注意路況，行駛中請勿操作手機。
 
@@ -84,6 +85,15 @@ WayMap 預設從 JitPack 取得（`gradle.properties` 的 `wayMapVersion`）。�
 
 - minSdk 31 / targetSdk 34 / compileSdk 36。
 - 不需要背景定位權限：守衛服務一律由前景的 Activity 啟動。
+
+### 發佈 App Release（GitHub Actions）
+
+`.github/workflows/release.yml` 會在推送 `v*` tag（或手動執行 `workflow_dispatch`）時自動建置簽署的 Release APK 與 `.sha256` 校驗檔並發佈到 GitHub Releases。需先在 GitHub Repository Secrets 設定以下 4 個簽章參數（確保歷次更新使用相同簽章金鑰）：
+
+- `ANDROID_KEYSTORE_BASE64`（`.jks` / `.keystore` 檔的 Base64 內容）
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
 
 ## 測試行車（不必真的上路）
 

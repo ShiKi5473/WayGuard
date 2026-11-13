@@ -45,7 +45,35 @@ object CameraIcons {
         suppressed.forEach { combos += Style.OFF to it.limitKmh }
         return combos.map { (style, limit) ->
             MapIcon("cam-${style.key}-${limit ?: "x"}") { sign(style, limit) }
-        }
+        } + tripIcons()
+    }
+
+    const val TRIP_ICON_START = "trip-start"
+    const val TRIP_ICON_END = "trip-end"
+    const val TRIP_ICON_EVENT = "trip-event"
+    const val TRIP_ICON_OVERSPEED = "trip-over"
+
+    private fun tripIcons(): List<MapIcon> = listOf(
+        MapIcon(TRIP_ICON_START) { dotPin(Color.rgb(46, 125, 50), 40) },
+        MapIcon(TRIP_ICON_END) { dotPin(Color.rgb(38, 50, 56), 40) },
+        MapIcon(TRIP_ICON_EVENT) { dotPin(Color.rgb(25, 118, 210), 32) },
+        MapIcon(TRIP_ICON_OVERSPEED) { dotPin(Color.rgb(211, 47, 47), 36) },
+    )
+
+    private fun dotPin(fillColor: Int, sizePx: Int): Bitmap {
+        val bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val c = sizePx / 2f
+        val r = c - sizePx * 0.12f
+        paint.style = Paint.Style.FILL
+        paint.color = fillColor
+        canvas.drawCircle(c, c, r, paint)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = sizePx * 0.12f
+        paint.color = Color.WHITE
+        canvas.drawCircle(c, c, r, paint)
+        return bmp
     }
 
     private fun sign(style: Style, limit: Int?): Bitmap {

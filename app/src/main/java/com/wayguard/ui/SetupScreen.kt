@@ -76,6 +76,7 @@ data class Permissions(
     val notifications: Boolean = false,
     val overlay: Boolean = false,
     val battery: Boolean = false,
+    val installPackages: Boolean = false,
 ) {
     fun allDone(needOverlay: Boolean) = location && notifications && battery && (overlay || !needOverlay)
 }

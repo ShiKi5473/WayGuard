@@ -3,6 +3,7 @@ package com.wayguard
 import com.wayguard.core.model.CameraKind
 import com.wayguard.core.model.SpeedCamera
 import com.wayguard.settings.GuardSettings
+import com.wayguard.ui.formatBytes
 import com.wayguard.ui.formatDistance
 import com.wayguard.ui.formatHeadings
 import org.junit.Assert.assertEquals
@@ -25,6 +26,13 @@ class FormatTest {
     fun distances() {
         assertEquals("350 m", formatDistance(349.6))
         assertEquals("1.2 km", formatDistance(1234.0))
+    }
+
+    @Test
+    fun bytesFormatting() {
+        assertEquals("512 B", formatBytes(512L))
+        assertEquals("10 KB", formatBytes(10 * 1024L))
+        assertEquals("18.5 MB", formatBytes((18.5 * 1024 * 1024).toLong()))
     }
 
     @Test
