@@ -128,8 +128,9 @@ internal class LocationChecker(
                         dA != null && dB != null -> {
                             val minD = min(dA, dB)
                             val maxD = max(dA, dB)
-                            val effectiveMaxD = if (parsed.offsetMeters != null && minD <= LocationVerdict.ROAD_OK_M) {
-                                (maxD - parsed.offsetMeters).coerceAtLeast(minD)
+                            val offsetM = parsed.offsetMeters
+                            val effectiveMaxD = if (offsetM != null && minD <= LocationVerdict.ROAD_OK_M) {
+                                (maxD - offsetM).coerceAtLeast(minD)
                             } else {
                                 maxD
                             }
@@ -213,8 +214,9 @@ internal class LocationChecker(
                     v
                 }
 
-                val mpPos = if (ref != null && parsed.km != null) {
-                    mileposts?.interpolate(ref, parsed.isFreeway, parsed.km)
+                val km = parsed.km
+                val mpPos = if (ref != null && km != null) {
+                    mileposts?.interpolate(ref, parsed.isFreeway, km)
                 } else {
                     null
                 }
@@ -225,9 +227,6 @@ internal class LocationChecker(
                     if (mpVerdict != VerdictLevel.OK) {
                         reasons += "距里程內插點 ${mpDist.roundToInt()} m"
                         rawDistM = mpDist
-                    }
-                    if (mpVerdict == VerdictLevel.MISMATCH) {
-                        suggested = mpPos
                     }
                     LocationVerdict.combine(osmRouteVerdict, mpVerdict)
                 } else {
@@ -395,21 +394,6 @@ internal class LocationChecker(
                     )
                 }
             }
-        }
-
-        if ((parsed.kind == AddressKind.FREEWAY_KM || parsed.kind == AddressKind.PROVINCIAL_KM) &&
-            parsed.routeRef != null && parsed.km != null && mileposts != null
-        ) {
-            val mpPos = mileposts.interpolate(parsed.routeRef, parsed.isFreeway, parsed.km) ?: return null
-            val label = if (parsed.isFreeway) "國道${parsed.routeRef}號" else "${parsed.routeRef}線"
-            return LocationCheck(
-                verdict = VerdictLevel.MISMATCH,
-                method = "milepost",
-                suggestedLat = round6(mpPos.lat),
-                suggestedLon = round6(mpPos.lon),
-                reason = "被拒絕列反推里程座標（$label ${parsed.km}K）",
-                checkedAt = now,
-            )
         }
         return null
     }

@@ -109,7 +109,7 @@ class MilepostIndex(markers: List<MilepostMarker>) {
             return MilepostIndex(markers)
         }
 
-        internal fun parseKmToken(raw: String): Double? {
+        fun parseKmToken(raw: String): Double? {
             val cleaned = raw.trim().replace('Ｋ', 'K').replace('ｋ', 'k').replace('＋', '+')
             cleaned.toDoubleOrNull()?.let { return it }
             val m = KM_VAL_RE.find(cleaned) ?: return null
