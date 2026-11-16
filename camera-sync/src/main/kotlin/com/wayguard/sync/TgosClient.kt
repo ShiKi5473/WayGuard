@@ -34,6 +34,27 @@ internal class TgosClient(
     private val maxConsecutiveFailures: Int = 3,
     private val logger: (String) -> Unit = { System.err.println(it) },
 ) {
+    data class Stats(
+        val attempted: Int,
+        val hits: Int,
+        val empty: Int,
+        val cacheHits: Int,
+        val failures: Int,
+        val aborted: Boolean,
+        val lastError: String?,
+    ) {
+        fun summary(): String = buildString {
+            append("已執行（查詢 $attempted 筆、命中 $hits 筆、查無 $empty 筆、快取 $cacheHits 筆、失敗 $failures 筆")
+            if (aborted) {
+                append("，已熔斷")
+                if (!lastError.isNullOrBlank()) append("：$lastError")
+            } else if (failures > 0 && !lastError.isNullOrBlank()) {
+                append("，最近錯誤：$lastError")
+            }
+            append("）")
+        }
+    }
+
     private val client by lazy {
         HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build()
     }
@@ -42,18 +63,37 @@ internal class TgosClient(
     private var consecutiveFailures = 0
     private var aborted = false
     private var loggedFirstFailure = false
+    private var attemptedCount = 0
+    private var hitCount = 0
+    private var emptyCount = 0
+    private var cacheHitCount = 0
+    private var failureCount = 0
+    private var lastFailureDetail: String? = null
+
+    fun stats(): Stats = Stats(
+        attempted = attemptedCount,
+        hits = hitCount,
+        empty = emptyCount,
+        cacheHits = cacheHitCount,
+        failures = failureCount,
+        aborted = aborted,
+        lastError = lastFailureDetail,
+    )
 
     /** Looks up a single cleaned address via TGOS QueryAddr, caching responses per cleaned address. */
     fun query(id: String, cleanedAddress: String): TgosHit? {
         val addr = cleanedAddress.trim()
         if (addr.isEmpty() || appId.isBlank() || apiKey.isBlank() || aborted) return null
         if (addr in cache) {
+            cacheHitCount++
             return cache[addr]?.copy(id = id)
         }
+        attemptedCount++
         val hit = queryEndpoints(id, addr)
         // Do not negative-cache circuit-broken/failed lookups unless a valid response arrived.
         if (consecutiveFailures == 0) {
             cache[addr] = hit
+            if (hit != null) hitCount++ else emptyCount++
         }
         return hit
     }
@@ -91,6 +131,8 @@ internal class TgosClient(
     }
 
     private fun recordFailure(detail: String) {
+        failureCount++
+        lastFailureDetail = detail
         consecutiveFailures++
         if (!loggedFirstFailure) {
             loggedFirstFailure = true

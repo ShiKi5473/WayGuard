@@ -89,6 +89,8 @@ data class BuildReport(
     val unmatchedOverrides: List<String> = emptyList(),
     /** Cameras flagged as `SUSPECT` or `MISMATCH` by internal or external location cross-verification. */
     val locationIssues: List<Pair<SpeedCamera, LocationCheck>> = emptyList(),
+    /** Cameras whose `MISMATCH` coordinates were auto-replaced by a high-confidence address-derived position. */
+    val autoFixedLocations: List<Pair<SpeedCamera, LocationCheck>> = emptyList(),
     /** Suggested coordinates for out-of-county rejected rows keyed by row id. */
     val rejectedSuggestions: Map<String, LocationCheck> = emptyMap(),
 ) {
@@ -126,6 +128,7 @@ object DatasetBuilder {
         roadChecks: Map<String, RoadCheck> = emptyMap(),
         locationChecks: Map<String, LocationCheck> = emptyMap(),
         extraKnownRoads: Set<String> = emptySet(),
+        applyAutoFixes: Boolean = true,
     ): BuildResult {
         val rejected = ArrayList(csvRejected)
         val swapped = ArrayList<Int>()
@@ -202,6 +205,7 @@ object DatasetBuilder {
                 if (headings.isEmpty()) unknown.merge(row.direct.ifBlank { "(空白)" }, 1, Int::plus)
             }
 
+            val hasCoordFix = fix?.lat != null || fix?.lon != null
             val base = SpeedCamera(
                 id = baseId,
                 lat = lat,
@@ -214,6 +218,7 @@ object DatasetBuilder {
                 district = district,
                 address = row.address,
                 directionText = row.direct,
+                posSource = if (hasCoordFix) "override" else null,
             )
             // 南向60北向70 → one camera per direction, each with its own limit.
             val cameras = if (parsed.limitsByHeading.isEmpty() || fix?.headings != null) listOf(base)
@@ -266,30 +271,56 @@ object DatasetBuilder {
             .distinctBy { it.id }
             .sortedWith(compareBy({ it.city }, { it.district }, { it.address }, { it.id }))
 
+        val addedIds = overrides.add.mapTo(HashSet()) { it.id }
         val internalConflicts = LocationVerdict.findInternalConflicts(rawCameras, knownRoads, generatedAt)
         val locationIssues = ArrayList<Pair<SpeedCamera, LocationCheck>>()
+        val autoFixedLocations = ArrayList<Pair<SpeedCamera, LocationCheck>>()
         val cameras = rawCameras.map { cam ->
             val baseId = cam.id.substringBefore("-h")
             val external = (locationChecks[cam.id] ?: locationChecks[baseId])
                 ?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
             val internal = internalConflicts[cam.id]
             val merged = mergeLocationCheck(external, internal)
-            val locTag = if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
-                merged.verdict.locTag
-            } else {
-                null
-            }
             val axis = cam.roadAxis ?: computeRoadAxis(cam, baseId, external, roadChecks, knownRoads)
-            val updated = if (locTag != cam.loc || axis != cam.roadAxis) {
-                cam.copy(loc = locTag ?: cam.loc, roadAxis = axis)
+
+            val autoFixCoords = applyAutoFixes &&
+                cam.posSource == null &&
+                cam.id !in addedIds &&
+                external?.verdict == VerdictLevel.MISMATCH &&
+                external.suggestedLat != null &&
+                external.suggestedLon != null &&
+                external.suggestedSource != null
+            if (autoFixCoords) {
+                val updated = cam.copy(
+                    lat = external.suggestedLat,
+                    lon = external.suggestedLon,
+                    loc = null,
+                    roadAxis = axis,
+                    posSource = external.suggestedSource,
+                )
+                autoFixedLocations += updated to (merged ?: external)
+                updated
             } else {
-                cam
+                val locTag = if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
+                    merged.verdict.locTag
+                } else {
+                    null
+                }
+                val updated = if (locTag != cam.loc || axis != cam.roadAxis) {
+                    cam.copy(loc = locTag ?: cam.loc, roadAxis = axis)
+                } else {
+                    cam
+                }
+                if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
+                    locationIssues += updated to merged
+                }
+                updated
             }
-            if (merged != null && (merged.verdict == VerdictLevel.SUSPECT || merged.verdict == VerdictLevel.MISMATCH)) {
-                locationIssues += updated to merged
-            }
-            updated
         }
+        autoFixedLocations.sortWith(
+            compareByDescending<Pair<SpeedCamera, LocationCheck>> { it.second.distanceM ?: -1 }
+                .thenBy { it.first.id }
+        )
         locationIssues.sortWith(
             compareByDescending<Pair<SpeedCamera, LocationCheck>> { it.second.verdict.severity }
                 .thenByDescending { it.second.distanceM ?: -1 }
@@ -328,6 +359,7 @@ object DatasetBuilder {
             autoSections = autoSections,
             unmatchedOverrides = unmatchedOverrides,
             locationIssues = locationIssues,
+            autoFixedLocations = autoFixedLocations,
             rejectedSuggestions = rejectedSuggestions,
         )
         return BuildResult(dataset, report)
@@ -365,6 +397,7 @@ object DatasetBuilder {
                     verdict = combined,
                     suggestedLat = internal.suggestedLat ?: external.suggestedLat,
                     suggestedLon = internal.suggestedLon ?: external.suggestedLon,
+                    suggestedSource = internal.suggestedSource ?: external.suggestedSource,
                 )
             external.verdict == VerdictLevel.SUSPECT && internal.verdict == VerdictLevel.SUSPECT ->
                 external.copy(

@@ -90,6 +90,17 @@ class TgosClientTest {
         assertEquals("cam-2", hit!!.id)
         assertEquals(25.037542, hit.pos.lat, 1e-6)
         assertEquals(121.564099, hit.pos.lon, 1e-6)
+        // Cache hit reuses cached response
+        assertNotNull(client.query("cam-3", "臺北市信義區市府路1號"))
+
+        val stats = client.stats()
+        assertEquals(2, stats.attempted)
+        assertEquals(1, stats.hits)
+        assertEquals(0, stats.empty)
+        assertEquals(1, stats.cacheHits)
+        assertEquals(1, stats.failures)
+        assertTrue(!stats.aborted)
+        assertTrue(stats.summary().contains("命中 1 筆"))
     }
 }
 

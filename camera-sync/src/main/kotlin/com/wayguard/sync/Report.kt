@@ -19,6 +19,7 @@ internal object Report {
         problems: List<String>,
         unchanged: Boolean,
         locationChecks: Map<String, LocationCheck> = emptyMap(),
+        tgosSummary: String? = null,
     ): String =
         buildString {
             val rep = r.report
@@ -47,7 +48,10 @@ internal object Report {
             val suspectCount = rep.locationIssues.count { it.second.verdict == VerdictLevel.SUSPECT }
             val mismatchCount = rep.locationIssues.count { it.second.verdict == VerdictLevel.MISMATCH }
             val unverifiableCount = camChecks.count { it.verdict == VerdictLevel.UNVERIFIABLE }
-            appendLine("- 位置交叉驗證：一致 $okCount、可疑 $suspectCount、不符 $mismatchCount、無法驗證 $unverifiableCount")
+            appendLine("- 位置交叉驗證：一致 $okCount、可疑 $suspectCount、不符 $mismatchCount、無法驗證 $unverifiableCount；高信心自動修正 ${rep.autoFixedLocations.size} 筆")
+            if (!tgosSummary.isNullOrBlank()) {
+                appendLine("- TGOS 線上門牌查詢：$tgosSummary")
+            }
             appendLine()
             appendLine("## 安全檢查")
             appendLine()
@@ -107,6 +111,28 @@ internal object Report {
                 appendLine("|---|---|")
                 rep.unknownDirections.entries.sortedByDescending { it.value }
                     .forEach { (t, n) -> appendLine("| ${cell(t)} | $n |") }
+            }
+
+            if (rep.autoFixedLocations.isNotEmpty()) {
+                appendLine()
+                appendLine("## 自動修正座標（高信心地址推算）")
+                appendLine()
+                appendLine("以下點位原公告座標判定為「位置不符」，且地址具備唯一高信心推算位置（單一路口或里程內插），已自動採用推算座標並標記 `posSource`（`overrides.json` 仍具最高優先權）。")
+                appendLine()
+                appendLine("| id | 來源 | 地址 | 原公告座標 | 採用座標 | 差距 |")
+                appendLine("|---|---|---|---|---|---|")
+                rep.autoFixedLocations.take(MAX_LOCATION_ISSUE_ROWS).forEach { (cam, chk) ->
+                    val srcLabel = when (cam.posSource) {
+                        "intersection" -> "路口推算"
+                        "milepost" -> "里程推算"
+                        else -> cam.posSource.orEmpty()
+                    }
+                    val addr = cell("${cam.city}${cam.district} ${cam.address}".trim())
+                    val origCoord = if (chk.lat != null && chk.lon != null) osmLink(chk.lat!!, chk.lon!!) else "—"
+                    val newCoord = osmLink(cam.lat, cam.lon)
+                    val dist = chk.distanceM?.let { "$it m" } ?: "—"
+                    appendLine("| ${cam.id} | $srcLabel | $addr | $origCoord | $newCoord | $dist |")
+                }
             }
 
             if (rep.locationIssues.isNotEmpty()) {

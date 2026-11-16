@@ -72,7 +72,14 @@ fun CameraDetailDialog(
                     "mismatch" -> Text("⚠️ 位置不符（公告座標與地址道路或行政區差距過大）")
                     "suspect" -> Text("⚠️ 位置可疑（公告座標與地址道路或行政區略有偏差）")
                 }
-                Text(if (isUser) "來源：自訂點位（僅存在本機）" else "來源：內政部警政署開放資料")
+                val sourceLabel = when {
+                    isUser -> "自訂點位（僅存在本機）"
+                    camera.posSource == "override" -> "內政部警政署開放資料（座標經人工修正）"
+                    camera.posSource == "intersection" -> "內政部警政署開放資料（座標依路口推算）"
+                    camera.posSource == "milepost" -> "內政部警政署開放資料（座標依里程推算）"
+                    else -> "內政部警政署開放資料"
+                }
+                Text("來源：$sourceLabel")
                 if (suppressed) Text("已標記為誤報，不會提醒。")
             }
         },

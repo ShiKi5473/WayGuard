@@ -169,10 +169,10 @@ fun sync(a: SyncArgs): Int {
         OsmExtract.load(it)
     }
     val extraKnownRoads = osm?.knownRoadNames.orEmpty()
-    fun build() = DatasetBuilder.build(
-        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks, extraKnownRoads,
+    fun build(applyAutoFixes: Boolean = true) = DatasetBuilder.build(
+        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks, extraKnownRoads, applyAutoFixes,
     )
-    var result = build()
+    var result = build(applyAutoFixes = false)
     val nominatim = Nominatim(USER_AGENT)
 
     if (a.suggestPlaces) {
@@ -230,8 +230,14 @@ fun sync(a: SyncArgs): Int {
         result = build()
     }
     if (osm != null && !osm.isEmpty) {
-        println("位置交叉驗證：本輪檢查 ${locResult.checkedCount} 個點位，發現可疑／不符 ${result.report.locationIssues.size} 筆")
+        println("位置交叉驗證：本輪檢查 ${locResult.checkedCount} 個點位，發現可疑／不符 ${result.report.locationIssues.size} 筆，自動修正 ${result.report.autoFixedLocations.size} 筆")
     }
+    val tgosSummary = when {
+        a.offline -> "離線模式（略過 TGOS 線上查詢）"
+        tgos == null -> "未啟用（未設定 TGOS_APP_ID／TGOS_API_KEY）"
+        else -> tgos.stats().summary()
+    }
+    println("TGOS 門牌查詢：$tgosSummary")
     val tgosUploadRows = LocationChecker.buildTgosUploadRows(
         cameras = result.dataset.cameras,
         rejected = result.report.rejected,
@@ -250,7 +256,7 @@ fun sync(a: SyncArgs): Int {
     val unchanged = previous?.version == result.dataset.version
 
     a.report.parentFile?.mkdirs()
-    a.report.writeText(Report.markdown(result, previous, problems, unchanged, locChecks))
+    a.report.writeText(Report.markdown(result, previous, problems, unchanged, locChecks, tgosSummary))
     a.candidates.parentFile?.mkdirs()
     a.candidates.writeText(Report.sectionCandidatesCsv(result))
     val fixSuggestions = LocationChecker.buildFixSuggestions(result.report.locationIssues, result.report.rejectedSuggestions)

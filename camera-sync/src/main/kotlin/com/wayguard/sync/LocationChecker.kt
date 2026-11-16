@@ -117,6 +117,8 @@ internal class LocationChecker(
         var method = "unverifiable"
         var rawDistM: Double? = null
         var suggested: LatLng? = null
+        var suggestedSource: String? = null
+        var milepostPos: LatLng? = null
 
         var intersectionPair = parsed.roads.take(2)
         val roadVerdict: VerdictLevel = when (parsed.kind) {
@@ -244,6 +246,7 @@ internal class LocationChecker(
                     null
                 }
                 if (mpPos != null) {
+                    milepostPos = mpPos
                     val mpDist = GeoUtils.haversine(cam.pos, mpPos)
                     val mpVerdict = LocationVerdict.forMilepost(mpDist)
                     if (osmDist == null) method = "milepost"
@@ -319,17 +322,54 @@ internal class LocationChecker(
             )
             if (candidates.size == 1) {
                 val cand = candidates.single()
+                val shifted = if (cam.headings.size == 1 && cam.headingToleranceDeg == null && parsed.offsetMeters == null) {
+                    val upstreamBearing = (cam.headings.single() + 180.0) % 360.0
+                    GeoUtils.destinationPoint(cand, INTERSECTION_UPSTREAM_M, upstreamBearing)
+                        .takeIf { CountyBounds.TAIWAN.contains(it.lat, it.lon) } ?: cand
+                } else {
+                    cand
+                }
                 val nlscAgrees = if (!offline && nlsc != null && CountyBounds.isKnown(cam.city)) {
-                    val nh = nlsc.query(cand.lat, cand.lon)
+                    val nh = nlsc.query(shifted.lat, shifted.lon)
                     nh == null || LocationVerdict.forAdmin(cam.city, cam.district, nh.city, nh.district) == VerdictLevel.OK
                 } else {
                     true
                 }
                 if (nlscAgrees) {
-                    suggested = cand
-                    val jumpM = GeoUtils.haversine(cam.pos, cand)
+                    suggested = shifted
+                    suggestedSource = "intersection"
+                    val jumpM = GeoUtils.haversine(cam.pos, shifted)
                     rawDistM = jumpM
                     reasons += "推算路口相距 ${jumpM.roundToInt()} m"
+                }
+            }
+        } else if (
+            (parsed.kind == AddressKind.FREEWAY_KM || parsed.kind == AddressKind.PROVINCIAL_KM) &&
+            combined == VerdictLevel.MISMATCH &&
+            !parsed.isRampOrSpan
+        ) {
+            val mp = milepostPos
+            val ref = parsed.routeRef
+            if (mp != null && ref != null && CountyBounds.TAIWAN.contains(mp.lat, mp.lon)) {
+                val routeOk = if (osm != null && !osm.isEmpty) {
+                    osm.distanceToRoute(mp, ref, parsed.isFreeway)?.let { it <= MILEPOST_ON_ROUTE_MAX_M } ?: false
+                } else {
+                    true
+                }
+                val adminOk = if (osm != null && !osm.isEmpty && !AddressParser.isRouteCity(cam.city) && CountyBounds.isKnown(cam.city)) {
+                    val hit = osm.adminAt(mp)
+                    LocationVerdict.forAdmin(cam.city, cam.district, hit.city, hit.district, hit.borderDistanceM) == VerdictLevel.OK
+                } else {
+                    true
+                }
+                if (routeOk && adminOk) {
+                    suggested = mp
+                    suggestedSource = "milepost"
+                    val jumpM = GeoUtils.haversine(cam.pos, mp)
+                    if (rawDistM == null) rawDistM = jumpM
+                    if (reasons.none { it.startsWith("距里程內插點") }) {
+                        reasons += "里程內插位置相距 ${jumpM.roundToInt()} m"
+                    }
                 }
             }
         }
@@ -360,6 +400,7 @@ internal class LocationChecker(
             lat = cam.lat,
             lon = cam.lon,
             roadAxis = roadAxis,
+            suggestedSource = suggestedSource,
         )
     }
 
@@ -453,6 +494,7 @@ internal class LocationChecker(
                     verdict = combined,
                     suggestedLat = internal.suggestedLat ?: external.suggestedLat,
                     suggestedLon = internal.suggestedLon ?: external.suggestedLon,
+                    suggestedSource = internal.suggestedSource ?: external.suggestedSource,
                     roadAxis = external.roadAxis,
                 )
             external.verdict == VerdictLevel.SUSPECT && internal.verdict == VerdictLevel.SUSPECT ->
@@ -465,6 +507,9 @@ internal class LocationChecker(
     }
 
     companion object {
+        private const val INTERSECTION_UPSTREAM_M = 50.0
+        private const val MILEPOST_ON_ROUTE_MAX_M = 150.0
+
         /** Exports house-number cameras without an active TGOS check to CSV for batch TGOS upload. */
         fun buildTgosUploadRows(
             cameras: List<SpeedCamera>,

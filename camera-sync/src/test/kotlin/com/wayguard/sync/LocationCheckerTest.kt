@@ -288,7 +288,7 @@ class LocationCheckerTest {
         val tgosHits = TgosCsv.parseResults("id,lon,lat,address\ncam-house,121.230,24.960,桃園市中壢區中山路100號\n")
 
         // 3. Single-road camera within 25 m -> computes roadAxis = 90° (east-west 中山路)
-        val mpIndex = MilepostIndex.fromCsv("路線,里程,lon,lat\n國道1號,50.0,121.210,24.970\n國道1號,52.0,121.230,24.970\n")
+        val mpIndex = MilepostIndex.fromCsv("路線編號,里程,lon,lat\n國道1號,50.0,121.210,24.970\n國道1號,52.0,121.230,24.970\n")
         val fwCam = SpeedCamera("cam-fw-mp", 24.970, 121.220, city = "國道一號", address = "國道一號北向51公里")
 
         // 4. Suspect intersection (120m from crossing) does NOT receive suggestedLat/Lon (reserved for MISMATCH only)
@@ -366,6 +366,50 @@ class LocationCheckerTest {
         LocationChecker(osm, offline = false, tgos = fakeTgos)
             .checkAll(listOf(cam), emptyList(), emptyMap(), onlineRes.checks, "2026-11-20T00:00:00Z", verifyAll = false)
         assertEquals(1, calls)
+    }
+
+    @Test
+    fun mismatchIntersectionShifts50mUpstreamAndMismatchMilepostSuggestsOnRoutePoint() {
+        // Directional intersection MISMATCH (heading = 90° eastbound) shifts 50 m west (270°) from (24.960, 121.220).
+        val dirBadInter = SpeedCamera(
+            "cam-dir-inter",
+            24.951,
+            121.220,
+            headings = listOf(90),
+            city = "桃園市",
+            district = "中壢區",
+            address = "中山路與中正路口",
+        )
+        // Freeway MISMATCH (>1 km from interpolated milepost at 24.970, 121.220) -> suggests milepost pos.
+        val mpIndex = MilepostIndex.fromCsv("路線編號,里程,lon,lat\n國道1號,50.0,121.210,24.970\n國道1號,52.0,121.230,24.970\n")
+        val badFw = SpeedCamera(
+            "cam-fw-bad",
+            24.950,
+            121.220,
+            city = "國道一號",
+            address = "國道一號北向51公里",
+        )
+        val res = LocationChecker(osm, offline = true, mileposts = mpIndex).checkAll(
+            cameras = listOf(dirBadInter, badFw),
+            rejected = emptyList(),
+            rowsById = emptyMap(),
+            existing = emptyMap(),
+            now = "2026-11-16T00:00:00Z",
+            verifyAll = true,
+        )
+
+        val interChk = res.checks.getValue("cam-dir-inter")
+        assertEquals(VerdictLevel.MISMATCH, interChk.verdict)
+        assertEquals("intersection", interChk.suggestedSource)
+        val expectedShifted = GeoUtils.destinationPoint(LatLng(24.960, 121.220), 50.0, 270.0)
+        assertEquals(expectedShifted.lat, interChk.suggestedLat!!, 1e-4)
+        assertEquals(expectedShifted.lon, interChk.suggestedLon!!, 1e-4)
+
+        val fwChk = res.checks.getValue("cam-fw-bad")
+        assertEquals(VerdictLevel.MISMATCH, fwChk.verdict)
+        assertEquals("milepost", fwChk.suggestedSource)
+        assertEquals(24.970, fwChk.suggestedLat!!, 1e-4)
+        assertEquals(121.220, fwChk.suggestedLon!!, 1e-4)
     }
 }
 

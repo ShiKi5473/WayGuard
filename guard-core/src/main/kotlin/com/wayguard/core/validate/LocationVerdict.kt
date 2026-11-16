@@ -43,6 +43,8 @@ data class LocationCheck(
     val lon: Double? = null,
     /** Stabilized road axis (0–170°, rounded to 10°) when single-road camera sits <= 25 m from its OSM road. */
     val roadAxis: Int? = null,
+    /** High-confidence suggestion source (`"intersection"` or `"milepost"`) eligible for auto-apply on MISMATCH. */
+    val suggestedSource: String? = null,
 ) {
     fun matchesPosition(camLat: Double, camLon: Double): Boolean =
         (lat == null || abs(lat - camLat) <= 1e-5) && (lon == null || abs(lon - camLon) <= 1e-5)
@@ -54,6 +56,7 @@ data class LocationCheck(
             distanceM == other.distanceM &&
             suggestedLat == other.suggestedLat &&
             suggestedLon == other.suggestedLon &&
+            suggestedSource == other.suggestedSource &&
             reason == other.reason &&
             roadAxis == other.roadAxis &&
             matchesPosition(other.lat ?: Double.NaN, other.lon ?: Double.NaN)

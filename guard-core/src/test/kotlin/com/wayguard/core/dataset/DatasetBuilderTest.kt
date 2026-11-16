@@ -140,4 +140,87 @@ class DatasetBuilderTest {
         val merged = r.dataset.cameras.single { it.headings == listOf(0) }
         assertEquals(50, merged.limitKmh)
     }
+
+    @Test
+    fun autoAppliesHighConfidenceMismatchOnlyAndRespectsOverrides() {
+        val autoRow = NpaRow(2, "桃園市", "中壢區", "中山路與中正路口", "局", "分", "121.22", "24.95", "往北", "50")
+        val ovrRow = NpaRow(3, "桃園市", "中壢區", "中華路與民權路口", "局", "分", "121.23", "24.95", "往北", "50")
+        val suspectRow = NpaRow(4, "桃園市", "中壢區", "中正路100號", "局", "分", "121.22", "24.961", "往北", "50")
+        val autoId = DatasetBuilder.stableId(autoRow)
+        val ovrId = DatasetBuilder.stableId(ovrRow)
+        val suspectId = DatasetBuilder.stableId(suspectRow)
+
+        val checks = mapOf(
+            autoId to com.wayguard.core.validate.LocationCheck(
+                verdict = com.wayguard.core.validate.VerdictLevel.MISMATCH,
+                method = "intersection",
+                distanceM = 1100,
+                suggestedLat = 24.960,
+                suggestedLon = 121.220,
+                suggestedSource = "intersection",
+                lat = 24.95,
+                lon = 121.22,
+            ),
+            ovrId to com.wayguard.core.validate.LocationCheck(
+                verdict = com.wayguard.core.validate.VerdictLevel.MISMATCH,
+                method = "intersection",
+                distanceM = 900,
+                suggestedLat = 24.965,
+                suggestedLon = 121.235,
+                suggestedSource = "intersection",
+                lat = 24.95,
+                lon = 121.23,
+            ),
+            suspectId to com.wayguard.core.validate.LocationCheck(
+                verdict = com.wayguard.core.validate.VerdictLevel.SUSPECT,
+                method = "road",
+                distanceM = 100,
+                lat = 24.961,
+                lon = 121.22,
+            ),
+        )
+        val overrides = Overrides(
+            fix = mapOf(ovrId to CameraFix(lat = 24.9611, lon = 121.2311, note = "manual")),
+        )
+
+        val pre = DatasetBuilder.build(
+            rows = listOf(autoRow, ovrRow, suspectRow),
+            csvRejected = emptyList(),
+            sections = emptyList(),
+            overrides = overrides,
+            generatedAt = "2026-11-16T00:00:00Z",
+            source = "test",
+            locationChecks = checks,
+            applyAutoFixes = false,
+        )
+        assertEquals(24.95, pre.dataset.cameras.single { it.id == autoId }.lat, 1e-6)
+
+        val applied = DatasetBuilder.build(
+            rows = listOf(autoRow, ovrRow, suspectRow),
+            csvRejected = emptyList(),
+            sections = emptyList(),
+            overrides = overrides,
+            generatedAt = "2026-11-16T00:00:00Z",
+            source = "test",
+            locationChecks = checks,
+            applyAutoFixes = true,
+        )
+        val autoCam = applied.dataset.cameras.single { it.id == autoId }
+        assertEquals(24.960, autoCam.lat, 1e-6)
+        assertEquals(121.220, autoCam.lon, 1e-6)
+        assertEquals(null, autoCam.loc)
+        assertEquals("intersection", autoCam.posSource)
+
+        val ovrCam = applied.dataset.cameras.single { it.id == ovrId }
+        assertEquals(24.9611, ovrCam.lat, 1e-6)
+        assertEquals("override", ovrCam.posSource)
+
+        val susCam = applied.dataset.cameras.single { it.id == suspectId }
+        assertEquals(24.961, susCam.lat, 1e-6)
+        assertEquals("suspect", susCam.loc)
+        assertEquals(null, susCam.posSource)
+
+        assertEquals(listOf(autoId), applied.report.autoFixedLocations.map { it.first.id })
+        assertEquals(listOf(suspectId), applied.report.locationIssues.map { it.first.id })
+    }
 }
