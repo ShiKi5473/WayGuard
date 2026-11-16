@@ -8,11 +8,44 @@ import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** Continuous polyline slice styled by whether the trip was overspeeding during that span. */
+/** Speed bracket used to colorize recorded trip polylines and UI indicators. */
+enum class SpeedTier(
+    val minKmh: Int,
+    val maxKmh: Int?,
+    val label: String,
+    val colorHex: String,
+) {
+    SLOW(0, 30, "< 30", "#1E88E5"),
+    CITY(30, 60, "30–60", "#43A047"),
+    ARTERIAL(60, 90, "60–90", "#F9A825"),
+    HIGHWAY(90, 110, "90–110", "#FB8C00"),
+    HIGH_SPEED(110, null, "110+", "#D32F2F");
+
+    companion object {
+        fun fromSpeed(speedKmh: Double): SpeedTier = when {
+            speedKmh < 30.0 -> SLOW
+            speedKmh < 60.0 -> CITY
+            speedKmh < 90.0 -> ARTERIAL
+            speedKmh < 110.0 -> HIGHWAY
+            else -> HIGH_SPEED
+        }
+    }
+}
+
+/** Continuous polyline slice styled by speed tier and whether the trip was overspeeding during that span. */
 data class TrackSegment(
     val points: List<LatLng>,
     val overspeed: Boolean,
-)
+    val speedTier: SpeedTier = SpeedTier.CITY,
+    val avgSpeedKmh: Double = 0.0,
+) {
+    val colorHex: String
+        get() = if (overspeed) OVERSPEED_COLOR_HEX else speedTier.colorHex
+
+    companion object {
+        const val OVERSPEED_COLOR_HEX = "#D32F2F"
+    }
+}
 
 /**
  * Computes accurate trip statistics, recovers incomplete `.jsonl` streams, and builds map polylines.
@@ -26,6 +59,7 @@ object TripStats {
     private const val SPIKE_JUMP_KMH = 35.0
     private const val SPIKE_SOLO_CAP_KMH = 150.0
     private const val OVERSPEED_SEGMENT_HOLD_MS = 4_000L
+    private const val TIER_HYSTERESIS_KMH = 1.5
 
     fun summarize(
         id: String,
@@ -210,35 +244,96 @@ object TripStats {
         return TripDetail(summary, points, events)
     }
 
-    /** Splits a trip track into continuous blue (normal) and red (overspeed) segments for map rendering. */
+    /** Splits a trip track into continuous speed-tier and overspeed-highlighted segments for map rendering. */
     fun buildSegments(points: List<TrackPoint>, events: List<TripEvent>): List<TrackSegment> {
         if (points.size < 2) return emptyList()
         val overspeedWindows = buildOverspeedWindows(events)
         val isPointOver = points.map { pt -> isPointOverspeed(pt, events, overspeedWindows) }
+        val effectiveSpeeds = points.indices.map { i -> effectivePointSpeedKmh(points, i) }
 
         val out = ArrayList<TrackSegment>()
-        var curOver = isPointOver[0]
-        var curList = mutableListOf(LatLng(points[0].lat, points[0].lon))
+        var curOver = false
+        var curTier: SpeedTier? = null
+        var curPoints = mutableListOf<LatLng>()
+        var curSpeedSum = 0.0
+        var curEdgeCount = 0
+
+        fun flush() {
+            val tier = curTier
+            if (curPoints.size >= 2 && tier != null && curEdgeCount > 0) {
+                out += TrackSegment(
+                    points = curPoints,
+                    overspeed = curOver,
+                    speedTier = tier,
+                    avgSpeedKmh = curSpeedSum / curEdgeCount,
+                )
+            }
+            curPoints = mutableListOf()
+            curSpeedSum = 0.0
+            curEdgeCount = 0
+        }
+
         for (i in 1 until points.size) {
-            val pt = points[i]
-            val ll = LatLng(pt.lat, pt.lon)
-            val over = isPointOver[i]
-            val gap = pt.tMs - points[i - 1].tMs > MAX_SEGMENT_GAP_MS
-            if (gap) {
-                if (curList.size >= 2) out += TrackSegment(curList, curOver)
-                curList = mutableListOf(ll)
-                curOver = over
-            } else if (over != curOver) {
-                curList += ll
-                if (curList.size >= 2) out += TrackSegment(curList, curOver)
-                curList = mutableListOf(ll)
-                curOver = over
+            val prevPt = points[i - 1]
+            val curPt = points[i]
+            if (curPt.tMs - prevPt.tMs > MAX_SEGMENT_GAP_MS) {
+                flush()
+                curTier = null
+                curOver = false
+                continue
+            }
+
+            val edgeSpeed = effectiveSpeeds[i]
+            val edgeOver = isPointOver[i] || (i == 1 && isPointOver[0])
+            val edgeTier = resolveSpeedTier(edgeSpeed, curTier)
+
+            if (curPoints.isEmpty()) {
+                curOver = edgeOver
+                curTier = edgeTier
+                curPoints.add(LatLng(prevPt.lat, prevPt.lon))
+                curPoints.add(LatLng(curPt.lat, curPt.lon))
+                curSpeedSum = edgeSpeed
+                curEdgeCount = 1
+            } else if (edgeOver == curOver && edgeTier == curTier) {
+                curPoints.add(LatLng(curPt.lat, curPt.lon))
+                curSpeedSum += edgeSpeed
+                curEdgeCount++
             } else {
-                curList += ll
+                flush()
+                curOver = edgeOver
+                curTier = edgeTier
+                curPoints = mutableListOf(LatLng(prevPt.lat, prevPt.lon), LatLng(curPt.lat, curPt.lon))
+                curSpeedSum = edgeSpeed
+                curEdgeCount = 1
             }
         }
-        if (curList.size >= 2) out += TrackSegment(curList, curOver)
+        flush()
         return out
+    }
+
+    private fun effectivePointSpeedKmh(points: List<TrackPoint>, index: Int): Double {
+        val cur = points[index]
+        if (!isIsolatedSpike(points, index)) return cur.speedKmh.coerceAtLeast(0.0)
+        val prev = points.getOrNull(index - 1)?.takeIf { cur.tMs - it.tMs <= SPIKE_NEIGHBOR_WINDOW_MS }
+        val next = points.getOrNull(index + 1)?.takeIf { it.tMs - cur.tMs <= SPIKE_NEIGHBOR_WINDOW_MS }
+        val neighbors = listOfNotNull(prev, next)
+        return if (neighbors.isNotEmpty()) {
+            neighbors.map { it.speedKmh.coerceAtLeast(0.0) }.average()
+        } else {
+            cur.speedKmh.coerceIn(0.0, SPIKE_SOLO_CAP_KMH)
+        }
+    }
+
+    private fun resolveSpeedTier(speedKmh: Double, previousTier: SpeedTier?): SpeedTier {
+        val candidate = SpeedTier.fromSpeed(speedKmh)
+        if (previousTier == null || candidate == previousTier) return candidate
+        if (candidate.ordinal == previousTier.ordinal + 1 && speedKmh < candidate.minKmh + TIER_HYSTERESIS_KMH) {
+            return previousTier
+        }
+        if (candidate.ordinal == previousTier.ordinal - 1 && speedKmh > previousTier.minKmh - TIER_HYSTERESIS_KMH) {
+            return previousTier
+        }
+        return candidate
     }
 
     private fun buildOverspeedWindows(events: List<TripEvent>): List<LongRange> {

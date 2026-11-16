@@ -194,4 +194,50 @@ class TripRecorderTest {
         assertTrue(gpx.contains("<trkpt lat=\"25.033000\" lon=\"121.565400\">"))
         assertTrue(gpx.contains("臺北市 信義區 市府路 &amp; 松壽路口"))
     }
+
+    @Test
+    fun buildsSpeedColoredSegmentsWithHysteresisAndSpikeFiltering() {
+        assertEquals(SpeedTier.SLOW, SpeedTier.fromSpeed(0.0))
+        assertEquals(SpeedTier.SLOW, SpeedTier.fromSpeed(29.9))
+        assertEquals(SpeedTier.CITY, SpeedTier.fromSpeed(30.0))
+        assertEquals(SpeedTier.CITY, SpeedTier.fromSpeed(59.9))
+        assertEquals(SpeedTier.ARTERIAL, SpeedTier.fromSpeed(60.0))
+        assertEquals(SpeedTier.ARTERIAL, SpeedTier.fromSpeed(89.9))
+        assertEquals(SpeedTier.HIGHWAY, SpeedTier.fromSpeed(90.0))
+        assertEquals(SpeedTier.HIGHWAY, SpeedTier.fromSpeed(109.9))
+        assertEquals(SpeedTier.HIGH_SPEED, SpeedTier.fromSpeed(110.0))
+
+        val t0 = 1_700_000_000_000L
+        val points = listOf(
+            TrackPoint(t0, 25.000, 121.500, speedKmh = 20.0),
+            TrackPoint(t0 + 2_000L, 25.001, 121.500, speedKmh = 20.0),
+            TrackPoint(t0 + 4_000L, 25.002, 121.500, speedKmh = 45.0),
+            // Boundary jitter just above 60 km/h stays in CITY due to 1.5 km/h hysteresis
+            TrackPoint(t0 + 6_000L, 25.003, 121.500, speedKmh = 60.5),
+            TrackPoint(t0 + 8_000L, 25.004, 121.500, speedKmh = 48.0),
+            // Isolated tunnel spike between 48 and 50 km/h is smoothed into CITY
+            TrackPoint(t0 + 10_000L, 25.005, 121.500, speedKmh = 190.0),
+            TrackPoint(t0 + 12_000L, 25.006, 121.500, speedKmh = 50.0),
+            TrackPoint(t0 + 14_000L, 25.007, 121.500, speedKmh = 75.0),
+            TrackPoint(t0 + 16_000L, 25.008, 121.500, speedKmh = 100.0),
+            TrackPoint(t0 + 18_000L, 25.009, 121.500, speedKmh = 118.0),
+        )
+
+        val segs = TripStats.buildSegments(points, emptyList())
+        assertEquals(
+            listOf(
+                SpeedTier.SLOW,
+                SpeedTier.CITY,
+                SpeedTier.ARTERIAL,
+                SpeedTier.HIGHWAY,
+                SpeedTier.HIGH_SPEED,
+            ),
+            segs.map { it.speedTier },
+        )
+        assertEquals(segs.map { it.speedTier.colorHex }, segs.map { it.colorHex })
+        assertEquals(6, segs[1].points.size) // p1..p6 merged into single CITY segment
+        for (i in 1 until segs.size) {
+            assertEquals(segs[i - 1].points.last(), segs[i].points.first())
+        }
+    }
 }

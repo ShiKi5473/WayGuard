@@ -1,6 +1,7 @@
 package com.wayguard.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudOff
@@ -36,6 +39,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SmallFloatingActionButton
@@ -50,8 +54,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.wayguard.core.trip.SpeedTier
 import com.wayguard.core.trip.TripDetail
 import com.wayguard.core.trip.TripEvent
 import com.wayguard.core.trip.TripEventType
@@ -62,16 +68,29 @@ import com.waymap.ui.MapLine
 import com.waymap.ui.MapMarker
 import kotlin.math.roundToInt
 
-/** Builds blue (normal) and red (overspeed) track polylines for a trip detail. */
+/** Maps a [SpeedTier] to its Compose UI color. */
+fun speedTierColor(tier: SpeedTier): Color = when (tier) {
+    SpeedTier.SLOW -> Color(0xFF1E88E5)
+    SpeedTier.CITY -> Color(0xFF43A047)
+    SpeedTier.ARTERIAL -> Color(0xFFF9A825)
+    SpeedTier.HIGHWAY -> Color(0xFFFB8C00)
+    SpeedTier.HIGH_SPEED -> Color(0xFFD32F2F)
+}
+
+/** Returns the color representing [speedKmh], forcing alert red when [overspeed] is true. */
+fun speedColor(speedKmh: Double, overspeed: Boolean = false): Color =
+    if (overspeed) Color(0xFFD32F2F) else speedTierColor(SpeedTier.fromSpeed(speedKmh))
+
+/** Builds speed-colored track polylines (with red overspeed highlighting) for a trip detail. */
 fun tripMapLines(detail: TripDetail): List<MapLine> =
     TripStats.buildSegments(detail.points, detail.events).mapIndexed { idx, seg ->
         MapLine(
             id = "trip-${detail.summary.id}-$idx",
             points = seg.points,
-            color = if (seg.overspeed) "#D32F2F" else "#1976D2",
-            width = if (seg.overspeed) 6f else 5f,
+            color = seg.colorHex,
+            width = if (seg.overspeed) 6.5f else 5f,
             casingColor = "#FFFFFF",
-            casingWidth = if (seg.overspeed) 9f else 8f,
+            casingWidth = if (seg.overspeed) 9.5f else 8f,
         )
     }
 
@@ -235,10 +254,8 @@ private fun TripSummaryCard(summary: TripSummary, onClick: () -> Unit) {
             ) {
                 Text("里程 ${formatDistance(summary.distanceM)}", style = MaterialTheme.typography.bodySmall)
                 Text("移動 ${formatDuration(summary.movingDurationMs)}", style = MaterialTheme.typography.bodySmall)
-                Text(
-                    "均速 ${summary.avgMovingSpeedKmh.roundToInt()} / 極速 ${summary.maxSpeedKmh.roundToInt()} km/h",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                SpeedMetricText("均速", summary.avgMovingSpeedKmh, MaterialTheme.typography.bodySmall)
+                SpeedMetricText("極速", summary.maxSpeedKmh, MaterialTheme.typography.bodySmall)
             }
             val overColor = if (summary.overspeedCount > 0) Color(0xFFD32F2F) else MaterialTheme.colorScheme.onSurfaceVariant
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -309,8 +326,8 @@ fun TripDetailOverlay(
                 ) {
                     Text("里程 ${formatDistance(s.distanceM)}")
                     Text("移動 ${formatDuration(s.movingDurationMs)}")
-                    Text("均速 ${s.avgMovingSpeedKmh.roundToInt()} km/h")
-                    Text("極速 ${s.maxSpeedKmh.roundToInt()} km/h")
+                    SpeedMetricText("均速", s.avgMovingSpeedKmh, LocalTextStyle.current)
+                    SpeedMetricText("極速", s.maxSpeedKmh, LocalTextStyle.current)
                     Text("測速 ${s.cameraCount} 次")
                     Text(
                         "超速 ${s.overspeedCount} 次",
@@ -318,6 +335,8 @@ fun TripDetailOverlay(
                         fontWeight = if (s.overspeedCount > 0) FontWeight.Bold else FontWeight.Normal,
                     )
                 }
+
+                SpeedColorLegend()
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { onExportGpx(detail) }) {
@@ -382,6 +401,62 @@ fun TripDetailOverlay(
 }
 
 @Composable
+private fun SpeedMetricText(
+    label: String,
+    speedKmh: Double,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(speedColor(speedKmh), CircleShape),
+        )
+        Text("$label ${speedKmh.roundToInt()} km/h", style = style)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SpeedColorLegend() {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            "時速",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        for (tier in SpeedTier.entries) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 14.dp, height = 6.dp)
+                        .background(speedTierColor(tier), RoundedCornerShape(3.dp)),
+                )
+                Text(
+                    tier.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Text(
+            "km/h",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun EventRow(ev: TripEvent) {
     val label = when (ev.type) {
         TripEventType.APPROACH -> "測速提醒"
@@ -396,7 +471,11 @@ private fun EventRow(ev: TripEvent) {
     val place = ev.camera?.address?.takeIf { it.isNotBlank() } ?: ev.sectionId.orEmpty()
     val limit = ev.limitKmh?.let { "限 $it" } ?: ""
     val speed = "${ev.speedKmh.roundToInt()} km/h"
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             formatTimeOfDay(ev.tMs),
             style = MaterialTheme.typography.bodySmall,
@@ -408,10 +487,21 @@ private fun EventRow(ev: TripEvent) {
             fontWeight = FontWeight.Bold,
             color = if (isOver) Color(0xFFD32F2F) else MaterialTheme.colorScheme.onSurface,
         )
-        Text(
-            "$speed${if (limit.isNotEmpty()) " / $limit" else ""}",
-            style = MaterialTheme.typography.bodySmall,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(speedColor(ev.speedKmh, isOver), CircleShape),
+            )
+            Text(
+                "$speed${if (limit.isNotEmpty()) " / $limit" else ""}",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isOver) Color(0xFFD32F2F) else MaterialTheme.colorScheme.onSurface,
+            )
+        }
         if (place.isNotBlank()) {
             Text(
                 place,
