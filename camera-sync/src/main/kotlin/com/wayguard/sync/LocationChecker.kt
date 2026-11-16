@@ -125,12 +125,14 @@ internal class LocationChecker(
                 if (osm == null || osm.isEmpty) {
                     VerdictLevel.UNVERIFIABLE
                 } else {
-                    val chosen = pickIntersectionPair(cam.pos, cam.address, cam.city, parsed.roads, osm)
+                    val chosen = pickIntersectionPair(cam.pos, cam.address, cam.city, parsed.roads, parsed.roadLanes, osm)
                     intersectionPair = listOf(chosen.first, chosen.second)
                     val dA = chosen.third.first
                     val dB = chosen.third.second
                     val rA = chosen.first
                     val rB = chosen.second
+                    val labelA = parsed.roadLanes[rA] ?: rA
+                    val labelB = parsed.roadLanes[rB] ?: rB
                     when {
                         dA != null && dB != null -> {
                             val minD = min(dA, dB)
@@ -144,12 +146,12 @@ internal class LocationChecker(
                             rawDistM = maxD
                             val v = LocationVerdict.forIntersection(effectiveMaxD)
                             if (v != VerdictLevel.OK) {
-                                reasons += "距路口道路最遠 ${maxD.roundToInt()} m（$rA ${dA.roundToInt()} m、$rB ${dB.roundToInt()} m）"
+                                reasons += "距路口道路最遠 ${maxD.roundToInt()} m（$labelA ${dA.roundToInt()} m、$labelB ${dB.roundToInt()} m）"
                             }
                             v
                         }
                         dA != null || dB != null -> {
-                            val foundName = if (dA != null) rA else rB
+                            val foundName = if (dA != null) labelA else labelB
                             val foundD = dA ?: dB!!
                             rawDistM = foundD
                             when {
@@ -170,8 +172,17 @@ internal class LocationChecker(
             }
             AddressKind.HOUSE_NUMBER, AddressKind.ROAD_ONLY -> {
                 val roadName = parsed.roads.first()
+                val laneName = parsed.roadLanes[roadName]
                 val osmDist = osm?.let {
-                    it.distanceToRoadInCity(cam.pos, roadName, cam.city)
+                    val roadOrLaneDist = if (parsed.kind == AddressKind.ROAD_ONLY && laneName != null) {
+                        listOfNotNull(
+                            it.distanceToRoadInCity(cam.pos, roadName, cam.city, null),
+                            it.distanceToRoadInCity(cam.pos, roadName, cam.city, laneName),
+                        ).minOrNull()
+                    } else {
+                        it.distanceToRoadInCity(cam.pos, roadName, cam.city, laneName)
+                    }
+                    roadOrLaneDist
                         ?: parsed.routeRef?.let { ref -> it.distanceToRoute(cam.pos, ref, isFreeway = false) }
                 }
                 val osmVerdict = if (osmDist == null) {
@@ -180,7 +191,7 @@ internal class LocationChecker(
                     method = "road"
                     rawDistM = osmDist
                     val v = LocationVerdict.forRoad(osmDist)
-                    if (v != VerdictLevel.OK) reasons += "距 $roadName ${osmDist.roundToInt()} m"
+                    if (v != VerdictLevel.OK) reasons += "距 ${laneName ?: roadName} ${osmDist.roundToInt()} m"
                     v
                 }
 
@@ -299,7 +310,12 @@ internal class LocationChecker(
             intersectionPair.size >= 2
         ) {
             val candidates = osm.findIntersectionCandidates(
-                intersectionPair[0], intersectionPair[1], cam.city, cam.district,
+                intersectionPair[0],
+                intersectionPair[1],
+                cam.city,
+                cam.district,
+                parsed.roadLanes[intersectionPair[0]],
+                parsed.roadLanes[intersectionPair[1]],
             )
             if (candidates.size == 1) {
                 val cand = candidates.single()
@@ -321,8 +337,14 @@ internal class LocationChecker(
         // Compute stabilized roadAxis (0..170 deg) for single-road cameras within 25 m of OSM centerline.
         val camRoad = CameraRoad.of(cam.address, cam.directionText, knownRoads)
         val roadAxis = if (osm != null && !osm.isEmpty && camRoad is CameraRoad.Known) {
-            osm.nearestMatchingRoad(cam.pos, camRoad.base, cam.city, LocationVerdict.ROAD_AXIS_MAX_DIST_M)
-                ?.let { hit -> LocationVerdict.stabilizeRoadAxis(hit.bearingDeg, prevRoadAxis) }
+            val axisLane = if (parsed.kind == AddressKind.HOUSE_NUMBER) parsed.roadLanes[camRoad.base] else null
+            osm.nearestMatchingRoad(
+                cam.pos,
+                camRoad.base,
+                cam.city,
+                LocationVerdict.ROAD_AXIS_MAX_DIST_M,
+                axisLane,
+            )?.let { hit -> LocationVerdict.stabilizeRoadAxis(hit.bearingDeg, prevRoadAxis) }
         } else {
             null
         }
@@ -346,6 +368,7 @@ internal class LocationChecker(
         address: String,
         city: String,
         roads: List<String>,
+        roadLanes: Map<String, String>,
         osm: OsmExtract,
     ): Triple<String, String, Pair<Double?, Double?>> {
         if ("至" in address && roads.size >= 3) {
@@ -353,8 +376,8 @@ internal class LocationChecker(
             var best: Triple<String, String, Pair<Double?, Double?>>? = null
             var bestScore = Double.POSITIVE_INFINITY
             for ((a, b) in pairs) {
-                val da = osm.distanceToRoadInCity(pos, a, city)
-                val db = osm.distanceToRoadInCity(pos, b, city)
+                val da = osm.distanceToRoadInCity(pos, a, city, roadLanes[a])
+                val db = osm.distanceToRoadInCity(pos, b, city, roadLanes[b])
                 val score = when {
                     da != null && db != null -> max(da, db)
                     da != null -> da + 10_000.0
@@ -370,7 +393,12 @@ internal class LocationChecker(
         }
         val rA = roads[0]
         val rB = roads[1]
-        return Triple(rA, rB, osm.distanceToRoadInCity(pos, rA, city) to osm.distanceToRoadInCity(pos, rB, city))
+        return Triple(
+            rA,
+            rB,
+            osm.distanceToRoadInCity(pos, rA, city, roadLanes[rA]) to
+                osm.distanceToRoadInCity(pos, rB, city, roadLanes[rB]),
+        )
     }
 
     private fun suggestRejected(
@@ -386,7 +414,11 @@ internal class LocationChecker(
         val district = row.region.trim().removePrefix("福建省").removePrefix(city).removePrefix(city.replace('臺', '台'))
 
         if (parsed.kind == AddressKind.INTERSECTION && parsed.roads.size >= 2 && osm != null && !osm.isEmpty) {
-            val candidates = osm.findIntersectionCandidates(parsed.roads[0], parsed.roads[1], city, district)
+            val r0 = parsed.roads[0]
+            val r1 = parsed.roads[1]
+            val l0 = parsed.roadLanes[r0]
+            val l1 = parsed.roadLanes[r1]
+            val candidates = osm.findIntersectionCandidates(r0, r1, city, district, l0, l1)
             if (candidates.size == 1) {
                 val cand = candidates.single()
                 val ok = if (!offline && nlsc != null && CountyBounds.isKnown(city)) {
@@ -401,7 +433,7 @@ internal class LocationChecker(
                         method = "intersection",
                         suggestedLat = round6(cand.lat),
                         suggestedLon = round6(cand.lon),
-                        reason = "被拒絕列反推路口座標（${parsed.roads[0]} × ${parsed.roads[1]}）",
+                        reason = "被拒絕列反推路口座標（${l0 ?: r0} × ${l1 ?: r1}）",
                         checkedAt = now,
                     )
                 }

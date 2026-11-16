@@ -98,6 +98,99 @@ class LocationCheckerTest {
     }
 
     @Test
+    fun laneAwareLookupFixesLaneAddressesIntersectionsAndRoadAxisWhileKeepingMainRoadsStrict() {
+        assertEquals("瑤鳳路二段416巷", OsmExtract.indexName("瑤鳳路2段416巷"))
+        assertEquals("瑤鳳路二段416巷", OsmExtract.indexName("瑤鳳路２段４１６巷"))
+        assertEquals("臺灣大道十段50巷", OsmExtract.indexName("台灣大道 10段 50巷"))
+        assertEquals("大巷街", OsmExtract.indexName("大巷街二段"))
+        assertEquals("大巷街二段10巷", OsmExtract.indexName("大巷街二段10巷"))
+
+        // Synthetic extract in 桃園市 / 中壢區:
+        // - 中華路 runs N-S (bearing 0°) at lon 121.2200
+        // - 中華路一段2巷 runs E-W (bearing 90°) at lat 24.9600, lon 121.222..121.228 (~200-800m east of 中華路)
+        // - 柳橋東路 runs N-S at lon 121.2350, crossing 瑤鳳路二段416巷 (E-W at lat 24.9620)
+        // - 大莊路 runs E-W at lat 24.9500, with sibling lane 大莊路58巷 at lat 24.9510 (大莊路60巷 itself unnamed here)
+        // - An unrelated 高雄市大莊路60巷 far south (22.62, 120.30) must not block city-scoped fallback in 桃園市.
+        val laneExtract = OsmExtract.fromText(
+            listOf(
+                """{"type":"Feature","properties":{"boundary":"administrative","admin_level":"4","name":"桃園市"},"geometry":{"type":"Polygon","coordinates":[[[121.19,24.93],[121.31,24.93],[121.31,24.99],[121.19,24.99],[121.19,24.93]]]}}""",
+                """{"type":"Feature","properties":{"boundary":"administrative","admin_level":"7","name":"中壢區"},"geometry":{"type":"Polygon","coordinates":[[[121.20,24.94],[121.26,24.94],[121.26,24.98],[121.20,24.98],[121.20,24.94]]]}}""",
+                """{"type":"Feature","properties":{"highway":"primary","name":"中華路"},"geometry":{"type":"LineString","coordinates":[[121.2200,24.955],[121.2200,24.965]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"中華路一段2巷"},"geometry":{"type":"LineString","coordinates":[[121.22005,24.9600],[121.2280,24.9600]]}}""",
+                """{"type":"Feature","properties":{"highway":"secondary","name":"柳橋東路"},"geometry":{"type":"LineString","coordinates":[[121.2350,24.958],[121.2350,24.966]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"瑤鳳路二段416巷"},"geometry":{"type":"LineString","coordinates":[[121.2300,24.9620],[121.2400,24.9620]]}}""",
+                """{"type":"Feature","properties":{"highway":"secondary","name":"公道五路"},"geometry":{"type":"LineString","coordinates":[[121.2420,24.958],[121.2420,24.966]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"東大路3段430巷"},"geometry":{"type":"LineString","coordinates":[[121.2400,24.9640],[121.2450,24.9640]]}}""",
+                """{"type":"Feature","properties":{"highway":"secondary","name":"大莊路"},"geometry":{"type":"LineString","coordinates":[[121.2150,24.9500],[121.2250,24.9500]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"大莊路58巷"},"geometry":{"type":"LineString","coordinates":[[121.2150,24.9510],[121.2250,24.9510]]}}""",
+                """{"type":"Feature","properties":{"highway":"residential","name":"大莊路60巷"},"geometry":{"type":"LineString","coordinates":[[120.3000,22.6200],[120.3100,22.6200]]}}""",
+            ).joinToString("\n") { "\u001e$it" },
+        )
+
+        // Direct OsmExtract lane-aware API checks
+        assertTrue(laneExtract.distanceToRoad(LatLng(24.9600, 121.2260), "中華路", laneName = "中華路一段2巷")!! < 1.0)
+        assertTrue(laneExtract.distanceToRoad(LatLng(24.9640, 121.2430), "東大路", laneName = "東大路三段430巷")!! < 1.0)
+        assertTrue(laneExtract.hasRoad("中華路", laneName = "中華路一段2巷"))
+        assertTrue(laneExtract.hasRoad("大莊路", laneName = "大莊路999巷")) // falls back to parent/sibling
+
+        // 1. Lane camera sitting on its named lane (~600 m from parent 中華路) -> OK, roadAxis from lane (90°).
+        val onNamedLane = SpeedCamera("cam-lane-ok", 24.9600, 121.2260, city = "桃園市", district = "中壢區", address = "中華路一段2巷137號")
+        // 2. Named lane exists in city, but camera sits on parent 中華路 ~200m from lane start? Use 24.9560 (440m south on 中華路).
+        val offNamedLane = SpeedCamera("cam-lane-bad", 24.9560, 121.2200, city = "桃園市", district = "中壢區", address = "中華路一段2巷137號")
+        // 3. Main-road address sitting on the alley ~600m from 中華路 -> still NOT masked by alley -> MISMATCH.
+        val mainOnAlley = SpeedCamera("cam-main-on-alley", 24.9600, 121.2260, city = "桃園市", district = "中壢區", address = "中華路100號")
+        // 4. Main-road camera sitting on 中華路 5 m from perpendicular 中華路一段2巷 -> roadAxis comes from 中華路 (0°), NOT 90°.
+        val mainNearAlley = SpeedCamera("cam-main-axis", 24.9600, 121.2200, city = "桃園市", district = "中壢區", address = "中華路100號")
+        // 5. Unnamed lane (大莊路60巷 absent in 桃園市, though present in 高雄市) near sibling 大莊路58巷 -> fallback OK.
+        val unnamedLane = SpeedCamera("cam-lane-fallback", 24.9510, 121.2200, city = "桃園市", district = "中壢區", address = "大莊路60巷90號對面")
+        // 6. ROAD_ONLY lane-mouth camera on main road ~44m upstream of 中華路一段2巷 (and another right at the junction) -> OK + main roadAxis (0°).
+        val roadOnlyUpstream = SpeedCamera("cam-lane-mouth-upstream", 24.9596, 121.2200, city = "桃園市", district = "中壢區", address = "中華路一段2巷口")
+        val roadOnlyJunction = SpeedCamera("cam-lane-mouth-junction", 24.9600, 121.22004, city = "桃園市", district = "中壢區", address = "中華路一段2巷口")
+        // 7. Intersection with a lane using 2段↔二段 (and OSM Arabic 3段 ↔ address 三段) normalization.
+        val interLaneOk = SpeedCamera("cam-inter-ok", 24.9620, 121.2350, city = "桃園市", district = "中壢區", address = "柳橋東路與瑤鳳路2段416巷口")
+        val interLaneRevOk = SpeedCamera("cam-inter-rev-ok", 24.9640, 121.2420, city = "桃園市", district = "中壢區", address = "公道五路五段、東大路三段430巷口")
+        val interLaneBad = SpeedCamera("cam-inter-bad", 24.9550, 121.2350, city = "桃園市", district = "中壢區", address = "柳橋東路與瑤鳳路2段416巷口")
+
+        val checker = LocationChecker(laneExtract, offline = true)
+        val res = checker.checkAll(
+            cameras = listOf(
+                onNamedLane, offNamedLane, mainOnAlley, mainNearAlley, unnamedLane,
+                roadOnlyUpstream, roadOnlyJunction, interLaneOk, interLaneRevOk, interLaneBad,
+            ),
+            rejected = emptyList(),
+            rowsById = emptyMap(),
+            existing = emptyMap(),
+            now = "2026-11-16T00:00:00Z",
+            verifyAll = true,
+        )
+
+        val namedChk = res.checks.getValue("cam-lane-ok")
+        assertEquals(VerdictLevel.OK, namedChk.verdict)
+        assertEquals("road", namedChk.method)
+        assertEquals(90, namedChk.roadAxis)
+
+        assertEquals(VerdictLevel.MISMATCH, res.checks.getValue("cam-lane-bad").verdict)
+        assertEquals(VerdictLevel.MISMATCH, res.checks.getValue("cam-main-on-alley").verdict)
+        val mainAxisChk = res.checks.getValue("cam-main-axis")
+        assertEquals(VerdictLevel.OK, mainAxisChk.verdict)
+        assertEquals(0, mainAxisChk.roadAxis)
+        assertEquals(VerdictLevel.OK, res.checks.getValue("cam-lane-fallback").verdict)
+        val mouthUpstreamChk = res.checks.getValue("cam-lane-mouth-upstream")
+        assertEquals(VerdictLevel.OK, mouthUpstreamChk.verdict)
+        assertEquals(0, mouthUpstreamChk.roadAxis)
+        val mouthJunctionChk = res.checks.getValue("cam-lane-mouth-junction")
+        assertEquals(VerdictLevel.OK, mouthJunctionChk.verdict)
+        assertEquals(0, mouthJunctionChk.roadAxis)
+        assertEquals(VerdictLevel.OK, res.checks.getValue("cam-inter-ok").verdict)
+        assertEquals(VerdictLevel.OK, res.checks.getValue("cam-inter-rev-ok").verdict)
+
+        val interBadChk = res.checks.getValue("cam-inter-bad")
+        assertEquals(VerdictLevel.MISMATCH, interBadChk.verdict)
+        assertEquals(24.9620, interBadChk.suggestedLat!!, 1e-4)
+        assertEquals(121.2350, interBadChk.suggestedLon!!, 1e-4)
+    }
+
+    @Test
     fun localRoadCheckerReplacesNominatimWhenOsmExtractIsLoaded() {
         val checker = RoadChecker(Nominatim("test"), osm)
         val checks = checker.check(listOf("cam-1" to LatLng(24.960, 121.217)), "2026-11-13T00:00:00Z")

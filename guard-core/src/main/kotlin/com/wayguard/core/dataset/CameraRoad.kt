@@ -29,6 +29,20 @@ sealed interface CameraRoad {
         private val SEPARATOR = Regex("[與及、,，()（）]|(?<=[路街道段號巷弄線,])(?:和|接)")
         private val TOWARD_IN_ADDRESS = Regex("往[^、,，()（）\\s]+方向")
         private val SECTION_SUFFIX = Regex("^[一二三四五六七八九十]+段")
+        private val LANE_SECTION_RE = Regex("^\\s*((?:[一二三四五六七八九十]+|[0-9０-９]+)段)")
+        private const val NUMBERED_LANE_OR_ALLEY = "(?:[0-9０-９]+(?:[之\\-－][0-9０-９]+)?|[一二三四五六七八九十百千]+)"
+        private const val NAMED_LANE_PREFIX =
+            "(?!(?:小|暗|死|無名|防火|對面|旁|前|後|內|外|底|口|近|往))[^與及、,，()（）\\s0-9０-９路街道段巷弄號線縣市區鄉鎮]{2,6}(?:[一二三四五六七八九十]+)?"
+        private val LANE_PART_RE = Regex("^\\s*(${NUMBERED_LANE_OR_ALLEY}巷|${NAMED_LANE_PREFIX}巷)")
+        private val ALLEY_PART_RE = Regex("^\\s*(${NUMBERED_LANE_OR_ALLEY}弄)")
+        private val EXACT_NON_LANE_TOKENS = setOf("後巷", "前巷", "舊巷", "新巷", "單巷")
+        private val NON_LANE_TAILS = setOf("小巷", "暗巷", "死巷", "無名巷", "防火巷", "旁巷", "側巷")
+        private val NON_LANE_MARKERS = setOf("對面", "旁邊", "附近", "路口", "方向")
+        private val BASE_ROAD_RE = Regex(".+?$SUFFIX")
+        private val LANE_CHAR_RE = Regex("[巷弄]")
+        private val CN_SECTION_DIGITS = arrayOf("", "一", "二", "三", "四", "五", "六", "七", "八", "九")
+        private val ARABIC_SECTION_RE = Regex("(?<=[\\u4e00-\\u9fff])(\\d+)段")
+        private val INTERNAL_CJK_SPACE_RE = Regex("(?<=[\\u4e00-\\u9fff0-9])\\s+(?=[\\u4e00-\\u9fff0-9])")
         private const val KNOWN_BOUNDARY_CHARS = "路街道段巷弄號線縣市區鄉鎮村里鄰與和及、,，()（） 0123456789"
         private val RELATIVE_PARENS = Regex("[(（][^()（）]*(?:以[東西南北]|往[東西南北]|\\d+\\s*(?:公尺|[mM])|間|中段|[-~～至])[^()（）]*[)）]")
         private val ARABIC_ROAD_DIGIT = Regex("(?<=[\\u4e00-\\u9fff])[1-9](?=[路街段])")
@@ -65,8 +79,34 @@ sealed interface CameraRoad {
         fun roadBeforeToward(directionText: String): String? =
             ROAD_BEFORE_TOWARD.find(directionText.filterNot(Char::isWhitespace))?.let { base(it.groupValues[1]) }
 
+        private data class RoadMatch(val offset: Int, val base: String, val lane: String?)
+
         /** Ordered, deduplicated base road names appearing anywhere in [address]. */
-        fun roadsInAddress(address: String, knownRoads: Set<String> = emptySet()): List<String> {
+        fun roadsInAddress(address: String, knownRoads: Set<String> = emptySet()): List<String> =
+            roadsAndLanesInAddress(address, knownRoads).first
+
+        /**
+         * Normalized lane/alley token (`…巷` / `…弄`, e.g. `中華路一段2巷`, `瑤鳳路二段416巷`,
+         * `中正路二段239巷15弄`) keyed by base road name for roads in [address] that carry one.
+         */
+        fun roadLanesInAddress(address: String, knownRoads: Set<String> = emptySet()): Map<String, String> =
+            roadsAndLanesInAddress(address, knownRoads).second
+
+        /** Extracts both [roadsInAddress] and [roadLanesInAddress] in a single pass. */
+        fun roadsAndLanesInAddress(
+            address: String,
+            knownRoads: Set<String> = emptySet(),
+        ): Pair<List<String>, Map<String, String>> {
+            val sorted = extractRoadMatches(address, knownRoads).sortedBy { it.offset }
+            val roads = sorted.map { it.base }.distinct()
+            val lanes = LinkedHashMap<String, String>()
+            for (m in sorted) {
+                if (m.lane != null) lanes.putIfAbsent(m.base, m.lane)
+            }
+            return roads to lanes
+        }
+
+        private fun extractRoadMatches(address: String, knownRoads: Set<String>): List<RoadMatch> {
             var cleaned = address.trim()
                 .replace('台', '臺')
                 .replace(TOWARD_IN_ADDRESS, ",")
@@ -84,7 +124,7 @@ sealed interface CameraRoad {
                 .replace(KM_MARKER, ",")
                 .replace(GENERIC_ROAD_RE, ",")
             val buf = StringBuilder(cleaned)
-            val found = ArrayList<Pair<Int, String>>()
+            val found = ArrayList<RoadMatch>()
 
             val sortedKnown = knownRoads.asSequence()
                 .map(::base)
@@ -100,9 +140,11 @@ sealed interface CameraRoad {
                     val end = idx + k.length
                     val nextOk = end >= buf.length || buf[end] !in "路街道"
                     if (prevOk && nextOk) {
-                        val secLen = SECTION_SUFFIX.find(buf.substring(end))?.value?.length ?: 0
+                        val afterBase = buf.substring(end)
+                        val lane = extractLaneAfterRoad(k, afterBase)
+                        val secLen = (LANE_SECTION_RE.find(afterBase) ?: SECTION_SUFFIX.find(afterBase))?.value?.length ?: 0
                         val totalEnd = end + secLen
-                        found += idx to k
+                        found += RoadMatch(idx, k, lane)
                         for (p in idx until totalEnd) buf[p] = ','
                         from = totalEnd
                     } else {
@@ -119,23 +161,99 @@ sealed interface CameraRoad {
                 for (m in ROAD.findAll(stripped)) {
                     val road = base(m.groupValues[1])
                     if (road.length >= 2 && road !in GENERIC_ROADS) {
-                        found += (pos + stripShift + m.range.first) to road
+                        val baseEnd = m.range.first + m.groupValues[1].length
+                        val lane = extractLaneAfterRoad(road, stripped.substring(baseEnd))
+                        found += RoadMatch(pos + stripShift + m.range.first, road, lane)
                     }
                 }
                 pos += piece.length + 1
             }
 
-            return found.sortedBy { it.first }.map { it.second }.distinct()
+            return found
+        }
+
+        private fun extractLaneAfterRoad(roadBase: String, afterBase: String): String? {
+            if (afterBase.isEmpty()) return null
+            var pos = LANE_SECTION_RE.find(afterBase)?.let { it.range.last + 1 } ?: 0
+            var laneEnd = -1
+
+            val laneMatch = LANE_PART_RE.find(afterBase.substring(pos))
+            if (laneMatch != null && isValidLaneToken(laneMatch.groupValues[1])) {
+                pos += laneMatch.range.last + 1
+                laneEnd = pos
+                while (true) {
+                    val alleyMatch = ALLEY_PART_RE.find(afterBase.substring(pos)) ?: break
+                    pos += alleyMatch.range.last + 1
+                    laneEnd = pos
+                }
+            } else {
+                while (true) {
+                    val alleyMatch = ALLEY_PART_RE.find(afterBase.substring(pos)) ?: break
+                    pos += alleyMatch.range.last + 1
+                    laneEnd = pos
+                }
+            }
+            if (laneEnd <= 0) return null
+            return normalizeLane(roadBase + afterBase.substring(0, laneEnd))
+        }
+
+        private fun isValidLaneToken(token: String): Boolean {
+            if (token in EXACT_NON_LANE_TOKENS) return false
+            if (NON_LANE_TAILS.any { token.endsWith(it) }) return false
+            if (NON_LANE_MARKERS.any { it in token }) return false
+            return true
+        }
+
+        /**
+         * Canonicalizes a lane/alley name for symmetric OSM indexing and address querying:
+         * trims spaces (and stray spaces between CJK/digit tokens), unifies `台`→`臺` and
+         * full-width digits→ASCII, and converts Arabic section numbers before `段` (1..99)
+         * to Chinese numerals (`瑤鳳路2段416巷` → `瑤鳳路二段416巷`).
+         */
+        fun normalizeLane(name: String): String {
+            val ascii = buildString(name.length) {
+                for (ch in name.trim()) {
+                    append(
+                        when (ch) {
+                            in '０'..'９' -> ('0' + (ch - '０'))
+                            '台' -> '臺'
+                            else -> ch
+                        }
+                    )
+                }
+            }.replace(INTERNAL_CJK_SPACE_RE, "")
+            return ARABIC_SECTION_RE.replace(ascii) { m ->
+                val num = m.groupValues[1].toIntOrNull()
+                val cn = num?.let(::toChineseSection)
+                if (cn != null) "${cn}段" else m.value
+            }
+        }
+
+        private fun toChineseSection(n: Int): String? = when {
+            n <= 0 || n >= 100 -> null
+            n < 10 -> CN_SECTION_DIGITS[n]
+            n == 10 -> "十"
+            n < 20 -> "十${CN_SECTION_DIGITS[n % 10]}"
+            n % 10 == 0 -> "${CN_SECTION_DIGITS[n / 10]}十"
+            else -> "${CN_SECTION_DIGITS[n / 10]}十${CN_SECTION_DIGITS[n % 10]}"
         }
 
         /** `大興西路三段` → `大興西路`, `中正路二段239巷` → `中正路`; 台/臺 unified. */
         fun base(name: String): String {
             val n = name.trim().replace('台', '臺')
-            val end = Regex(".+?$SUFFIX").find(n)?.range?.last ?: return n
+            val end = BASE_ROAD_RE.find(n)?.range?.last ?: return n
             return n.substring(0, end + 1)
         }
 
-        /** A lane or alley, not a through road. */
-        fun isLane(name: String): Boolean = Regex("[巷弄]").containsMatchIn(name)
+        /**
+         * A lane or alley, not a through road. Characters inside a road's own base name before
+         * `路`/`街`/`大道` (e.g. `大巷街`, `大巷街二段`) do not make it a lane.
+         */
+        fun isLane(name: String): Boolean {
+            val n = name.trim().replace('台', '臺')
+            val baseMatch = BASE_ROAD_RE.find(n)
+            val afterBase = if (baseMatch != null) n.substring(baseMatch.range.last + 1) else n
+            return LANE_CHAR_RE.containsMatchIn(afterBase)
+        }
     }
 }

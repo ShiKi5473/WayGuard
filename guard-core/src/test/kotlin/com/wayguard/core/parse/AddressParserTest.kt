@@ -160,5 +160,29 @@ class AddressParserTest {
         assertEquals(listOf("同盟三路", "十全三路"), offset.roads)
         assertEquals(220.0, offset.offsetMeters!!, 1e-6)
     }
+
+    @Test
+    fun extractsRoadLanesWithoutChangingBaseRoads() {
+        val singleLane = AddressParser.parse("中華路一段2巷137號", "彰化縣")
+        assertEquals(AddressKind.HOUSE_NUMBER, singleLane.kind)
+        assertEquals(listOf("中華路"), singleLane.roads)
+        assertEquals("137", singleLane.houseNumber)
+        assertEquals(mapOf("中華路" to "中華路一段2巷"), singleLane.roadLanes)
+
+        val alleyChain = AddressParser.parse("中正路二段239巷15弄8號", "桃園市")
+        assertEquals(AddressKind.HOUSE_NUMBER, alleyChain.kind)
+        assertEquals(listOf("中正路"), alleyChain.roads)
+        assertEquals(mapOf("中正路" to "中正路二段239巷15弄"), alleyChain.roadLanes)
+
+        val interLane = AddressParser.parse("埔心鄉柳橋東路與瑤鳳路2段416巷口", "彰化縣")
+        assertEquals(AddressKind.INTERSECTION, interLane.kind)
+        assertEquals(listOf("柳橋東路", "瑤鳳路"), interLane.roads)
+        assertEquals(mapOf("瑤鳳路" to "瑤鳳路二段416巷"), interLane.roadLanes)
+
+        val nonLaneRoad = AddressParser.parse("大巷街二段100號", "臺中市")
+        assertEquals(AddressKind.HOUSE_NUMBER, nonLaneRoad.kind)
+        assertEquals(listOf("大巷街"), nonLaneRoad.roads)
+        assertTrue(nonLaneRoad.roadLanes.isEmpty())
+    }
 }
 

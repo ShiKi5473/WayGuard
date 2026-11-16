@@ -32,6 +32,7 @@ import kotlinx.serialization.json.jsonPrimitive
 internal class OsmExtract private constructor(
     private val roadCells: Map<Long, List<RoadPolyline>>,
     private val roadsByName: Map<String, List<RoadPolyline>>,
+    private val lanesByParent: Map<String, List<RoadPolyline>>,
     private val cityBoundaries: List<AdminPolygon>,
     private val districtBoundaries: List<AdminPolygon>,
     val mileposts: MilepostIndex = MilepostIndex(emptyList()),
@@ -104,11 +105,42 @@ internal class OsmExtract private constructor(
         return bestHit
     }
 
+    /**
+     * Resolves candidate polylines for [roadName], optionally scoped to [box].
+     * When [laneName] is provided, checks the exact normalized lane first and falls back to
+     * `roadsByName[base] + lanesByParent[base]` if that lane is absent/unnamed in OSM.
+     * Non-lane queries remain strictly on `roadsByName[base]`.
+     */
+    private fun matchingPolylines(
+        roadName: String,
+        laneName: String? = null,
+        box: BBox? = null,
+    ): List<RoadPolyline> {
+        fun inBox(list: List<RoadPolyline>): List<RoadPolyline> =
+            if (box == null) list else list.filter { overlaps(it.bbox, box) }
+
+        val laneKey = laneName?.let(::indexName)?.takeIf { it.isNotBlank() }
+        if (laneKey != null) {
+            val exact = inBox(roadsByName[laneKey].orEmpty())
+            if (exact.isNotEmpty()) return exact
+            val baseKey = CameraRoad.base(roadName)
+            if (baseKey.isBlank()) return emptyList()
+            return inBox(roadsByName[baseKey].orEmpty() + lanesByParent[baseKey].orEmpty())
+        }
+        val target = indexName(roadName)
+        if (target.isBlank()) return emptyList()
+        return inBox(roadsByName[target].orEmpty())
+    }
+
     /** Shortest distance (m) from [pos] to any road segment matching [baseRoadName] within [searchRadiusM]. */
-    fun distanceToRoad(pos: LatLng, baseRoadName: String, searchRadiusM: Double = 500.0): Double? {
-        val target = indexName(baseRoadName)
-        if (target.isBlank()) return null
-        val matching = roadsByName[target] ?: return null
+    fun distanceToRoad(
+        pos: LatLng,
+        baseRoadName: String,
+        searchRadiusM: Double = 500.0,
+        laneName: String? = null,
+    ): Double? {
+        val matching = matchingPolylines(baseRoadName, laneName)
+        if (matching.isEmpty()) return null
         var best: Double? = null
         val dLat = searchRadiusM / METERS_PER_DEG_LAT
         val dLon = searchRadiusM / (METERS_PER_DEG_LAT * cos(Math.toRadians(pos.lat)).coerceAtLeast(0.01))
@@ -123,13 +155,16 @@ internal class OsmExtract private constructor(
     }
 
     /** Distance (m) within [city]'s bounds to the nearest segment of [baseRoadName], or null if not in extract. */
-    fun distanceToRoadInCity(pos: LatLng, baseRoadName: String, city: String): Double? {
-        val target = indexName(baseRoadName)
-        val matching = roadsByName[target] ?: return null
-        val box = CountyBounds.of(city)
+    fun distanceToRoadInCity(
+        pos: LatLng,
+        baseRoadName: String,
+        city: String,
+        laneName: String? = null,
+    ): Double? {
+        val matching = matchingPolylines(baseRoadName, laneName, CountyBounds.of(city))
+        if (matching.isEmpty()) return null
         var best: Double? = null
         for (poly in matching) {
-            if (!overlaps(poly.bbox, box)) continue
             val d = distanceToPolyline(poly.points, pos) ?: continue
             if (best == null || d < best) best = d
         }
@@ -142,15 +177,13 @@ internal class OsmExtract private constructor(
         baseRoadName: String,
         city: String,
         maxDistM: Double = LocationVerdict.ROAD_AXIS_MAX_DIST_M,
+        laneName: String? = null,
     ): RoadHit? {
-        val target = indexName(baseRoadName)
-        if (target.isBlank()) return null
-        val matching = roadsByName[target] ?: return null
-        val box = CountyBounds.of(city)
+        val matching = matchingPolylines(baseRoadName, laneName, CountyBounds.of(city))
+        if (matching.isEmpty()) return null
         var bestHit: RoadHit? = null
         var bestDist = maxDistM
         for (poly in matching) {
-            if (!overlaps(poly.bbox, box)) continue
             val nearest = nearestPointAndBearing(poly.points, pos) ?: continue
             if (nearest.second <= bestDist) {
                 bestDist = nearest.second
@@ -162,11 +195,8 @@ internal class OsmExtract private constructor(
     }
 
     /** True when at least one road segment in OSM carries [baseRoadName] (optionally within [box]). */
-    fun hasRoad(baseRoadName: String, box: BBox? = null): Boolean {
-        val matching = roadsByName[indexName(baseRoadName)] ?: return false
-        if (box == null) return matching.isNotEmpty()
-        return matching.any { overlaps(it.bbox, box) }
-    }
+    fun hasRoad(baseRoadName: String, box: BBox? = null, laneName: String? = null): Boolean =
+        matchingPolylines(baseRoadName, laneName, box).isNotEmpty()
 
     /** Shortest distance (m) from [pos] to a route matching [routeRef] and [isFreeway] class. */
     fun distanceToRoute(
@@ -209,13 +239,15 @@ internal class OsmExtract private constructor(
         roadB: String,
         city: String,
         district: String,
+        laneA: String? = null,
+        laneB: String? = null,
     ): List<LatLng> {
-        val baseA = indexName(roadA)
-        val baseB = indexName(roadB)
-        if (baseA.isBlank() || baseB.isBlank() || baseA == baseB) return emptyList()
+        val keyA = laneA?.takeIf { it.isNotBlank() }?.let(::indexName) ?: indexName(roadA)
+        val keyB = laneB?.takeIf { it.isNotBlank() }?.let(::indexName) ?: indexName(roadB)
+        if (keyA.isBlank() || keyB.isBlank() || keyA == keyB) return emptyList()
         val box = CountyBounds.of(city)
-        val listA = roadsByName[baseA].orEmpty().filter { overlaps(it.bbox, box) }
-        val listB = roadsByName[baseB].orEmpty().filter { overlaps(it.bbox, box) }
+        val listA = matchingPolylines(roadA, laneA, box)
+        val listB = matchingPolylines(roadB, laneB, box)
         if (listA.isEmpty() || listB.isEmpty()) return emptyList()
 
         val rawHits = ArrayList<LatLng>()
@@ -302,9 +334,11 @@ internal class OsmExtract private constructor(
          * (`枋坪巷`) are unaffected because their base name is already the full name.
          */
         internal fun indexName(raw: String): String {
-            val normalized = raw.trim().replace('台', '臺')
-            val base = CameraRoad.base(normalized)
-            return if (CameraRoad.isLane(normalized) && base != normalized) normalized else base
+            val trimmed = raw.trim().replace('台', '臺')
+            if (!CameraRoad.isLane(trimmed)) return CameraRoad.base(trimmed)
+            val normLane = CameraRoad.normalizeLane(trimmed)
+            val base = CameraRoad.base(normLane)
+            return if (base != normLane) normLane else base
         }
 
         fun load(file: File): OsmExtract {
@@ -345,6 +379,7 @@ internal class OsmExtract private constructor(
         private fun fromFeatures(features: Sequence<JsonObject>): OsmExtract {
             val roadCells = HashMap<Long, MutableList<RoadPolyline>>()
             val roadsByName = HashMap<String, MutableList<RoadPolyline>>()
+            val lanesByParent = HashMap<String, MutableList<RoadPolyline>>()
             val cityBoundaries = ArrayList<AdminPolygon>()
             val districtBoundaries = ArrayList<AdminPolygon>()
             val milestoneMarkers = ArrayList<MilepostMarker>()
@@ -394,6 +429,12 @@ internal class OsmExtract private constructor(
                         network == "TW:freeway" ||
                         rawNames.any { "國道" in it || "高速公路" in it }
                     val primaryName = indexName(primaryRaw).ifBlank { baseNames.firstOrNull().orEmpty() }
+                    val parentBases = baseNames.asSequence()
+                        .mapNotNull { indexed ->
+                            val parent = CameraRoad.base(indexed)
+                            parent.takeIf { it.isNotBlank() && indexed != it }
+                        }
+                        .toSet()
 
                     val lineParts = when (geomType) {
                         "LineString" -> listOf(toLatLngList(coords))
@@ -405,6 +446,9 @@ internal class OsmExtract private constructor(
                         val poly = RoadPolyline(primaryName, baseNames, routeRefs, isMotorway, pts, bboxOf(pts))
                         for (name in baseNames) {
                             roadsByName.getOrPut(name) { ArrayList() } += poly
+                        }
+                        for (parent in parentBases) {
+                            lanesByParent.getOrPut(parent) { ArrayList() } += poly
                         }
                         val seenCells = HashSet<Long>()
                         for (p in pts) {
@@ -456,6 +500,7 @@ internal class OsmExtract private constructor(
             return OsmExtract(
                 roadCells,
                 roadsByName,
+                lanesByParent,
                 cityBoundaries,
                 districtBoundaries,
                 MilepostIndex(milestoneMarkers),

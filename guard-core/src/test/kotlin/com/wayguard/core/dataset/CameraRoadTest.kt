@@ -57,7 +57,47 @@ class CameraRoadTest {
         assertEquals(CameraRoad.base("台北路"), CameraRoad.base("臺北路"))
         assertTrue(CameraRoad.isLane("中正路二段239巷"))
         assertTrue(CameraRoad.isLane("龍山街426巷"))
+        assertTrue(CameraRoad.isLane("枋坪巷"))
+        assertTrue(CameraRoad.isLane("大巷街二段10巷"))
         assertFalse(CameraRoad.isLane("環中東路"))
+        assertFalse(CameraRoad.isLane("大巷街"))
+        assertFalse(CameraRoad.isLane("大巷街二段"))
+    }
+
+    @Test
+    fun normalizesAndExtractsRoadLanesAndIgnoresNonLaneWords() {
+        assertEquals("瑤鳳路二段416巷", CameraRoad.normalizeLane(" 瑤鳳路2段416巷 "))
+        assertEquals("瑤鳳路二段416巷", CameraRoad.normalizeLane("瑤鳳路２段４１６巷"))
+        assertEquals("臺灣大道十段50巷", CameraRoad.normalizeLane("台灣大道 10段 50巷"))
+        assertEquals("臺灣大道二十一段3巷", CameraRoad.normalizeLane("台灣大道21段3巷"))
+        assertEquals("臺中路12弄", CameraRoad.normalizeLane(" 台中路 12弄 "))
+
+        assertEquals(mapOf("中華路" to "中華路一段2巷"), CameraRoad.roadLanesInAddress("中華路一段2巷137號"))
+        assertEquals(mapOf("大莊路" to "大莊路60巷"), CameraRoad.roadLanesInAddress("岡山區大莊路60巷90號對面"))
+        assertEquals(mapOf("光復路" to "光復路一段525巷"), CameraRoad.roadLanesInAddress("新竹市東區光復路一段525巷67號前"))
+        assertEquals(mapOf("翠屏路" to "翠屏路112巷"), CameraRoad.roadLanesInAddress("大社區翠屏路112巷1-11號旁"))
+        assertEquals(mapOf("東大路" to "東大路三段430巷"), CameraRoad.roadLanesInAddress("公道五路五段、東大路三段430巷口"))
+        assertEquals(mapOf("喜樹路" to "喜樹路340巷"), CameraRoad.roadLanesInAddress("濱南路與喜樹路340巷口"))
+        assertEquals(mapOf("光興路" to "光興路1343巷"), CameraRoad.roadLanesInAddress("太平區太堤東路與光興路1343巷口"))
+        assertEquals(mapOf("瑤鳳路" to "瑤鳳路二段416巷"), CameraRoad.roadLanesInAddress("埔心鄉柳橋東路與瑤鳳路2段416巷口"))
+
+        // 弄 alone, 巷 + 弄 chain, and named lanes
+        assertEquals(mapOf("中正路" to "中正路二段239巷15弄"), CameraRoad.roadLanesInAddress("中正路二段239巷15弄8號"))
+        assertEquals(mapOf("臺中路" to "臺中路12弄"), CameraRoad.roadLanesInAddress("台中路12弄"))
+        assertEquals(mapOf("豐勢路" to "豐勢路九房巷"), CameraRoad.roadLanesInAddress("豐勢路九房巷口"))
+        assertEquals(
+            mapOf("和平西路" to "和平西路一段100巷"),
+            CameraRoad.roadLanesInAddress("和平西路一段100巷5號", setOf("和平西路", "和平路")),
+        )
+
+        // Non-lane words containing 巷/弄 and lanes inside relative parens must not produce lane tokens
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("中正路巷口"))
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("中正路100號對面小巷"))
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("中正路無名巷口"))
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("復興路弄堂餐廳前"))
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("大巷街二段100號"))
+        assertEquals(emptyMap<String, String>(), CameraRoad.roadLanesInAddress("太平區環中東路三段(育才路與樹孝路67巷間)"))
+        assertEquals(mapOf("中正路" to "中正路3巷"), CameraRoad.roadLanesInAddress("中正路3巷弄口"))
     }
 
     // ---- rules ----

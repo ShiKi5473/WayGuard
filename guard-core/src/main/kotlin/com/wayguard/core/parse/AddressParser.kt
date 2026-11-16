@@ -33,6 +33,8 @@ data class ParsedAddress(
     val houseNumber: String? = null,
     val offsetMeters: Double? = null,
     val isRampOrSpan: Boolean = false,
+    /** Normalized lane/alley token (`…巷` / `…弄`) per base road name when the address specifies one. */
+    val roadLanes: Map<String, String> = emptyMap(),
 )
 
 /**
@@ -67,12 +69,13 @@ object AddressParser {
         val norm = normalizeText(address)
         val normCity = normalizeText(city)
 
-        val addressRoads = CameraRoad.roadsInAddress(address, knownRoads)
+        val (addressRoads, addressRoadLanes) = CameraRoad.roadsAndLanesInAddress(address, knownRoads)
         val roads = if (addressRoads.isNotEmpty()) {
             addressRoads
         } else {
             listOfNotNull(CameraRoad.roadBeforeToward(directionText))
         }
+        val roadLanes = if (addressRoads.isNotEmpty()) addressRoadLanes else emptyMap()
 
         val (routeRef, isFreeway) = extractRoute(norm) ?: extractRoute(normCity) ?: (null to false)
         val km = extractKm(norm)
@@ -101,6 +104,7 @@ object AddressParser {
             houseNumber = house,
             offsetMeters = offsetMeters,
             isRampOrSpan = isRampOrSpan,
+            roadLanes = roadLanes,
         )
     }
 
