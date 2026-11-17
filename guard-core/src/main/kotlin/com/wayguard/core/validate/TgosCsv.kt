@@ -38,11 +38,17 @@ object TgosCsv {
         return "$prefix$body".trim()
     }
 
-    /** Formats a CSV upload file (`id,address`) for TGOS batch geocoding. */
+    /**
+     * Header TGOS batch house-number matching requires verbatim: exactly these five columns, the
+     * `Response_*` ones left empty for TGOS to fill in.
+     */
+    const val UPLOAD_HEADER = "id,Address,Response_Address,Response_X,Response_Y"
+
+    /** Formats a CSV upload file ([UPLOAD_HEADER]) for TGOS batch geocoding. */
     fun formatUploadCsv(rows: List<TgosRow>): String = buildString {
-        appendLine("id,address")
+        appendLine(UPLOAD_HEADER)
         for (r in rows) {
-            append(csvEscape(r.id)).append(',').appendLine(csvEscape(r.address))
+            append(csvEscape(r.id)).append(',').append(csvEscape(r.address)).appendLine(",,,")
         }
     }
 
@@ -95,7 +101,11 @@ object TgosCsv {
         return LatLng(latRad * 180.0 / PI, lonRad * 180.0 / PI)
     }
 
-    /** Parses TGOS batch result CSV (`id`, `X`/`經度`/`橫坐標`, `Y`/`緯度`/`縱坐標`, optional address). */
+    /**
+     * Parses TGOS batch result CSV: the batch format (`id,Address,Response_Address,Response_X,Response_Y`)
+     * or generic `id` + `X`/`經度`/`橫坐標` + `Y`/`緯度`/`縱坐標` (+ optional address) columns.
+     * Rows TGOS could not match (empty `Response_X`/`Response_Y`) are skipped.
+     */
     fun parseResults(csvText: String): Map<String, TgosHit> {
         val lines = csvText.lineSequence()
             .map { it.trimStart('\uFEFF').trimEnd('\r') }
@@ -107,9 +117,10 @@ object TgosCsv {
         val headers = splitCsvLine(lines.first(), delim).map { it.trim() }
 
         val idIdx = findCol(headers, "id", "序號", "編號", "識別碼")
-        val xIdx = findCol(headers, "x", "經度", "橫坐標", "lon", "lng", "twd97_x", "x坐標")
-        val yIdx = findCol(headers, "y", "緯度", "縱坐標", "lat", "twd97_y", "y坐標")
-        val addrIdx = findCol(headers, "matched_address", "比對地址", "門牌地址", "完整地址", "address", "地址")
+        val xIdx = findCol(headers, "response_x", "x", "經度", "橫坐標", "lon", "lng", "twd97_x", "x坐標")
+        val yIdx = findCol(headers, "response_y", "y", "緯度", "縱坐標", "lat", "twd97_y", "y坐標")
+        // Prefer the address TGOS matched over the one we uploaded.
+        val addrIdx = findCol(headers, "response_address", "matched_address", "比對地址", "門牌地址", "完整地址", "address", "地址")
         if (idIdx < 0 || xIdx < 0 || yIdx < 0) return emptyMap()
 
         val out = LinkedHashMap<String, TgosHit>()

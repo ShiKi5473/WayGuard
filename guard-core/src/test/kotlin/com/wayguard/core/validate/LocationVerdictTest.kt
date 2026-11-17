@@ -114,9 +114,13 @@ class LocationVerdictTest {
         val cleaned = TgosCsv.cleanAddressForTgos("臺中市", "大里區", "大里區國光路一段72號前（北向）")
         assertEquals("臺中市大里區國光路一段72號", cleaned)
 
-        val csv = TgosCsv.formatUploadCsv(listOf(TgosRow("npa-1", cleaned)))
-        assertTrue(csv.contains("id,address"))
-        assertTrue(csv.contains("npa-1,臺中市大里區國光路一段72號"))
+        val csv = TgosCsv.formatUploadCsv(listOf(TgosRow("npa-1", cleaned), TgosRow("npa-2", "臺中市北區三民路100號,前")))
+        val lines = csv.lines().filter { it.isNotEmpty() }
+        assertEquals("id,Address,Response_Address,Response_X,Response_Y", lines[0])
+        assertEquals("npa-1,臺中市大里區國光路一段72號,,,", lines[1])
+        assertEquals("npa-2,\"臺中市北區三民路100號,前\",,,", lines[2])
+        // Every row carries exactly the five TGOS columns.
+        assertTrue(lines.all { TgosCsv.splitCsvLine(it, ',').size == 5 })
 
         // Taipei 101 TWD97 TM2 (X=306969.38, Y=2769659.58) -> (25.033976, 121.564538)
         val wgs = TgosCsv.twd97ToWgs84(306969.38, 2769659.58)
@@ -131,6 +135,19 @@ class LocationVerdictTest {
         assertEquals(2, parsed.size)
         assertEquals(25.033976, parsed.getValue("npa-1").pos.lat, 1e-4)
         assertEquals(24.150000, parsed.getValue("npa-2").pos.lat, 1e-5)
+
+        // TGOS batch result format: Response_* filled in, unmatched rows left empty.
+        val batchCsv = """
+            id,Address,Response_Address,Response_X,Response_Y
+            npa-1,臺北市信義區市府路45號,臺北市信義區西村里市府路45號,306969.38,2769659.58
+            npa-2,臺中市北區三民路100號,,,
+            npa-3,澎湖縣馬公市中正路1號,澎湖縣馬公市啟明里中正路1號,119.566,23.566
+        """.trimIndent()
+        val batch = TgosCsv.parseResults(batchCsv)
+        assertEquals(setOf("npa-1", "npa-3"), batch.keys)
+        assertEquals(25.033976, batch.getValue("npa-1").pos.lat, 1e-4)
+        assertEquals("臺北市信義區西村里市府路45號", batch.getValue("npa-1").matchedAddress)
+        assertEquals(119.566, batch.getValue("npa-3").pos.lon, 1e-9)
     }
 
     @Test
