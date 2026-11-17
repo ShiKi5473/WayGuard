@@ -191,6 +191,52 @@ class LocationCheckerTest {
     }
 
     @Test
+    fun laneIntersectionNeverFallsBackToParentRoad() {
+        // Regression for npa-d58d814a44 (臺南市安南區「臺江大道三段近安中路320巷口」):
+        // - 臺江大道 runs E-W at lat 23.0617; the camera sits on it at lon 120.1700
+        // - 安中路五段 crosses 臺江大道 2.67 km west at lon 120.1441 (the wrong auto-fix target)
+        // - 安中路四段320巷129弄 lies ~400 m north of the camera and never meets 臺江大道
+        val base = listOf(
+            """{"type":"Feature","properties":{"boundary":"administrative","admin_level":"4","name":"臺南市"},"geometry":{"type":"Polygon","coordinates":[[[120.10,22.95],[120.25,22.95],[120.25,23.15],[120.10,23.15],[120.10,22.95]]]}}""",
+            """{"type":"Feature","properties":{"boundary":"administrative","admin_level":"7","name":"安南區"},"geometry":{"type":"Polygon","coordinates":[[[120.10,23.00],[120.22,23.00],[120.22,23.12],[120.10,23.12],[120.10,23.00]]]}}""",
+            """{"type":"Feature","properties":{"highway":"primary","name":"臺江大道三段"},"geometry":{"type":"LineString","coordinates":[[120.1400,23.0617],[120.1800,23.0617]]}}""",
+            """{"type":"Feature","properties":{"highway":"secondary","name":"安中路五段"},"geometry":{"type":"LineString","coordinates":[[120.1441,23.0500],[120.1441,23.0750]]}}""",
+            """{"type":"Feature","properties":{"highway":"residential","name":"安中路四段320巷129弄"},"geometry":{"type":"LineString","coordinates":[[120.1680,23.0653],[120.1720,23.0653]]}}""",
+        )
+        val noLane = OsmExtract.fromText(base.joinToString("\n") { "\u001e$it" })
+        // 1. Lane absent in OSM: no fallback to 安中路 trunk, and the 129弄 sub-alley does not count.
+        assertTrue(noLane.findIntersectionCandidates("臺江大道", "安中路", "臺南市", "安南區", null, "安中路320巷").isEmpty())
+
+        val cam = SpeedCamera(
+            "npa-d58d814a44", 23.06164, 120.17002, city = "臺南市", district = "安南區",
+            address = "臺江大道三段近安中路320巷口", directionText = "雙向",
+        )
+        val chk = LocationChecker(noLane, offline = true).checkAll(
+            cameras = listOf(cam),
+            rejected = emptyList(),
+            rowsById = emptyMap(),
+            existing = emptyMap(),
+            now = "2026-11-17T00:00:00Z",
+            verifyAll = true,
+        ).checks.getValue("npa-d58d814a44")
+        assertEquals(VerdictLevel.MISMATCH, chk.verdict)
+        assertNull(chk.suggestedLat)
+        assertNull(chk.suggestedSource)
+
+        // 2. Section omitted in the address but present in OSM (安中路320巷 ↔ 安中路四段320巷) -> matched.
+        val withLane = OsmExtract.fromText(
+            (base + """{"type":"Feature","properties":{"highway":"residential","name":"安中路四段320巷"},"geometry":{"type":"LineString","coordinates":[[120.1700,23.0617],[120.1700,23.0700]]}}""")
+                .joinToString("\n") { "\u001e$it" },
+        )
+        val hits = withLane.findIntersectionCandidates("臺江大道", "安中路", "臺南市", "安南區", null, "安中路320巷")
+        assertEquals(1, hits.size)
+        assertEquals(23.0617, hits.single().lat, 1e-4)
+        assertEquals(120.1700, hits.single().lon, 1e-4)
+        // 3. A lane that already names a different section gets no relaxation.
+        assertTrue(withLane.findIntersectionCandidates("臺江大道", "安中路", "臺南市", "安南區", null, "安中路三段320巷").isEmpty())
+    }
+
+    @Test
     fun localRoadCheckerReplacesNominatimWhenOsmExtractIsLoaded() {
         val checker = RoadChecker(Nominatim("test"), osm)
         val checks = checker.check(listOf("cam-1" to LatLng(24.960, 121.217)), "2026-11-13T00:00:00Z")

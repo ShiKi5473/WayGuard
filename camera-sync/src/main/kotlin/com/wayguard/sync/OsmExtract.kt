@@ -110,11 +110,16 @@ internal class OsmExtract private constructor(
      * When [laneName] is provided, checks the exact normalized lane first and falls back to
      * `roadsByName[base] + lanesByParent[base]` if that lane is absent/unnamed in OSM.
      * Non-lane queries remain strictly on `roadsByName[base]`.
+     *
+     * With [strictLane] (used for intersection reverse-geocoding) the parent-road fallback is
+     * disabled: only lanes in `lanesByParent[base]` whose name equals the query once its omitted
+     * section is ignored (`安中路320巷` ↔ `安中路四段320巷`) are accepted; otherwise empty.
      */
     private fun matchingPolylines(
         roadName: String,
         laneName: String? = null,
         box: BBox? = null,
+        strictLane: Boolean = false,
     ): List<RoadPolyline> {
         fun inBox(list: List<RoadPolyline>): List<RoadPolyline> =
             if (box == null) list else list.filter { overlaps(it.bbox, box) }
@@ -123,6 +128,7 @@ internal class OsmExtract private constructor(
         if (laneKey != null) {
             val exact = inBox(roadsByName[laneKey].orEmpty())
             if (exact.isNotEmpty()) return exact
+            if (strictLane) return inBox(sectionlessLaneMatches(laneKey))
             val baseKey = CameraRoad.base(roadName)
             if (baseKey.isBlank()) return emptyList()
             return inBox(roadsByName[baseKey].orEmpty() + lanesByParent[baseKey].orEmpty())
@@ -130,6 +136,23 @@ internal class OsmExtract private constructor(
         val target = indexName(roadName)
         if (target.isBlank()) return emptyList()
         return inBox(roadsByName[target].orEmpty())
+    }
+
+    /**
+     * Lanes under the same parent road whose name matches [laneKey] when [laneKey] omits the
+     * section (`安中路320巷` → `安中路四段320巷`, but not `安中路四段320巷129弄`). A [laneKey] that
+     * already names a section has no such relaxation and yields nothing.
+     */
+    private fun sectionlessLaneMatches(laneKey: String): List<RoadPolyline> {
+        val base = CameraRoad.base(laneKey)
+        val tail = laneKey.removePrefix(base)
+        if (base.isBlank() || tail.isBlank() || SECTION_PREFIX_RE.containsMatchIn(tail)) return emptyList()
+        return lanesByParent[base].orEmpty().filter { poly ->
+            poly.baseNames.any { name ->
+                CameraRoad.base(name) == base &&
+                    name.removePrefix(base).replaceFirst(SECTION_PREFIX_RE, "") == tail
+            }
+        }
     }
 
     /** Shortest distance (m) from [pos] to any road segment matching [baseRoadName] within [searchRadiusM]. */
@@ -246,8 +269,8 @@ internal class OsmExtract private constructor(
         val keyB = laneB?.takeIf { it.isNotBlank() }?.let(::indexName) ?: indexName(roadB)
         if (keyA.isBlank() || keyB.isBlank() || keyA == keyB) return emptyList()
         val box = CountyBounds.of(city)
-        val listA = matchingPolylines(roadA, laneA, box)
-        val listB = matchingPolylines(roadB, laneB, box)
+        val listA = matchingPolylines(roadA, laneA, box, strictLane = true)
+        val listB = matchingPolylines(roadB, laneB, box, strictLane = true)
         if (listA.isEmpty() || listB.isEmpty()) return emptyList()
 
         val rawHits = ArrayList<LatLng>()
@@ -320,6 +343,7 @@ internal class OsmExtract private constructor(
         private const val METERS_PER_DEG_LAT = 111_320.0
         private const val INTERSECTION_SNAP_M = 25.0
         private const val CLUSTER_RADIUS_M = 100.0
+        private val SECTION_PREFIX_RE = Regex("^[一二三四五六七八九十]+段")
 
         private fun cellOf(deg: Double): Int = floor(deg / CELL_DEG).toInt()
         private fun cellKey(la: Int, lo: Int): Long = (la.toLong() shl 32) or (lo.toLong() and 0xFFFFFFFFL)
