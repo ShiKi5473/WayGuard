@@ -38,7 +38,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,9 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wayguard.core.engine.AlertText
 import com.wayguard.core.model.SpeedCamera
-import com.wayguard.core.trip.TripDetail
-import com.wayguard.core.trip.TripStats
-import com.wayguard.core.trip.TripSummary
 import com.wayguard.data.CameraData
 import com.wayguard.guard.GuardState
 import com.wayguard.settings.GuardSettings
@@ -58,7 +54,6 @@ import com.wayguard.settings.UserCameraStore
 import com.wayguard.update.AppUpdateState
 import com.wayguard.update.AvailableUpdate
 import com.waymap.geo.LatLng
-import com.waymap.ui.CenterRequest
 import com.waymap.ui.CompassPlacement
 import com.waymap.ui.MapLine
 import com.waymap.ui.PointLayer
@@ -66,7 +61,6 @@ import com.waymap.ui.UserLocationMode
 import com.waymap.ui.WayMap
 import java.io.File
 import kotlin.math.roundToInt
-import kotlinx.coroutines.launch
 
 private val StartGreen = Color(0xFF2E7D32)
 private val AlertRed = Color(0xFFD32F2F)
@@ -83,12 +77,8 @@ data class MainActions(
     val onSaveSettings: ((GuardSettings) -> GuardSettings) -> Unit,
     val onSyncNow: () -> Unit,
     val onClearSuppressed: () -> Unit,
-    val onLoadTripDetail: suspend (TripSummary) -> TripDetail?,
-    val onDeleteTrip: (TripSummary) -> Unit,
-    val onExportTripGpx: (TripDetail) -> Unit,
-    val onNavigateTripDest: (TripSummary) -> Unit,
-    val onExportTripBackup: () -> Unit,
-    val onImportTripBackup: () -> Unit,
+    /** Opens the stand-alone trip browser. */
+    val onOpenTrips: () -> Unit,
     val onCheckAppUpdate: () -> Unit,
     val onDownloadAppUpdate: (AvailableUpdate) -> Unit,
     val onInstallAppUpdate: (AvailableUpdate, File) -> Unit,
@@ -108,14 +98,9 @@ fun MainScreen(
     syncing: Boolean,
     syncMessage: String?,
     appUpdate: AppUpdateState,
-    trips: List<TripSummary>,
-    backupMessage: String?,
     actions: MainActions,
 ) {
-    val scope = rememberCoroutineScope()
     var showSettings by remember { mutableStateOf(false) }
-    var showTrips by remember { mutableStateOf(false) }
-    var activeTripDetail by remember { mutableStateOf<TripDetail?>(null) }
     var selected by remember { mutableStateOf<SpeedCamera?>(null) }
     var addAt by remember { mutableStateOf<LatLng?>(null) }
     /** Camera follows the user; panning the map turns it off, the locate button back on. */
@@ -144,135 +129,103 @@ fun MainScreen(
             MapLine("sec-${it.id}", listOf(it.start, it.end), color = "#1976D2", width = 3f, casingColor = "#FFFFFF", casingWidth = 6f)
         }
     }
-    val tripLines = remember(activeTripDetail) {
-        activeTripDetail?.let(::tripMapLines).orEmpty()
-    }
-    val tripMarkers = remember(activeTripDetail) {
-        activeTripDetail?.let(::tripMapMarkers).orEmpty()
-    }
-    val tripCenter = remember(activeTripDetail) {
-        activeTripDetail?.let { d ->
-            TripStats.computeCenterAndZoom(d.points, d.events)?.let { (pt, z) -> CenterRequest(pt, z) }
-        }
-    }
     val userLocation = when {
         !perms.location -> UserLocationMode.HIDDEN
-        activeTripDetail != null -> UserLocationMode.SHOW
         follow && guard.running -> UserLocationMode.FOLLOW_BEARING
         follow -> UserLocationMode.FOLLOW
         else -> UserLocationMode.SHOW
     }
 
-    val fullOverlayOpen = showSettings || showTrips
+    val fullOverlayOpen = showSettings
 
     Box(modifier = Modifier.fillMaxSize()) {
         WayMap(
             modifier = Modifier.fillMaxSize(),
             icons = icons,
-            markers = tripMarkers,
-            lines = sectionLines + tripLines,
+            lines = sectionLines,
             pointLayers = layers,
-            centerOn = tripCenter,
             userLocation = userLocation,
             // Above the bottom controls.
             compass = CompassPlacement(endDp = 16, bottomDp = 150),
             // Ignore taps that fall through from full-screen overlays to the map.
             onPointTap = { _, id -> if (!fullOverlayOpen) selected = data.find(id) },
-            onLongPress = { if (!fullOverlayOpen && activeTripDetail == null) addAt = it },
+            onLongPress = { if (!fullOverlayOpen) addAt = it },
             onFollowDismissed = { follow = false },
         )
 
-        val currentDetail = activeTripDetail
-        if (currentDetail != null) {
-            TripDetailOverlay(
-                detail = currentDetail,
-                onExportGpx = actions.onExportTripGpx,
-                onNavigate = actions.onNavigateTripDest,
-                onDelete = { summary ->
-                    actions.onDeleteTrip(summary)
-                    activeTripDetail = null
-                    showTrips = true
-                },
-                onBack = {
-                    activeTripDetail = null
-                    showTrips = true
-                },
-            )
-        } else {
-            // ============ TOP — status / setup, floating over the map ============
-            Column(
-                modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                guard.error?.let { msg ->
-                    Card(modifier = Modifier.fillMaxWidth()) { Text(msg, modifier = Modifier.padding(12.dp)) }
-                }
-                SetupScreen(
-                    perms = perms,
-                    needOverlay = settings.overlayEnabled,
-                    onRequestLocation = actions.onRequestLocation,
-                    onOpenOverlay = actions.onOpenOverlaySettings,
-                    onRequestBattery = actions.onRequestBattery,
-                    dismissed = settings.setupDismissed,
-                    onDismiss = actions.onDismissSetup,
-                )
-                if (guard.running) SpeedPanel(guard) else DataSummary(data)
+        // ============ TOP — status / setup, floating over the map ============
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            guard.error?.let { msg ->
+                Card(modifier = Modifier.fillMaxWidth()) { Text(msg, modifier = Modifier.padding(12.dp)) }
             }
+            SetupScreen(
+                perms = perms,
+                needOverlay = settings.overlayEnabled,
+                onRequestLocation = actions.onRequestLocation,
+                onOpenOverlay = actions.onOpenOverlaySettings,
+                onRequestBattery = actions.onRequestBattery,
+                dismissed = settings.setupDismissed,
+                onDismiss = actions.onDismissSetup,
+            )
+            if (guard.running) SpeedPanel(guard) else DataSummary(data)
+        }
 
-            // ============ BOTTOM — controls ============
-            Column(
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    FilterChip(
-                        selected = settings.overlayEnabled && perms.overlay,
-                        onClick = {
-                            if (!perms.overlay) actions.onOpenOverlaySettings()
-                            else actions.onSaveSettings { it.copy(overlayEnabled = !it.overlayEnabled) }
-                        },
-                        label = { Text("懸浮視窗") },
-                    )
-                    Spacer(Modifier.weight(1f))
-                    SmallFloatingActionButton(onClick = { showTrips = true }) {
-                        Icon(Icons.Default.History, contentDescription = "旅程記錄")
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    SmallFloatingActionButton(onClick = { showSettings = true }) {
-                        Icon(Icons.Default.Settings, contentDescription = "設定")
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    FloatingActionButton(
-                        onClick = { if (perms.location) follow = true else actions.onRequestLocation() },
-                        modifier = Modifier.size(48.dp),
-                    ) {
-                        Icon(Icons.Default.MyLocation, contentDescription = "回到目前位置")
-                    }
+        // ============ BOTTOM — controls ============
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                FilterChip(
+                    selected = settings.overlayEnabled && perms.overlay,
+                    onClick = {
+                        if (!perms.overlay) actions.onOpenOverlaySettings()
+                        else actions.onSaveSettings { it.copy(overlayEnabled = !it.overlayEnabled) }
+                    },
+                    label = { Text("懸浮視窗") },
+                )
+                Spacer(Modifier.weight(1f))
+                SmallFloatingActionButton(onClick = actions.onOpenTrips) {
+                    Icon(Icons.Default.History, contentDescription = "旅程記錄")
                 }
-                if (guard.running) {
-                    Button(
-                        onClick = actions.onStopGuard,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        ),
-                    ) {
-                        Icon(Icons.Default.Stop, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("停止守衛", style = MaterialTheme.typography.titleMedium)
-                    }
-                } else {
-                    Button(
-                        onClick = actions.onStartGuard,
-                        enabled = data.dataset != null,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = StartGreen, contentColor = Color.White),
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("開始守衛", style = MaterialTheme.typography.titleMedium)
-                    }
+                Spacer(Modifier.width(8.dp))
+                SmallFloatingActionButton(onClick = { showSettings = true }) {
+                    Icon(Icons.Default.Settings, contentDescription = "設定")
+                }
+                Spacer(Modifier.width(8.dp))
+                FloatingActionButton(
+                    onClick = { if (perms.location) follow = true else actions.onRequestLocation() },
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(Icons.Default.MyLocation, contentDescription = "回到目前位置")
+                }
+            }
+            if (guard.running) {
+                Button(
+                    onClick = actions.onStopGuard,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                ) {
+                    Icon(Icons.Default.Stop, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("停止守衛", style = MaterialTheme.typography.titleMedium)
+                }
+            } else {
+                Button(
+                    onClick = actions.onStartGuard,
+                    enabled = data.dataset != null,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = StartGreen, contentColor = Color.White),
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("開始守衛", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -294,25 +247,6 @@ fun MainScreen(
                 currentHeading = guard.heading,
                 onAdd = { UserCameraStore.addCamera(it); addAt = null },
                 onDismiss = { addAt = null },
-            )
-        }
-
-        if (showTrips) {
-            TripListScreen(
-                trips = trips,
-                backupMessage = backupMessage,
-                onSelectTrip = { summary ->
-                    scope.launch {
-                        val detail = actions.onLoadTripDetail(summary)
-                        if (detail != null) {
-                            activeTripDetail = detail
-                            showTrips = false
-                        }
-                    }
-                },
-                onExportBackup = actions.onExportTripBackup,
-                onImportBackup = actions.onImportTripBackup,
-                onBack = { showTrips = false },
             )
         }
 

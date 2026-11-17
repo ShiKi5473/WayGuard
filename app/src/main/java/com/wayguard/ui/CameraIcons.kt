@@ -52,12 +52,17 @@ object CameraIcons {
     const val TRIP_ICON_END = "trip-end"
     const val TRIP_ICON_EVENT = "trip-event"
     const val TRIP_ICON_OVERSPEED = "trip-over"
+    const val TRIP_ICON_PLAYHEAD = "trip-playhead"
+    const val TRIP_ICON_FOCUS = "trip-focus"
 
-    private fun tripIcons(): List<MapIcon> = listOf(
+    /** Icons used by trip maps (start/end, events, playback head and the focused event). */
+    fun tripIcons(): List<MapIcon> = listOf(
         MapIcon(TRIP_ICON_START) { dotPin(Color.rgb(46, 125, 50), 40) },
         MapIcon(TRIP_ICON_END) { dotPin(Color.rgb(38, 50, 56), 40) },
         MapIcon(TRIP_ICON_EVENT) { dotPin(Color.rgb(25, 118, 210), 32) },
         MapIcon(TRIP_ICON_OVERSPEED) { dotPin(Color.rgb(211, 47, 47), 36) },
+        MapIcon(TRIP_ICON_PLAYHEAD) { dotPin(Color.rgb(94, 53, 177), 52) },
+        MapIcon(TRIP_ICON_FOCUS) { dotPin(Color.rgb(255, 160, 0), 56) },
     )
 
     private fun dotPin(fillColor: Int, sizePx: Int): Bitmap {

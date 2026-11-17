@@ -17,12 +17,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.wayguard.core.trip.TripDetail
-import com.wayguard.core.trip.TripSummary
 import com.wayguard.data.CameraRepository
 import com.wayguard.guard.GuardController
 import com.wayguard.guard.GuardService
@@ -32,14 +29,12 @@ import com.wayguard.settings.UserCameraStore
 import com.wayguard.sync.CameraSync
 import com.wayguard.sync.SyncOutcome
 import com.wayguard.sync.SyncScheduler
-import com.wayguard.trip.TripStore
 import com.wayguard.ui.MainActions
 import com.wayguard.ui.MainScreen
 import com.wayguard.ui.Permissions
 import com.wayguard.update.AppUpdateNotifier
 import com.wayguard.update.AppUpdateScheduler
 import com.wayguard.update.AppUpdater
-import java.time.LocalDate
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -49,41 +44,10 @@ class MainActivity : ComponentActivity() {
     private val perms = mutableStateOf(Permissions())
     private val syncing = mutableStateOf(false)
     private val syncMessage = mutableStateOf<String?>(null)
-    private val backupMessage = mutableStateOf<String?>(null)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { refreshPermissions() }
-
-    private val exportBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("application/zip")
-    ) { uri ->
-        if (uri == null) return@registerForActivityResult
-        lifecycleScope.launch {
-            val count = runCatching {
-                contentResolver.openOutputStream(uri)?.use { TripStore.exportBackupZip(it) } ?: 0
-            }.getOrElse {
-                backupMessage.value = "匯出失敗：${it.localizedMessage}"
-                return@launch
-            }
-            backupMessage.value = "已匯出 $count 趟旅程備份"
-        }
-    }
-
-    private val importBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri == null) return@registerForActivityResult
-        lifecycleScope.launch {
-            val count = runCatching {
-                contentResolver.openInputStream(uri)?.use { TripStore.importBackupZip(it) } ?: 0
-            }.getOrElse {
-                backupMessage.value = "匯入失敗：${it.localizedMessage}"
-                return@launch
-            }
-            backupMessage.value = if (count > 0) "已匯入 $count 趟旅程" else "沒有新增的旅程資料"
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,12 +107,7 @@ class MainActivity : ComponentActivity() {
             onSaveSettings = ::saveSettings,
             onSyncNow = ::syncNow,
             onClearSuppressed = UserCameraStore::clearSuppressed,
-            onLoadTripDetail = TripStore::loadDetail,
-            onDeleteTrip = { TripStore.deleteTrip(it.id) },
-            onExportTripGpx = ::exportTripGpx,
-            onNavigateTripDest = ::navigateTripDest,
-            onExportTripBackup = { exportBackupLauncher.launch("wayguard-trips-${LocalDate.now()}.zip") },
-            onImportTripBackup = { importBackupLauncher.launch(arrayOf("application/zip", "application/x-zip-compressed")) },
+            onOpenTrips = { startActivity(TripActivity.intent(this)) },
             onCheckAppUpdate = { AppUpdater.checkManual(this) },
             onDownloadAppUpdate = { rel -> AppUpdater.startDownloadAndInstall(this, rel, showPrompt = true) },
             onInstallAppUpdate = { rel, apk -> AppUpdater.installDownloaded(this, rel, apk, showPrompt = true) },
@@ -170,7 +129,6 @@ class MainActivity : ComponentActivity() {
                     val guard by GuardController.state.collectAsState()
                     val data by CameraRepository.state.collectAsState()
                     val settings by settingsFlow.collectAsState(initialSettings)
-                    val trips by TripStore.trips.collectAsState()
                     val appUpdate by AppUpdater.state.collectAsState()
                     MainScreen(
                         guard = guard,
@@ -180,8 +138,6 @@ class MainActivity : ComponentActivity() {
                         syncing = syncing.value,
                         syncMessage = syncMessage.value,
                         appUpdate = appUpdate,
-                        trips = trips,
-                        backupMessage = backupMessage.value,
                         actions = actions,
                     )
                 }
@@ -294,26 +250,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun exportTripGpx(detail: TripDetail) {
-        lifecycleScope.launch {
-            val file = TripStore.writeGpxShareFile(this@MainActivity, detail)
-            val uri = FileProvider.getUriForFile(this@MainActivity, "${BuildConfig.APPLICATION_ID}.fileprovider", file)
-            val share = Intent(Intent.ACTION_SEND).apply {
-                type = "application/gpx+xml"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            startActivity(Intent.createChooser(share, "分享 GPX 軌跡"))
-        }
-    }
-
-    private fun navigateTripDest(summary: TripSummary) {
-        val dest = summary.destination
-        val query = if (!dest.isNullOrBlank()) Uri.encode(dest) else "${summary.endLat},${summary.endLon}"
-        val mapsIntent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$query")).apply {
-            setPackage("com.google.android.apps.maps")
-        }
-        val fallback = Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/maps?q=$query"))
-        runCatching { startActivity(mapsIntent) }.onFailure { startActivity(fallback) }
-    }
 }

@@ -8,6 +8,7 @@ import kotlin.math.roundToInt
 
 private val DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 private val TIME_ONLY = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault())
+private val HOUR_MINUTE = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 
 /** ISO-8601 instant → local "yyyy-MM-dd HH:mm", or the input if unparseable. */
 fun formatIsoLocal(iso: String): String = runCatching { DATE_TIME.format(Instant.parse(iso)) }.getOrDefault(iso)
@@ -17,6 +18,18 @@ fun formatEpochLocal(ms: Long): String = if (ms <= 0) "尚未檢查" else DATE_T
 fun formatTripTime(ms: Long): String = if (ms <= 0) "--" else DATE_TIME.format(Instant.ofEpochMilli(ms))
 
 fun formatTimeOfDay(ms: Long): String = if (ms <= 0) "--" else TIME_ONLY.format(Instant.ofEpochMilli(ms))
+
+/** Local "HH:mm". */
+fun formatHourMinute(ms: Long): String = if (ms <= 0) "--" else HOUR_MINUTE.format(Instant.ofEpochMilli(ms))
+
+/** "1:05:09" / "5:09" for an elapsed duration. */
+fun formatElapsed(ms: Long): String {
+    val totalSec = (ms / 1000L).coerceAtLeast(0L)
+    val h = totalSec / 3600L
+    val m = (totalSec % 3600L) / 60L
+    val s = totalSec % 60L
+    return if (h > 0L) "%d:%02d:%02d".format(Locale.ROOT, h, m, s) else "%d:%02d".format(Locale.ROOT, m, s)
+}
 
 fun formatDuration(ms: Long): String {
     val totalMin = (ms / 60_000L).coerceAtLeast(0L)

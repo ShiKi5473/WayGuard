@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="trips"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:shortcutShortLabel="@string/trips_title">
+        <!-- Back from the trip browser returns to the main map. -->
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetClass="com.wayguard.MainActivity"
+            android:targetPackage="com.wayguard" />
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.wayguard.TripActivity"
+            android:targetPackage="com.wayguard" />
+    </shortcut>
+</shortcuts>
