@@ -33,6 +33,13 @@ data class AlertConfig(
     val roadAxisFilterEnabled: Boolean = true,
     /** Travel bearing must lie within ± this of [SpeedCamera.roadAxis] (either direction). */
     val roadAxisToleranceDeg: Double = 50.0,
+    /**
+     * New warnings (and resuming a paused one) wait until the heading has held within
+     * ± [steadyHeadingToleranceDeg] over the last this many metres driven: while turning or
+     * making a U-turn the heading sweeps across cameras on other roads.
+     */
+    val steadyHeadingDistM: Double = 30.0,
+    val steadyHeadingToleranceDeg: Double = 25.0,
 ) {
     fun approachDistance(speedKmh: Double): Double = when {
         speedKmh < 50 -> approachSlowM
@@ -67,6 +74,8 @@ data class EngineResult(val events: List<AlertEvent>, val active: ActiveCamera?)
  * A camera is relevant only when it lies ahead of the direction of travel and, for
  * one-way cameras, the travel direction matches the enforced one. Without a road
  * network, a parallel road very close by can still be mistaken for the camera's road.
+ * Right after a turn or U-turn the heading has swept across nearby roads, so new
+ * warnings wait until it has settled (see [AlertConfig.steadyHeadingDistM]).
  */
 class AlertEngine(config: AlertConfig = AlertConfig()) {
 
@@ -94,13 +103,23 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
 
     private val tracks = HashMap<String, Track>()
 
+    /** Distance driven while moving; [headingTrail] entries are placed along it. */
+    private var odometerM = 0.0
+    private var lastPos: LatLng? = null
+    /** (odometer, heading) of recent moving fixes, oldest first. */
+    private val headingTrail = ArrayDeque<Pair<Double, Double>>()
+
     /** Replaces the cameras (e.g. after a data update or a false-alarm mark). */
     fun setCameras(index: GridIndex<SpeedCamera>) {
         this.index = index
         tracks.clear()
     }
 
-    fun reset() = tracks.clear()
+    fun reset() {
+        tracks.clear()
+        headingTrail.clear()
+        lastPos = null
+    }
 
     fun update(fix: Fix, heading: Double?): EngineResult {
         val idx = index ?: return EngineResult(emptyList(), null)
@@ -108,6 +127,7 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
         val events = ArrayList<AlertEvent>()
         val approach = cfg.approachDistance(fix.speedKmh)
         val moving = fix.speedKmh >= cfg.minSpeedKmh
+        val steady = headingSteady(fix, heading, moving, cfg)
         val nearby = idx.near(fix.pos, maxOf(cfg.approachFastM, approach) + RELEASE_MARGIN_M)
             .filter { cam -> cam.kinds.any { it in cfg.enabledKinds } }
             .sortedBy { GeoUtils.haversine(fix.pos, it.pos) }
@@ -121,7 +141,7 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
             val t = tracks[cam.id]
 
             if (t == null) {
-                if (moving && heading != null && d <= approach &&
+                if (moving && heading != null && steady && d <= approach &&
                     isAhead(fix.pos, cam, heading, d, cfg) && headingMatches(cam, heading, cfg)
                 ) {
                     newCandidates += cam to d
@@ -150,7 +170,7 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
                 continue
             }
             if (t.offCourse) {
-                val dirOk = ahead && headingMatches(t.camera, heading, cfg)
+                val dirOk = steady && ahead && headingMatches(t.camera, heading, cfg)
                 if (dirOk && camDist < t.lastDist) {
                     t.offCourse = false
                     t.misses = 0
@@ -277,6 +297,26 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
                 events += AlertEvent(AlertType.OVERSPEED, t.camera, d, fix.speedKmh)
             }
         }
+    }
+
+    /**
+     * Records this fix's heading and reports whether the heading has held within
+     * ± [AlertConfig.steadyHeadingToleranceDeg] over the last [AlertConfig.steadyHeadingDistM]
+     * driven. Measured over distance rather than time, so waiting mid-turn (facing a
+     * camera on the cross road) doesn't count as having settled.
+     */
+    private fun headingSteady(fix: Fix, heading: Double?, moving: Boolean, cfg: AlertConfig): Boolean {
+        val prev = lastPos
+        lastPos = fix.pos
+        // Stationary GPS drift must not add distance.
+        if (!moving || heading == null) return false
+        if (prev != null) odometerM += GeoUtils.haversine(prev, fix.pos)
+        headingTrail.addLast(odometerM to heading)
+        val windowStart = odometerM - cfg.steadyHeadingDistM
+        // Keep the last entry at or before the window start, so the window is known to be covered.
+        while (headingTrail.size >= 2 && headingTrail[1].first <= windowStart) headingTrail.removeFirst()
+        return headingTrail.first().first <= windowStart &&
+            headingTrail.all { GeoUtils.angleDiff(it.second, heading) <= cfg.steadyHeadingToleranceDeg }
     }
 
     private fun isAhead(pos: LatLng, cam: SpeedCamera, heading: Double, d: Double, cfg: AlertConfig): Boolean =

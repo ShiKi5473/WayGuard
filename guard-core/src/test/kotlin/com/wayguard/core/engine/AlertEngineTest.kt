@@ -196,6 +196,58 @@ class AlertEngineTest {
         assertEquals(0.0, filter.update(Fix(driftEast, 1.0, null, 3000L))!!, 1.0)
     }
 
+    /** 600 m north of [origin]: where the turn tests leave the northbound road. */
+    private val turnPoint = GeoUtils.destinationPoint(origin, 600.0, 0.0)
+
+    private fun cameraAt(pos: LatLng, headings: List<Int> = emptyList()) =
+        SpeedCamera("x", pos.lat, pos.lon, 50, headings)
+
+    /** Northbound at 40 km/h up to [turnPoint]. */
+    private fun northToTurn() = drive(origin, 0.0, 40.0, 54)
+
+    private fun after(prev: List<Fix>) = prev.last().timeMs + 1000
+
+    @Test
+    fun uTurnSweepingPastCameraOnAnotherRoadIsSilent() {
+        // 250 m west of the U-turn: only "ahead" while the heading sweeps through west.
+        val cam = cameraAt(GeoUtils.destinationPoint(turnPoint, 250.0, 270.0))
+        val north = northToTurn()
+        val uTurn = arc(north.last().pos, 0.0, -180.0, 8.0, 15.0, startMs = after(north))
+        val south = drive(uTurn.last().pos, 180.0, 40.0, 40, startMs = after(uTurn))
+        assertTrue(run(engine(cam), north + uTurn + south).isEmpty())
+
+        // Same, but waiting mid-turn facing the camera (e.g. for oncoming traffic).
+        val half = arc(north.last().pos, 0.0, -90.0, 8.0, 15.0, startMs = after(north))
+        val wait = stop(half.last().pos, 8, startMs = after(half))
+        val rest = arc(half.last().pos, 270.0, -90.0, 8.0, 15.0, startMs = after(wait))
+        val south2 = drive(rest.last().pos, 180.0, 40.0, 40, startMs = after(rest))
+        assertTrue(run(engine(cam), north + half + wait + rest + south2).isEmpty())
+    }
+
+    @Test
+    fun rightTurnSweepingPastCameraOnAnotherRoadIsSilent() {
+        // 45° off both the road before and the road after the turn.
+        val cam = cameraAt(GeoUtils.destinationPoint(turnPoint, 260.0, 45.0))
+        val north = northToTurn()
+        val turn = arc(north.last().pos, 0.0, 90.0, 10.0, 20.0, startMs = after(north))
+        val east = drive(turn.last().pos, 90.0, 40.0, 30, startMs = after(turn))
+        assertTrue(run(engine(cam), north + turn + east).isEmpty())
+    }
+
+    @Test
+    fun cameraAheadAfterUTurnStillWarns() {
+        // Southbound-only camera on the opposite carriageway, 250 m past the U-turn.
+        val oppositeLane = GeoUtils.destinationPoint(turnPoint, 16.0, 270.0)
+        val cam = cameraAt(GeoUtils.destinationPoint(oppositeLane, 250.0, 180.0), headings = listOf(180))
+        val north = northToTurn()
+        val uTurn = arc(north.last().pos, 0.0, -180.0, 8.0, 15.0, startMs = after(north))
+        val south = drive(uTurn.last().pos, 180.0, 40.0, 40, startMs = after(uTurn))
+        val events = run(engine(cam), north + uTurn + south)
+        assertEquals(listOf(AlertType.APPROACH, AlertType.NEAR, AlertType.PASSED), types(events))
+        // Still a first warning, well before the near distance.
+        assertTrue(events[0].second.distanceM > AlertConfig().nearM)
+    }
+
     @Test
     fun roadAxisFiltersCrossStreetTrafficWhenEnabledAndCanBeDisabled() {
         val nAxisCam = camera(emptyList()).copy(roadAxis = 0)
