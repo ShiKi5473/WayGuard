@@ -81,6 +81,73 @@ sealed interface CameraRoad {
 
         private data class RoadMatch(val offset: Int, val base: String, val lane: String?)
 
+        private class KnownRoadIndex(
+            val source: Set<String>,
+            val sourceSize: Int,
+            val orderByRoad: Map<String, Int>,
+            val maxLen: Int,
+        )
+
+        @Volatile
+        private var lastKnownRoadIndex: KnownRoadIndex? = null
+        private val knownRoadIndexCache = ArrayList<KnownRoadIndex>(4)
+        private val knownRoadIndexLock = Any()
+
+        private fun indexFor(knownRoads: Set<String>): KnownRoadIndex? {
+            if (knownRoads.isEmpty()) return null
+            val size = knownRoads.size
+            val fast = lastKnownRoadIndex
+            if (fast != null && fast.source === knownRoads && fast.sourceSize == size) {
+                return fast
+            }
+            synchronized(knownRoadIndexLock) {
+                for (i in knownRoadIndexCache.indices) {
+                    val entry = knownRoadIndexCache[i]
+                    if (entry.source === knownRoads && entry.sourceSize == size) {
+                        lastKnownRoadIndex = entry
+                        return entry
+                    }
+                }
+                for (i in knownRoadIndexCache.indices) {
+                    val entry = knownRoadIndexCache[i]
+                    if (entry.sourceSize == size && entry.source == knownRoads) {
+                        val alias = KnownRoadIndex(knownRoads, size, entry.orderByRoad, entry.maxLen)
+                        cachePut(alias)
+                        return alias
+                    }
+                }
+                val built = buildKnownRoadIndex(knownRoads, size)
+                cachePut(built)
+                return built
+            }
+        }
+
+        private fun cachePut(entry: KnownRoadIndex) {
+            knownRoadIndexCache.removeAll { it.source === entry.source }
+            if (knownRoadIndexCache.size >= 4) {
+                knownRoadIndexCache.removeAt(0)
+            }
+            knownRoadIndexCache.add(entry)
+            lastKnownRoadIndex = entry
+        }
+
+        private fun buildKnownRoadIndex(knownRoads: Set<String>, size: Int): KnownRoadIndex {
+            val sorted = knownRoads.asSequence()
+                .map(::base)
+                .filter { VALID_KNOWN_ROAD.matches(it) && !isLane(it) && it !in GENERIC_ROADS }
+                .distinct()
+                .sortedByDescending { it.length }
+                .toList()
+            val orderByRoad = HashMap<String, Int>((sorted.size * 4 / 3) + 1)
+            var maxLen = 0
+            for (i in sorted.indices) {
+                val road = sorted[i]
+                orderByRoad[road] = i
+                if (road.length > maxLen) maxLen = road.length
+            }
+            return KnownRoadIndex(knownRoads, size, orderByRoad, maxLen)
+        }
+
         /** Ordered, deduplicated base road names appearing anywhere in [address]. */
         fun roadsInAddress(address: String, knownRoads: Set<String> = emptySet()): List<String> =
             roadsAndLanesInAddress(address, knownRoads).first
@@ -126,29 +193,49 @@ sealed interface CameraRoad {
             val buf = StringBuilder(cleaned)
             val found = ArrayList<RoadMatch>()
 
-            val sortedKnown = knownRoads.asSequence()
-                .map(::base)
-                .filter { VALID_KNOWN_ROAD.matches(it) && !isLane(it) && it !in GENERIC_ROADS }
-                .distinct()
-                .sortedByDescending { it.length }
-            for (k in sortedKnown) {
-                var from = 0
-                while (true) {
-                    val idx = buf.indexOf(k, from)
-                    if (idx < 0) break
-                    val prevOk = idx == 0 || buf[idx - 1] !in '\u4e00'..'\u9fff' || buf[idx - 1] in KNOWN_BOUNDARY_CHARS
-                    val end = idx + k.length
-                    val nextOk = end >= buf.length || buf[end] !in "路街道"
-                    if (prevOk && nextOk) {
-                        val afterBase = buf.substring(end)
-                        val lane = extractLaneAfterRoad(k, afterBase)
-                        val secLen = (LANE_SECTION_RE.find(afterBase) ?: SECTION_SUFFIX.find(afterBase))?.value?.length ?: 0
-                        val totalEnd = end + secLen
-                        found += RoadMatch(idx, k, lane)
-                        for (p in idx until totalEnd) buf[p] = ','
-                        from = totalEnd
+            val index = indexFor(knownRoads)
+            if (index != null && index.maxLen >= 2) {
+                val orderByRoad = index.orderByRoad
+                val maxLen = index.maxLen
+                val candidates = HashSet<String>()
+                for (end in 2..cleaned.length) {
+                    val last = cleaned[end - 1]
+                    if (last != '路' && last != '街' && last != '道') continue
+                    val minStart = maxOf(0, end - maxLen)
+                    val maxStart = end - 2
+                    for (start in minStart..maxStart) {
+                        val sub = cleaned.substring(start, end)
+                        if (sub in orderByRoad) {
+                            candidates += sub
+                        }
+                    }
+                }
+                if (candidates.isNotEmpty()) {
+                    val orderedCandidates = if (candidates.size == 1) {
+                        candidates
                     } else {
-                        from = idx + 1
+                        candidates.sortedBy { orderByRoad.getValue(it) }
+                    }
+                    for (k in orderedCandidates) {
+                        var from = 0
+                        while (true) {
+                            val idx = buf.indexOf(k, from)
+                            if (idx < 0) break
+                            val prevOk = idx == 0 || buf[idx - 1] !in '\u4e00'..'\u9fff' || buf[idx - 1] in KNOWN_BOUNDARY_CHARS
+                            val end = idx + k.length
+                            val nextOk = end >= buf.length || buf[end] !in "路街道"
+                            if (prevOk && nextOk) {
+                                val afterBase = buf.substring(end)
+                                val lane = extractLaneAfterRoad(k, afterBase)
+                                val secLen = (LANE_SECTION_RE.find(afterBase) ?: SECTION_SUFFIX.find(afterBase))?.value?.length ?: 0
+                                val totalEnd = end + secLen
+                                found += RoadMatch(idx, k, lane)
+                                for (p in idx until totalEnd) buf[p] = ','
+                                from = totalEnd
+                            } else {
+                                from = idx + 1
+                            }
+                        }
                     }
                 }
             }

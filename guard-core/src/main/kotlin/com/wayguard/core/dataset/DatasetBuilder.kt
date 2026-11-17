@@ -138,8 +138,7 @@ object DatasetBuilder {
         val placeSkipped = ArrayList<PlaceDerivation>()
         val unmatchedPlaces = LinkedHashMap<PlaceRef, MutableList<LatLng>>()
         val directory = PlaceDirectory(places)
-        val knownRoads = roadChecks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }
-            .map(CameraRoad::base).toSet() + extraKnownRoads.map(CameraRoad::base)
+        val knownRoads = mergeKnownRoads(roadChecks, extraKnownRoads)
         val matchedFixes = LinkedHashSet<String>()
         var missingLimit = 0
         var fixed = 0
@@ -425,6 +424,29 @@ object DatasetBuilder {
         val text = DatasetJson.encodeToString(ListSerializer(SpeedCamera.serializer()), cameras) +
             DatasetJson.encodeToString(ListSerializer(Section.serializer()), sections)
         return sha256Hex(text.toByteArray()).take(12)
+    }
+
+    /**
+     * Combines base road names from [roadChecks] with [extraKnownRoads], reusing
+     * [extraKnownRoads] directly whenever all checked base names are already present.
+     */
+    fun mergeKnownRoads(
+        roadChecks: Map<String, RoadCheck>,
+        extraKnownRoads: Set<String>,
+    ): Set<String> {
+        if (roadChecks.isEmpty()) return extraKnownRoads
+        val missing = LinkedHashSet<String>()
+        for (check in roadChecks.values) {
+            if (check.road.isBlank()) continue
+            val base = CameraRoad.base(check.road)
+            if (base !in extraKnownRoads) missing += base
+        }
+        if (missing.isEmpty()) return extraKnownRoads
+        if (extraKnownRoads.isEmpty()) return missing
+        return LinkedHashSet<String>(missing.size + extraKnownRoads.size).apply {
+            addAll(missing)
+            addAll(extraKnownRoads)
+        }
     }
 
     fun sha256Hex(bytes: ByteArray): String =

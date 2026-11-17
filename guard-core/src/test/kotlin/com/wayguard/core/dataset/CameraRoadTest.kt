@@ -157,4 +157,34 @@ class CameraRoadTest {
         )
         assertEquals(Unnamed, CameraRoad.of("東勢鄉153線與158甲線縣道路口", "往北", pollutedDict))
     }
+
+    @Test
+    fun knownRoadsIndexHandlesAvenuesOverlapsMutationsAndLargeSets() {
+        val dict = linkedSetOf("凱達格蘭大道", "凱達格蘭大", "和平路", "和平西路一段", "市區路", "路平街", "大莊路60巷")
+        assertEquals(Known("凱達格蘭大道"), CameraRoad.of("凱達格蘭大道1號前", "往東", dict))
+        assertEquals(Known("和平西路"), CameraRoad.of("和平西路一段100號", "往東", dict))
+        assertEquals(Intersection(listOf("市區路", "路平街")), CameraRoad.of("市區路路平街口", "往北", dict))
+        assertEquals(mapOf("大莊路" to "大莊路60巷"), CameraRoad.roadLanesInAddress("大莊路60巷90號", dict))
+
+        // Mutating a cached MutableSet invalidates the cached index cleanly.
+        val mutable = linkedSetOf("中正路")
+        assertEquals(Intersection(listOf("中正路", "強路")), CameraRoad.of("中正路和強路口", "往東", mutable))
+        mutable.add("和強路")
+        assertEquals(Intersection(listOf("中正路", "和強路")), CameraRoad.of("中正路和強路口", "往東", mutable))
+
+        // Large dictionary (simulating full Taiwan OSM road names) stays fast across thousands of calls.
+        val large = HashSet<String>(50_000)
+        for (i in 0 until 45_000) {
+            large += "測試第${i}路"
+        }
+        large += "和平西路"
+        large += "凱達格蘭大道"
+        val startNs = System.nanoTime()
+        repeat(2_000) {
+            assertEquals(Known("和平西路"), CameraRoad.of("和平西路一段100號", "往東", large))
+            assertEquals(Known("凱達格蘭大道"), CameraRoad.of("凱達格蘭大道1號", "往北", large))
+        }
+        val elapsedMs = (System.nanoTime() - startNs) / 1_000_000
+        assertTrue("Expected < 2000ms for 4,000 lookups over 45k roads, took ${elapsedMs}ms", elapsedMs < 2_000)
+    }
 }

@@ -169,8 +169,9 @@ fun sync(a: SyncArgs): Int {
         OsmExtract.load(it)
     }
     val extraKnownRoads = osm?.knownRoadNames.orEmpty()
+    var knownRoads = DatasetBuilder.mergeKnownRoads(checks, extraKnownRoads)
     fun build(applyAutoFixes: Boolean = true) = DatasetBuilder.build(
-        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks, extraKnownRoads, applyAutoFixes,
+        parsed.rows, parsed.rejected, sections, overrides, now, sourceLabel(a.source), places, checks, locChecks, knownRoads, applyAutoFixes,
     )
     var result = build(applyAutoFixes = false)
     val nominatim = Nominatim(USER_AGENT)
@@ -190,6 +191,7 @@ fun sync(a: SyncArgs): Int {
         println("比對道路走向：待比對 ${pending.size} 個點位，取得 ${found.size} 筆")
         if (found.isNotEmpty()) {
             checks += found
+            knownRoads = DatasetBuilder.mergeKnownRoads(checks, extraKnownRoads)
             result = build()
         }
     }
@@ -202,8 +204,6 @@ fun sync(a: SyncArgs): Int {
     }
 
     // Run multi-layer location cross-verification (internal <10m, local OSM, mileposts, NLSC secondary check, TGOS).
-    val knownRoads = checks.values.mapNotNull { it.road.takeIf(String::isNotBlank) }
-        .map(CameraRoad::base).toSet() + extraKnownRoads
     val rowsById = parsed.rows.associateBy(DatasetBuilder::stableId)
     val nlsc = if (!a.offline) NlscClient() else null
     val appId = a.tgosAppId ?: System.getenv("TGOS_APP_ID")

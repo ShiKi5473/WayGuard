@@ -8,6 +8,7 @@ import com.wayguard.core.parse.NpaRow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -222,5 +223,20 @@ class DatasetBuilderTest {
 
         assertEquals(listOf(autoId), applied.report.autoFixedLocations.map { it.first.id })
         assertEquals(listOf(suspectId), applied.report.locationIssues.map { it.first.id })
+    }
+
+    @Test
+    fun mergeKnownRoadsReusesExtraSetWhenCovered() {
+        val extra = setOf("中正路", "中山路")
+        val coveredChecks = mapOf(
+            "c1" to RoadCheck(bearing = 0, road = "中正路二段", distanceM = 5, checkedAt = "t"),
+            "c2" to RoadCheck(bearing = 90, road = "", distanceM = 5, checkedAt = "t"),
+        )
+        assertSame(extra, DatasetBuilder.mergeKnownRoads(emptyMap(), extra))
+        assertSame(extra, DatasetBuilder.mergeKnownRoads(coveredChecks, extra))
+
+        val withNewRoad = coveredChecks + ("c3" to RoadCheck(bearing = 180, road = "和平西路一段", distanceM = 5, checkedAt = "t"))
+        assertEquals(setOf("和平西路", "中正路", "中山路"), DatasetBuilder.mergeKnownRoads(withNewRoad, extra))
+        assertEquals(setOf("中正路", "和平西路"), DatasetBuilder.mergeKnownRoads(withNewRoad, emptySet()))
     }
 }
