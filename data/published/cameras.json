@@ -1,4 +1,4 @@
-{"schema":1,"version":"8f83a9382100","generatedAt":"2026-11-16T07:50:30Z","source":"內政部警政署「測速執法設置點」（data.gov.tw/dataset/7320）",
+{"schema":1,"version":"b3b9bf6cf753","generatedAt":"2026-11-17T08:36:25Z","source":"內政部警政署「測速執法設置點」（data.gov.tw/dataset/7320）",
 "sections":[
 {"id":"auto-npa-25aa1884f9","name":"金門大橋 5K–0.4K","startLat":24.452068,"startLon":118.303474,"endLat":24.44675,"endLon":118.26236,"lengthM":4600.0,"limitKmh":60,"heading":262},
 {"id":"auto-npa-2d55b2f5c8","name":"台11線 126.13K–129.61K","startLat":23.007769,"startLon":121.323524,"endLat":22.980171,"endLon":121.30966,"lengthM":3480.0,"limitKmh":60,"heading":205},
@@ -1465,7 +1465,7 @@
 {"id":"npa-4e9b06a4b8","lat":23.052057,"lon":120.142685,"limitKmh":70,"city":"臺南市","district":"安南區","address":"安明路近北汕尾路口","directionText":"雙向"},
 {"id":"npa-235f8db5ee","lat":23.032488,"lon":120.1784,"limitKmh":60,"city":"臺南市","district":"安南區","address":"海尾路(路燈桿編號：131387附近)","directionText":"雙向","roadAxis":60},
 {"id":"npa-4d620afe96","lat":23.051445,"lon":120.22557,"limitKmh":50,"headings":[90],"city":"臺南市","district":"安南區","address":"臺江大道一段與開安路口","directionText":"東向"},
-{"id":"npa-d58d814a44","lat":23.064272,"lon":120.144094,"limitKmh":70,"city":"臺南市","district":"安南區","address":"臺江大道三段近安中路320巷口","directionText":"雙向","posSource":"intersection"},
+{"id":"npa-d58d814a44","lat":23.06164,"lon":120.17002,"limitKmh":70,"city":"臺南市","district":"安南區","address":"臺江大道三段近安中路320巷口","directionText":"雙向","loc":"mismatch"},
 {"id":"npa-47bf72cc93","lat":23.094667,"lon":120.22924,"limitKmh":50,"headings":[90],"city":"臺南市","district":"安定區","address":"178線7.9公里與南134線路口","directionText":"東向"},
 {"id":"npa-b189b2d666","lat":23.079973,"lon":120.22951,"limitKmh":50,"city":"臺南市","district":"安定區","address":"嘉榮路512號前","directionText":"雙向","roadAxis":30},
 {"id":"npa-4b403e0629","lat":23.084492,"lon":120.210495,"limitKmh":50,"headings":[0],"city":"臺南市","district":"安定區","address":"臺19線132.7公里中崙段","directionText":"北向"},
