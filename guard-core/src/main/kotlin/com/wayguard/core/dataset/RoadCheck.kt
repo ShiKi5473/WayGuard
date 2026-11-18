@@ -77,7 +77,7 @@ object PlaceHeadingRules {
             CameraRoad.Unnamed -> Unit
         }
         // The road runs both ways; take the way that points toward the destination.
-        val dir = listOf(axis, (axis + 180) % 360)
+        val dir = listOf(axis, GeoUtils.normalizeBearing(axis + 180))
             .minBy { GeoUtils.angleDiff(it.toDouble(), bearingToPlace.toDouble()) }
         val diff = GeoUtils.angleDiff(dir.toDouble(), bearingToPlace.toDouble()).toInt()
         return if (diff > MAX_ROAD_DIFF_DEG) Outcome.Skip(SkipReason.ROAD_MISMATCH, diff)

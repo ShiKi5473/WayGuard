@@ -327,7 +327,7 @@ class AlertEngine(config: AlertConfig = AlertConfig()) {
             val axis = cam.roadAxis
             if (cfg.roadAxisFilterEnabled && axis != null) {
                 return GeoUtils.angleDiff(axis.toDouble(), heading) <= cfg.roadAxisToleranceDeg ||
-                    GeoUtils.angleDiff(((axis + 180) % 360).toDouble(), heading) <= cfg.roadAxisToleranceDeg
+                    GeoUtils.angleDiff(GeoUtils.normalizeBearing(axis + 180).toDouble(), heading) <= cfg.roadAxisToleranceDeg
             }
             return true
         }

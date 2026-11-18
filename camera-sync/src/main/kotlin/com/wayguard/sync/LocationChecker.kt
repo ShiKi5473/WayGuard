@@ -323,7 +323,7 @@ internal class LocationChecker(
             if (candidates.size == 1) {
                 val cand = candidates.single()
                 val shifted = if (cam.headings.size == 1 && cam.headingToleranceDeg == null && parsed.offsetMeters == null) {
-                    val upstreamBearing = (cam.headings.single() + 180.0) % 360.0
+                    val upstreamBearing = GeoUtils.normalizeBearing(cam.headings.single() + 180.0)
                     GeoUtils.destinationPoint(cand, INTERSECTION_UPSTREAM_M, upstreamBearing)
                         .takeIf { CountyBounds.TAIWAN.contains(it.lat, it.lon) } ?: cand
                 } else {

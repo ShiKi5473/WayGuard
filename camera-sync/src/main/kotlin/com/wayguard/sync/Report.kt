@@ -6,6 +6,7 @@ import com.wayguard.core.dataset.PlaceDerivation
 import com.wayguard.core.model.DatasetMeta
 import com.wayguard.core.validate.LocationCheck
 import com.wayguard.core.validate.VerdictLevel
+import com.waymap.geo.GeoUtils
 import java.util.Locale
 
 /** Human-readable outputs of a sync run (GitHub step summary + curation aids). */
@@ -205,7 +206,7 @@ internal object Report {
         val r = d.road ?: return "—"
         val name = r.road.ifBlank { "（無名道路）" }
         val b = r.bearing ?: return "$name（找不到，${r.distanceM?.let { "$it m" } ?: "—"}）"
-        return "${cell(name)} ${b}°／${(b + 180) % 360}°"
+        return "${cell(name)} ${b}°／${GeoUtils.normalizeBearing(b + 180)}°"
     }
 
     private fun cell(s: String) = s.replace("|", "\\|").replace("\n", " ")

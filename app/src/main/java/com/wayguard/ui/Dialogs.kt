@@ -37,6 +37,7 @@ import com.wayguard.core.model.SpeedCamera
 import com.wayguard.update.AppUpdateState
 import com.wayguard.update.AvailableUpdate
 import com.wayguard.update.InstallPauseReason
+import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import java.io.File
 import java.util.UUID
@@ -138,7 +139,7 @@ fun AddCameraDialog(
                 ) {
                     FilterChip(selected = heading == null, onClick = { heading = null }, label = { Text("雙向") })
                     currentHeading?.let { h ->
-                        val r = (h.roundToInt() % 360 + 360) % 360
+                        val r = GeoUtils.normalizeBearing(h.roundToInt())
                         FilterChip(selected = heading == r, onClick = { heading = r }, label = { Text("目前行進方向") })
                     }
                     DIRECTIONS.forEach { (name, deg) ->

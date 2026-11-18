@@ -165,7 +165,7 @@ internal class PlaceSuggester(private val nominatim: Nominatim) {
             val p = s.place
             val coord = p?.let { "${it.lat}, ${it.lon}" } ?: "—"
             val dirs = if (p == null) "—" else s.cameras.joinToString("<br>") { c ->
-                val h = (GeoUtils.bearing(c, p.pos).roundToInt() % 360 + 360) % 360
+                val h = GeoUtils.normalizeBearing(GeoUtils.bearing(c, p.pos).roundToInt())
                 val d = GeoUtils.haversine(c, p.pos)
                 "${h}°（${compass(h)}）／${String.format(Locale.ROOT, "%.1f", d / 1000)} km"
             }

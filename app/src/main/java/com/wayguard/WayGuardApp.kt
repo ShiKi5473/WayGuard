@@ -8,6 +8,7 @@ import com.wayguard.sync.SyncScheduler
 import com.wayguard.trip.TripStore
 import com.wayguard.update.AppUpdateScheduler
 import com.wayguard.update.AppUpdater
+import com.waymap.ui.WayMapCache
 
 class WayGuardApp : Application() {
     override fun onCreate() {
@@ -22,5 +23,7 @@ class WayGuardApp : Application() {
         AppUpdater.cleanupStaleFiles(this)
         AppUpdateScheduler.syncSchedule(this, settings.appAutoUpdate, settings.appUpdateWifiOnly)
         AppUpdateScheduler.checkOnStartupIfDue(this, settings)
+        // 看過的區域圖磚留在本機，山區等沒有訊號處仍可離線顯示
+        WayMapCache.setAmbientCacheSize(this, 200L * 1024 * 1024)
     }
 }

@@ -1,9 +1,11 @@
 package com.wayguard.ui
 
+import com.waymap.geo.GeoUtils
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.log2
 import kotlin.math.roundToInt
 
 private val DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
@@ -58,4 +60,11 @@ private val COMPASS_NAMES = listOf("北", "東北", "東", "東南", "南", "西
 /** 0° → "往北"; empty → "雙向". */
 fun formatHeadings(headings: List<Int>): String =
     if (headings.isEmpty()) "雙向／不限方向"
-    else headings.joinToString("、") { "往" + COMPASS_NAMES[((it % 360 + 360) % 360 + 22) / 45 % 8] }
+    else headings.joinToString("、") { "往" + COMPASS_NAMES[(GeoUtils.normalizeBearing(it) + 22) / 45 % 8] }
+
+/**
+ * 跟隨模式下依速度決定的地圖縮放：讓「首次警示距離」剛好落在游標（畫面中心）與畫面上緣之間。
+ * 台灣緯度下每 dp 約 70 914 / 2^z 公尺，可用的半個畫面高度約 400 dp，
+ * 故 z = log2(70 914 * 400 / (approachM * 1.1)) ≈ log2(28 000 000 / (approachM * 1.1))；限制在 14.0–17.5。
+ */
+fun followZoomFor(approachM: Double): Double = log2(28_000_000.0 / (approachM * 1.1)).coerceIn(14.0, 17.5)

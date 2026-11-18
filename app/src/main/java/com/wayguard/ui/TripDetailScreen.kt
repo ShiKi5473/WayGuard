@@ -2,6 +2,7 @@ package com.wayguard.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,6 +83,7 @@ import com.wayguard.core.trip.TripSummary
 import com.waymap.geo.LatLng
 import com.waymap.ui.CenterRequest
 import com.waymap.ui.CompassPlacement
+import com.waymap.ui.FitRequest
 import com.waymap.ui.MapMarker
 import com.waymap.ui.UserLocationMode
 import com.waymap.ui.WayMap
@@ -189,6 +191,10 @@ private fun ColumnScope.TripDetailBody(detail: TripDetail, actions: TripActions,
     val lines = remember(detail) { tripMapLines(detail) }
     val baseMarkers = remember(detail) { tripMapMarkers(detail) }
     val frame = remember(detail) { TripStats.computeCenterAndZoom(points, detail.events) }
+    val fitTo = remember(detail) {
+        val all = points.map { LatLng(it.lat, it.lon) } + detail.events.map { LatLng(it.lat, it.lon) }
+        if (all.isEmpty()) null else FitRequest(all, paddingDp = 40, animate = false)
+    }
     val series = remember(detail) { TripAnalytics.speedSeries(points) }
     val playPos: PlaybackPosition? = playT?.let { TripAnalytics.positionAt(points, it) }
 
@@ -246,6 +252,8 @@ private fun ColumnScope.TripDetailBody(detail: TripDetail, actions: TripActions,
             markers = markers,
             lines = lines,
             centerOn = centerReq,
+            fitTo = fitTo,
+            styleUrl = if (isSystemInDarkTheme()) WayMapDefaults.STYLE_URL_DARK else WayMapDefaults.STYLE_URL,
             userLocation = UserLocationMode.HIDDEN,
             initialCenter = frame?.first ?: WayMapDefaults.TAIPEI,
             initialZoom = frame?.second ?: WayMapDefaults.ZOOM,

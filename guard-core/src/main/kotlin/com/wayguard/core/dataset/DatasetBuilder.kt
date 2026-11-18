@@ -184,7 +184,7 @@ object DatasetBuilder {
                 if (place != null) {
                     val pos = LatLng(lat, lon)
                     val d = GeoUtils.haversine(pos, place.pos)
-                    val h = (GeoUtils.bearing(pos, place.pos).roundToInt() % 360 + 360) % 360
+                    val h = GeoUtils.normalizeBearing(GeoUtils.bearing(pos, place.pos).roundToInt())
                     val check = roadChecks[baseId]?.takeIf {
                         (it.lat == null || kotlin.math.abs(it.lat - lat) <= 1e-5) &&
                             (it.lon == null || kotlin.math.abs(it.lon - lon) <= 1e-5)

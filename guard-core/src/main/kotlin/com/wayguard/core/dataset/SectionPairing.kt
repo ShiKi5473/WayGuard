@@ -92,7 +92,7 @@ object SectionPairing {
             if (partner[b]?.singleOrNull() != a) continue
             val (ca, ra) = a
             val (cb, rb) = b
-            val heading = (GeoUtils.bearing(ca.pos, cb.pos).roundToInt() % 360 + 360) % 360
+            val heading = GeoUtils.normalizeBearing(GeoUtils.bearing(ca.pos, cb.pos).roundToInt())
             val covered = curated.any {
                 GeoUtils.haversine(it.start, ca.pos) <= CURATED_COVER_M &&
                     GeoUtils.angleDiff(it.heading.toDouble(), heading.toDouble()) <= CURATED_COVER_DEG

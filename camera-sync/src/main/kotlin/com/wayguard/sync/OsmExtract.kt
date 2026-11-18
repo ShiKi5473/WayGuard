@@ -98,7 +98,7 @@ internal class OsmExtract private constructor(
             val nearest = nearestPointAndBearing(poly.points, pos) ?: continue
             if (nearest.second <= bestDist) {
                 bestDist = nearest.second
-                val b = ((nearest.third.roundToInt() % 360) + 360) % 360
+                val b = GeoUtils.normalizeBearing(nearest.third.roundToInt())
                 bestHit = RoadHit(poly.primaryName, nearest.second, b)
             }
         }
@@ -210,7 +210,7 @@ internal class OsmExtract private constructor(
             val nearest = nearestPointAndBearing(poly.points, pos) ?: continue
             if (nearest.second <= bestDist) {
                 bestDist = nearest.second
-                val b = ((nearest.third.roundToInt() % 360) + 360) % 360
+                val b = GeoUtils.normalizeBearing(nearest.third.roundToInt())
                 bestHit = RoadHit(poly.primaryName, nearest.second, b)
             }
         }

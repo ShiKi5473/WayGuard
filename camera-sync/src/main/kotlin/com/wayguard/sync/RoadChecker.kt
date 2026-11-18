@@ -46,7 +46,7 @@ internal class RoadChecker(
                 // A camera far from any mapped street (or a non-street hit) can't be verified.
                 RoadCheck(bearing = null, road = hit.name, distanceM = distance?.roundToInt(), lat = pos.lat, lon = pos.lon, checkedAt = now)
             } else {
-                val b = (nearest.second.roundToInt() % 360 + 360) % 360
+                val b = GeoUtils.normalizeBearing(nearest.second.roundToInt())
                 RoadCheck(bearing = b, road = hit.name, distanceM = distance.roundToInt(), lat = pos.lat, lon = pos.lon, checkedAt = now)
             }
         }

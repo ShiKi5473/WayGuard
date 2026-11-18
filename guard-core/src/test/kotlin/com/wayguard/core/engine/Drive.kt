@@ -22,7 +22,7 @@ internal fun arc(from: LatLng, startBearing: Double, turnDeg: Double, radiusM: D
     val side = if (turnDeg > 0) 90.0 else -90.0
     val center = GeoUtils.destinationPoint(from, radiusM, startBearing + side)
     return (0..n).map { s ->
-        val bearing = ((startBearing + turnDeg * s / n) % 360.0 + 360.0) % 360.0
+        val bearing = GeoUtils.normalizeBearing(startBearing + turnDeg * s / n)
         Fix(GeoUtils.destinationPoint(center, radiusM, bearing + side + 180.0), speedKmh, bearing, startMs + s * 1000L)
     }
 }

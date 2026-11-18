@@ -3,6 +3,7 @@ package com.wayguard.ui
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,8 +58,10 @@ import com.waymap.geo.LatLng
 import com.waymap.ui.CompassPlacement
 import com.waymap.ui.MapLine
 import com.waymap.ui.PointLayer
+import com.waymap.ui.UserFix
 import com.waymap.ui.UserLocationMode
 import com.waymap.ui.WayMap
+import com.waymap.ui.WayMapDefaults
 import java.io.File
 import kotlin.math.roundToInt
 
@@ -105,8 +108,15 @@ fun MainScreen(
     var addAt by remember { mutableStateOf<LatLng?>(null) }
     /** Camera follows the user; panning the map turns it off, the locate button back on. */
     var follow by remember { mutableStateOf(false) }
+    var mapError by remember { mutableStateOf(false) }
 
     LaunchedEffect(guard.running) { if (guard.running) follow = true }
+    LaunchedEffect(mapError) {
+        if (mapError) {
+            kotlinx.coroutines.delay(8_000L)
+            mapError = false
+        }
+    }
 
     // Rebuilt only when the data changes (not on every 1 Hz guard update).
     val icons = remember(data) { CameraIcons.iconsFor(data.active, data.suppressed) }
@@ -136,6 +146,17 @@ fun MainScreen(
         else -> UserLocationMode.SHOW
     }
 
+    // 與警示引擎使用同一筆定位與過濾後的方向；未守衛時由 MapLibre 自行定位。
+    val userFix = if (guard.running && guard.gpsOk) {
+        guard.position?.let { UserFix(it, guard.heading?.toFloat(), guard.speedKmh?.let { kmh -> (kmh / 3.6).toFloat() }) }
+    } else null
+    // 跟隨時依速度對應的首次警示距離調整縮放。
+    val followZoomForSpeed = remember(settings) {
+        val cfg = settings.alertConfig()
+        val zoomFor: (Double) -> Double = { kmh -> followZoomFor(cfg.approachDistance(kmh)) }
+        zoomFor
+    }
+
     val fullOverlayOpen = showSettings
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -145,12 +166,16 @@ fun MainScreen(
             lines = sectionLines,
             pointLayers = layers,
             userLocation = userLocation,
+            userFix = userFix,
+            followZoomForSpeed = followZoomForSpeed,
+            styleUrl = if (isSystemInDarkTheme()) WayMapDefaults.STYLE_URL_DARK else WayMapDefaults.STYLE_URL,
             // Above the bottom controls.
             compass = CompassPlacement(endDp = 16, bottomDp = 150),
             // Ignore taps that fall through from full-screen overlays to the map.
             onPointTap = { _, id -> if (!fullOverlayOpen) selected = data.find(id) },
             onLongPress = { if (!fullOverlayOpen) addAt = it },
             onFollowDismissed = { follow = false },
+            onMapLoadError = { mapError = true },
         )
 
         // ============ TOP — status / setup, floating over the map ============
@@ -160,6 +185,11 @@ fun MainScreen(
         ) {
             guard.error?.let { msg ->
                 Card(modifier = Modifier.fillMaxWidth()) { Text(msg, modifier = Modifier.padding(12.dp)) }
+            }
+            if (mapError) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Text("地圖載入失敗（可能沒有網路），測速提醒不受影響", modifier = Modifier.padding(12.dp))
+                }
             }
             SetupScreen(
                 perms = perms,

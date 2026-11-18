@@ -5,6 +5,7 @@ import com.wayguard.core.model.SpeedCamera
 import com.wayguard.settings.GuardSettings
 import com.wayguard.ui.formatBytes
 import com.wayguard.ui.formatDistance
+import com.wayguard.ui.followZoomFor
 import com.wayguard.ui.formatHeadings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -45,5 +46,14 @@ class FormatTest {
         // A speed+red-light camera still alerts via its red-light kind.
         val cam = SpeedCamera("c", 25.0, 121.5, kinds = setOf(CameraKind.SPEED, CameraKind.RED_LIGHT))
         assertTrue(cam.kinds.any { it in cfg.enabledKinds })
+    }
+
+    @Test
+    fun followZoomFitsApproachDistanceAndClamps() {
+        assertEquals(16.37, followZoomFor(300.0), 0.05)
+        assertEquals(15.64, followZoomFor(500.0), 0.05)
+        assertEquals(14.96, followZoomFor(800.0), 0.05)
+        assertEquals(17.5, followZoomFor(50.0), 0.0)
+        assertEquals(14.0, followZoomFor(5000.0), 0.0)
     }
 }
