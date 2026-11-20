@@ -457,5 +457,62 @@ class LocationCheckerTest {
         assertEquals(24.970, fwChk.suggestedLat!!, 1e-4)
         assertEquals(121.220, fwChk.suggestedLon!!, 1e-4)
     }
+
+    @Test
+    fun tgosHouseNumberFixesOffRoadCoordinatesRescuesRejectedRowsAndSurvivesRunsWithoutTgos() {
+        // ~1.1 km south of 中山路 (lat 24.960): OSM says the coordinate is off its road.
+        val offRoad = SpeedCamera("cam-off", 24.950, 121.221, city = "桃園市", district = "中壢區", address = "中山路100號前")
+        // On 中山路 but ~800 m from its house number: flagged, coordinate kept.
+        val onRoad = SpeedCamera("cam-on", 24.960, 121.216, city = "桃園市", district = "中壢區", address = "中山路200號前")
+        // Fuzzy result on another number: ignored.
+        val wrongNo = SpeedCamera("cam-wrong", 24.960, 121.218, city = "桃園市", district = "中壢區", address = "中山路300號前")
+        val rejRow = NpaRow(9, "桃園市", "中壢區", "中山路120號前", "局", "分", "120.40", "24.05", "往東", "50")
+        val rejId = DatasetBuilder.stableId(rejRow)
+        val rejected = listOf(RejectedRow(9, "經緯度不在桃園市範圍內", "raw", rejId))
+        val tgosHits = TgosCsv.parseResults(
+            """
+            id,Address,Response_Address,Response_X,Response_Y
+            cam-off,桃園市中壢區中山路100號,桃園市中壢區中山里5鄰中山路100號,121.2212,24.9603
+            cam-on,桃園市中壢區中山路200號,桃園市中壢區中山里5鄰中山路200號,121.2240,24.9602
+            cam-wrong,桃園市中壢區中山路300號,桃園市中壢區中山里5鄰中山路58號,121.2240,24.9602
+            $rejId,桃園市中壢區中山路120號,桃園市中壢區中山里5鄰中山路120號,121.2222,24.9603
+            """.trimIndent(),
+        )
+        val cams = listOf(offRoad, onRoad, wrongNo)
+        val rowsById = mapOf(rejId to rejRow)
+        val res = LocationChecker(osm, offline = true, tgosResults = tgosHits)
+            .checkAll(cams, rejected, rowsById, emptyMap(), "2026-11-20T00:00:00Z", verifyAll = true)
+
+        val offChk = res.checks.getValue("cam-off")
+        assertEquals(VerdictLevel.MISMATCH, offChk.verdict)
+        assertEquals("tgos", offChk.suggestedSource)
+        // Projected onto 中山路 in front of the house, not the raw TGOS point.
+        assertEquals(24.960, offChk.suggestedLat!!, 1e-5)
+        assertEquals(121.2212, offChk.suggestedLon!!, 1e-5)
+
+        val onChk = res.checks.getValue("cam-on")
+        assertEquals(VerdictLevel.MISMATCH, onChk.verdict)
+        assertEquals("tgos", onChk.method)
+        assertNull(onChk.suggestedLat)
+
+        val wrongChk = res.checks.getValue("cam-wrong")
+        assertEquals("road", wrongChk.method)
+        assertEquals(VerdictLevel.OK, wrongChk.verdict)
+
+        val rejChk = res.checks.getValue(rejId)
+        assertEquals("tgos", rejChk.suggestedSource)
+        assertEquals(24.960, rejChk.suggestedLat!!, 1e-5)
+        assertEquals(121.2222, rejChk.suggestedLon!!, 1e-5)
+
+        // A later run without TGOS (CI) keeps the TGOS conclusions instead of dropping them.
+        val rerun = LocationChecker(osm, offline = true)
+            .checkAll(cams, rejected, rowsById, res.checks, "2026-11-27T00:00:00Z", verifyAll = true)
+        assertEquals(offChk, rerun.checks.getValue("cam-off"))
+        assertEquals(rejChk, rerun.checks.getValue(rejId))
+
+        // Neither is exported for another TGOS upload.
+        val upload = LocationChecker.buildTgosUploadRows(cams, rejected, rowsById, res.checks)
+        assertEquals(listOf("cam-wrong"), upload.map { it.id })
+    }
 }
 

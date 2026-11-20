@@ -1,5 +1,6 @@
 package com.wayguard.core.validate
 
+import com.waymap.geo.GeoUtils
 import com.waymap.geo.LatLng
 import kotlin.math.PI
 import kotlin.math.cos
@@ -10,7 +11,38 @@ import kotlin.math.tan
 
 data class TgosRow(val id: String, val address: String)
 
-data class TgosHit(val id: String, val pos: LatLng, val matchedAddress: String = "")
+/** One house-number location TGOS returned for a query. */
+data class TgosCandidate(val pos: LatLng, val address: String)
+
+data class TgosHit(
+    val id: String,
+    /** Centroid of [candidates]. */
+    val pos: LatLng,
+    val matchedAddress: String = "",
+    /** Every location TGOS returned; fuzzy matching may return several (`;`-separated in the batch CSV). */
+    val candidates: List<TgosCandidate> = listOf(TgosCandidate(pos, matchedAddress)),
+)
+
+/** How well the address TGOS matched agrees with the house number queried. */
+enum class TgosMatchQuality {
+    /** Same road, house number and 之 sub-number. */
+    EXACT,
+
+    /** Same road and house number, different (or missing) 之 sub-number. */
+    SAME_BASE,
+
+    /** Several neighbouring numbers on the same road that bracket the queried one. */
+    BRACKETED,
+
+    /** The result carries no matched address (generic CSV): fit for verification only. */
+    UNKNOWN,
+}
+
+/** A TGOS result that can be trusted for [pos]. */
+data class TgosMatch(val pos: LatLng, val quality: TgosMatchQuality) {
+    /** True when the position is pinned to the queried house number (not just any TGOS coordinate). */
+    val pinsHouse: Boolean get() = quality != TgosMatchQuality.UNKNOWN
+}
 
 /**
  * Helpers for Taiwan TGOS batch house-number geocoding CSV export and result parsing
@@ -104,7 +136,8 @@ object TgosCsv {
     /**
      * Parses TGOS batch result CSV: the batch format (`id,Address,Response_Address,Response_X,Response_Y`)
      * or generic `id` + `X`/`經度`/`橫坐標` + `Y`/`緯度`/`縱坐標` (+ optional address) columns.
-     * Rows TGOS could not match (empty `Response_X`/`Response_Y`) are skipped.
+     * Rows TGOS could not match (empty `Response_X`/`Response_Y`) are skipped. Fuzzy matching may
+     * return several `;`-separated candidates; each becomes one of [TgosHit.candidates].
      */
     fun parseResults(csvText: String): Map<String, TgosHit> {
         val lines = csvText.lineSequence()
@@ -127,15 +160,122 @@ object TgosCsv {
         for (line in lines.drop(1)) {
             val cols = splitCsvLine(line, delim)
             val id = cols.getOrNull(idIdx)?.trim().orEmpty()
-            val x = cols.getOrNull(xIdx)?.trim()?.toDoubleOrNull() ?: continue
-            val y = cols.getOrNull(yIdx)?.trim()?.toDoubleOrNull() ?: continue
             if (id.isEmpty()) continue
+            val xs = cols.getOrNull(xIdx)?.split(';').orEmpty()
+            val ys = cols.getOrNull(yIdx)?.split(';').orEmpty()
+            if (xs.isEmpty() || xs.size != ys.size) continue
             val addr = addrIdx.takeIf { it >= 0 }?.let { cols.getOrNull(it)?.trim() }.orEmpty()
-            val pos = toWgs84(x, y, isPenghu = "澎湖" in addr) ?: continue
-            if (!CountyBounds.TAIWAN.contains(pos.lat, pos.lon)) continue
-            out[id] = TgosHit(id, pos, addr)
+            val addrs = addr.split(';').map { it.trim() }.takeIf { it.size == xs.size }
+            val candidates = xs.indices.mapNotNull { i ->
+                val x = xs[i].trim().toDoubleOrNull() ?: return@mapNotNull null
+                val y = ys[i].trim().toDoubleOrNull() ?: return@mapNotNull null
+                val candAddr = addrs?.get(i) ?: if (xs.size == 1) addr else ""
+                val pos = toWgs84(x, y, isPenghu = "澎湖" in addr) ?: return@mapNotNull null
+                if (!CountyBounds.TAIWAN.contains(pos.lat, pos.lon)) return@mapNotNull null
+                TgosCandidate(pos, candAddr)
+            }
+            // Drop the whole row when any candidate is unreadable: a partial set could mislead.
+            if (candidates.size != xs.size) continue
+            out[id] = TgosHit(id, centroid(candidates.map { it.pos }), addr, candidates)
         }
         return out
+    }
+
+    /**
+     * Keeps a TGOS result only when it really points at [queryAddress]'s house number: every
+     * candidate must be on the same road (lane/section included) and either carry the same number
+     * or bracket it, all within [LocationVerdict.TGOS_CLUSTER_MAX_M] of each other. Fuzzy matching
+     * otherwise falls back to some other number (`中華路一段406號` → `218號`) or road, which is
+     * a different place. [city]/[district] are the camera's, stripped from both addresses.
+     */
+    fun assess(hit: TgosHit, city: String, district: String, queryAddress: String): TgosMatch? {
+        val cands = hit.candidates
+        if (cands.isEmpty()) return null
+        if (cands.all { it.address.isBlank() }) {
+            val pts = cands.map { it.pos }
+            return if (spreadM(pts) <= LocationVerdict.TGOS_CLUSTER_MAX_M) {
+                TgosMatch(centroid(pts), TgosMatchQuality.UNKNOWN)
+            } else {
+                null
+            }
+        }
+        val q = houseKey(queryAddress, city, district) ?: return null
+        val keys = cands.map { houseKey(it.address, city, district) ?: return null }
+        if (keys.any { it.road != q.road }) return null
+
+        val sameBase = cands.indices.filter { keys[it].number == q.number }
+        val exact = sameBase.filter { keys[it].sub == q.sub }
+        val (used, quality) = when {
+            exact.isNotEmpty() -> exact to TgosMatchQuality.EXACT
+            sameBase.isNotEmpty() -> sameBase to TgosMatchQuality.SAME_BASE
+            cands.size >= 2 && q.number in keys.minOf { it.number }..keys.maxOf { it.number } ->
+                cands.indices.toList() to TgosMatchQuality.BRACKETED
+            else -> return null
+        }
+        val pts = used.map { cands[it].pos }
+        if (spreadM(pts) > LocationVerdict.TGOS_CLUSTER_MAX_M) return null
+        return TgosMatch(centroid(pts), quality)
+    }
+
+    internal data class HouseKey(val road: String, val number: Int, val sub: Int?)
+
+    private val VILLAGE_RE = Regex("^[^\\d]{1,8}?[村里]\\d+鄰")
+    private val HOUSE_NO_RE = Regex("(\\d+)(?:之(\\d+))?號")
+    private val SUB_AFTER_RE = Regex("號之(\\d+)")
+    private val SECTION_NO_RE = Regex("(\\d+)段")
+    private val NEAR_RE = Regex("近(?=\\d)")
+    private const val CN_DIGITS = "一二三四五六七八九"
+
+    /**
+     * Road (with section/lane) + house number of [address], after dropping [city], [district] and
+     * TGOS's `XX里N鄰`. `3段`→`三段`, `18-1號`/`18號之1`→`18之1號`, `近100號`→`100號`.
+     */
+    internal fun houseKey(address: String, city: String, district: String): HouseKey? {
+        val s = normalizeHouseText(address)
+            .removePrefix(normalizeHouseText(city))
+            .removePrefix(normalizeHouseText(district))
+            .replaceFirst(VILLAGE_RE, "")
+        val m = HOUSE_NO_RE.find(s) ?: return null
+        val road = s.substring(0, m.range.first)
+        if (road.isEmpty()) return null
+        val number = m.groupValues[1].toIntOrNull() ?: return null
+        val sub = m.groupValues[2].takeIf { it.isNotEmpty() }?.toIntOrNull()
+        return HouseKey(road, number, sub)
+    }
+
+    private fun normalizeHouseText(s: String): String {
+        val sb = StringBuilder(s.length)
+        for (ch in s) {
+            when {
+                ch in '０'..'９' -> sb.append('0' + (ch - '０'))
+                ch.isWhitespace() -> Unit
+                ch == '台' -> sb.append('臺')
+                ch == '-' || ch == '－' || ch == '‐' || ch == '—' -> sb.append('之')
+                else -> sb.append(ch)
+            }
+        }
+        return sb.toString()
+            .replace(SUB_AFTER_RE, "之$1號")
+            .replace(SECTION_NO_RE) { "${chineseNumber(it.groupValues[1].toInt())}段" }
+            .replace(NEAR_RE, "")
+    }
+
+    private fun chineseNumber(n: Int): String = when (n) {
+        in 1..9 -> CN_DIGITS[n - 1].toString()
+        10 -> "十"
+        in 11..19 -> "十" + CN_DIGITS[n - 11]
+        else -> n.toString()
+    }
+
+    private fun centroid(pts: List<LatLng>): LatLng =
+        LatLng(pts.sumOf { it.lat } / pts.size, pts.sumOf { it.lon } / pts.size)
+
+    private fun spreadM(pts: List<LatLng>): Double {
+        var max = 0.0
+        for (i in pts.indices) for (j in i + 1 until pts.size) {
+            max = maxOf(max, GeoUtils.haversine(pts[i], pts[j]))
+        }
+        return max
     }
 
     fun toWgs84(x: Double, y: Double, isPenghu: Boolean = false): LatLng? = when {

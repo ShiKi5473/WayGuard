@@ -226,6 +226,57 @@ class DatasetBuilderTest {
     }
 
     @Test
+    fun rescuesRejectedRowOnlyWithHighConfidenceSuggestion() {
+        val tgosRow = NpaRow(2, "桃園市", "中壢區", "中山路120號前", "局", "分", "120.40", "24.05", "往東", "50")
+        val plainRow = NpaRow(3, "桃園市", "中壢區", "中山路與中正路口", "局", "分", "120.41", "24.06", "往東", "50")
+        val tgosId = DatasetBuilder.stableId(tgosRow)
+        val plainId = DatasetBuilder.stableId(plainRow)
+        val checks = mapOf(
+            tgosId to com.wayguard.core.validate.LocationCheck(
+                verdict = com.wayguard.core.validate.VerdictLevel.MISMATCH,
+                method = "tgos",
+                suggestedLat = 24.960,
+                suggestedLon = 121.2222,
+                reason = "被拒絕列依門牌位置推算（中山路）",
+                suggestedSource = "tgos",
+            ),
+            // Suggestion without a high-confidence source stays a manual decision.
+            plainId to com.wayguard.core.validate.LocationCheck(
+                verdict = com.wayguard.core.validate.VerdictLevel.MISMATCH,
+                method = "intersection",
+                suggestedLat = 24.960,
+                suggestedLon = 121.220,
+            ),
+        )
+        fun run(auto: Boolean) = DatasetBuilder.build(
+            rows = listOf(tgosRow, plainRow),
+            csvRejected = emptyList(),
+            sections = emptyList(),
+            overrides = Overrides(),
+            generatedAt = "2026-11-20T00:00:00Z",
+            source = "test",
+            locationChecks = checks,
+            applyAutoFixes = auto,
+        )
+
+        val pre = run(auto = false)
+        assertTrue(pre.dataset.cameras.isEmpty())
+        assertEquals(setOf(tgosId, plainId), pre.report.rejected.map { it.id }.toSet())
+
+        val applied = run(auto = true)
+        val cam = applied.dataset.cameras.single()
+        assertEquals(tgosId, cam.id)
+        assertEquals(24.960, cam.lat, 1e-9)
+        assertEquals(121.2222, cam.lon, 1e-9)
+        assertEquals("tgos", cam.posSource)
+        assertNull(cam.loc)
+        assertEquals(listOf(90), cam.headings)
+        assertEquals(listOf(plainId), applied.report.rejected.map { it.id })
+        assertEquals(listOf(tgosId), applied.report.autoFixedLocations.map { it.first.id })
+        assertTrue(applied.report.locationIssues.isEmpty())
+    }
+
+    @Test
     fun mergeKnownRoadsReusesExtraSetWhenCovered() {
         val extra = setOf("中正路", "中山路")
         val coveredChecks = mapOf(

@@ -78,6 +78,7 @@ fun CameraDetailDialog(
                     camera.posSource == "override" -> "內政部警政署開放資料（座標經人工修正）"
                     camera.posSource == "intersection" -> "內政部警政署開放資料（座標依路口推算）"
                     camera.posSource == "milepost" -> "內政部警政署開放資料（座標依里程推算）"
+                    camera.posSource == "tgos" -> "內政部警政署開放資料（座標依門牌位置推算）"
                     else -> "內政部警政署開放資料"
                 }
                 Text("來源：$sourceLabel")

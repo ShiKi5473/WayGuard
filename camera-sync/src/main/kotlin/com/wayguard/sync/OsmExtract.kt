@@ -217,6 +217,26 @@ internal class OsmExtract private constructor(
         return bestHit
     }
 
+    /** Point on the nearest segment matching [baseRoadName] in [city] when within [maxDistM] of [pos]. */
+    fun nearestPointOnRoad(
+        pos: LatLng,
+        baseRoadName: String,
+        city: String,
+        maxDistM: Double,
+        laneName: String? = null,
+    ): LatLng? {
+        var best: LatLng? = null
+        var bestDist = maxDistM
+        for (poly in matchingPolylines(baseRoadName, laneName, CountyBounds.of(city))) {
+            val nearest = nearestPointAndBearing(poly.points, pos) ?: continue
+            if (nearest.second <= bestDist) {
+                bestDist = nearest.second
+                best = nearest.first
+            }
+        }
+        return best
+    }
+
     /** True when at least one road segment in OSM carries [baseRoadName] (optionally within [box]). */
     fun hasRoad(baseRoadName: String, box: BBox? = null, laneName: String? = null): Boolean =
         matchingPolylines(baseRoadName, laneName, box).isNotEmpty()

@@ -140,6 +140,7 @@ object DatasetBuilder {
         val directory = PlaceDirectory(places)
         val knownRoads = mergeKnownRoads(roadChecks, extraKnownRoads)
         val matchedFixes = LinkedHashSet<String>()
+        val rescuedChecks = HashMap<String, LocationCheck>()
         var missingLimit = 0
         var fixed = 0
 
@@ -155,15 +156,24 @@ object DatasetBuilder {
             val coords = validCoords(row, city)
             val fix = overrides.fix[baseId]
             if (fix != null) matchedFixes += baseId
+            // Out-of-county row whose address pins a unique spot (e.g. TGOS house number on its OSM road).
+            val rescue = if (applyAutoFixes && coords == null && fix?.lat == null && fix?.lon == null) {
+                locationChecks[baseId]?.takeIf {
+                    it.suggestedSource != null && it.suggestedLat != null && it.suggestedLon != null
+                }
+            } else {
+                null
+            }
             // A fix may correct just one coordinate of a rejected row; the other is kept as published.
-            val lat = fix?.lat ?: coords?.first ?: row.lat.toDoubleOrNull()?.takeIf { fix != null }
-            val lon = fix?.lon ?: coords?.second ?: row.lon.toDoubleOrNull()?.takeIf { fix != null }
+            val lat = fix?.lat ?: coords?.first ?: rescue?.suggestedLat ?: row.lat.toDoubleOrNull()?.takeIf { fix != null }
+            val lon = fix?.lon ?: coords?.second ?: rescue?.suggestedLon ?: row.lon.toDoubleOrNull()?.takeIf { fix != null }
             if (lat == null || lon == null) {
                 rejected += RejectedRow(row.line, "經緯度不在${city.ifBlank { "臺灣" }}範圍內", rowText(row), baseId)
                 continue
             }
             if (coords?.third == true && fix?.lat == null) swapped += row.line
             if (fix != null) fixed++
+            if (rescue != null) rescuedChecks[baseId] = rescue
 
             val limit = LIMIT.find(row.limit)?.value?.toInt()?.takeIf { it in 10..130 }
             if (limit == null && parsed.limitsByHeading.isEmpty()) missingLimit++
@@ -217,7 +227,7 @@ object DatasetBuilder {
                 district = district,
                 address = row.address,
                 directionText = row.direct,
-                posSource = if (hasCoordFix) "override" else null,
+                posSource = if (hasCoordFix) "override" else rescue?.suggestedSource,
             )
             // 南向60北向70 → one camera per direction, each with its own limit.
             val cameras = if (parsed.limitsByHeading.isEmpty() || fix?.headings != null) listOf(base)
@@ -281,6 +291,7 @@ object DatasetBuilder {
             val internal = internalConflicts[cam.id]
             val merged = mergeLocationCheck(external, internal)
             val axis = cam.roadAxis ?: computeRoadAxis(cam, baseId, external, roadChecks, knownRoads)
+            val rescued = rescuedChecks[baseId]
 
             val autoFixCoords = applyAutoFixes &&
                 cam.posSource == null &&
@@ -289,7 +300,11 @@ object DatasetBuilder {
                 external.suggestedLat != null &&
                 external.suggestedLon != null &&
                 external.suggestedSource != null
-            if (autoFixCoords) {
+            if (rescued != null) {
+                val updated = cam.copy(loc = null, roadAxis = axis)
+                autoFixedLocations += updated to rescued
+                updated
+            } else if (autoFixCoords) {
                 val updated = cam.copy(
                     lat = external.suggestedLat,
                     lon = external.suggestedLon,

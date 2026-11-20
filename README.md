@@ -38,6 +38,7 @@ Android 測速照相守衛（Kotlin + Jetpack Compose + MapLibre GL）。地圖�
 ### 人工維護
 
 - **修正座標**：報告的「拒絕的列」會列出 id。在 `overrides.json` 的 `fix` 中補上正確座標即可納入，例如 `"npa-eaa1e9685b": {"lat": 24.645304, "note": "緯度筆誤"}`。
+- **門牌修正（TGOS）**：TGOS 擋境外 IP，需在台灣本機執行 `scripts\local-verify.ps1 -TgosResult <TGOS 批次結果檔>`。只採用門牌號真正對上的結果（同路段且同號，或多筆候選夾住該號且彼此相距 ≤ 100 m）；其中 OSM 也判定座標偏離所寫道路、或座標出界被拒絕的點位，自動改用「門牌點投影到該道路」的座標（`posSource: "tgos"`）。座標已在該道路上、只是離門牌較遠的，保留原座標，只標示可疑／不符。結論存進 `location-checks.json`，CI 會沿用。
 - **排除點位**：把 id 加進 `exclude`。
 - **區間測速**：全國沒有統一的起訖點資料。請參考 `section-candidates.csv` 和各縣市公告，人工整理後寫入 `sections.json`。每個行駛方向各寫一筆：
 

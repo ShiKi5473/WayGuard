@@ -71,7 +71,9 @@ internal class LocationChecker(
                 (verifyAll || prev == null || prev.method == "internal" || prev.verdict != VerdictLevel.OK || hasTgos || needsTgosApi)
             ) {
                 checkedCount++
-                verifyCamera(cam, osm, activeMileposts, prev?.roadAxis, knownRoads, now)
+                val fresh = verifyCamera(cam, osm, activeMileposts, prev?.roadAxis, knownRoads, now)
+                // TGOS is unreachable from CI (HTTP 403): keep a TGOS conclusion until a new TGOS hit replaces it.
+                if (prev?.method == "tgos" && fresh.method != "tgos") prev else fresh
             } else {
                 prev
             }
@@ -87,8 +89,10 @@ internal class LocationChecker(
             val id = rej.id ?: continue
             val row = rowsById[id] ?: continue
             val prev = existing[id]
-            if (hasExternalSources && (verifyAll || prev == null)) {
-                suggestRejected(id, row, osm, activeMileposts, knownRoads, now)?.let { out[id] = it }
+            if (hasExternalSources && (verifyAll || prev == null || id in tgosResults)) {
+                val fresh = suggestRejected(id, row, osm, activeMileposts, knownRoads, now)
+                    ?: prev?.takeIf { it.method == "tgos" }
+                fresh?.let { out[id] = it }
             } else if (prev != null) {
                 out[id] = prev
             }
@@ -119,6 +123,9 @@ internal class LocationChecker(
         var suggested: LatLng? = null
         var suggestedSource: String? = null
         var milepostPos: LatLng? = null
+        // TGOS position pinned to the address's house number, and the OSM-only road verdict.
+        var tgosHouse: LatLng? = null
+        var osmRoadVerdict = VerdictLevel.UNVERIFIABLE
 
         var intersectionPair = parsed.roads.take(2)
         val roadVerdict: VerdictLevel = when (parsed.kind) {
@@ -196,16 +203,20 @@ internal class LocationChecker(
                     if (v != VerdictLevel.OK) reasons += "距 ${laneName ?: roadName} ${osmDist.roundToInt()} m"
                     v
                 }
+                osmRoadVerdict = osmVerdict
 
+                val cleaned = TgosCsv.cleanAddressForTgos(cam.city, cam.district, cam.address)
                 val tgosHit = tgosResults[cam.id] ?: if (!offline && parsed.kind == AddressKind.HOUSE_NUMBER) {
-                    val cleaned = TgosCsv.cleanAddressForTgos(cam.city, cam.district, cam.address)
                     tgos?.query(cam.id, cleaned)
                 } else {
                     null
                 }
-                if (tgosHit != null) {
-                    // Notice: only conclusion & rounded distance are kept; TGOS coords stay out of public outputs.
-                    val tgosDist = GeoUtils.haversine(cam.pos, tgosHit.pos)
+                // Fuzzy results that landed on another number or road are a different place: ignore them.
+                val tgosMatch = tgosHit?.let { TgosCsv.assess(it, cam.city, cam.district, cleaned) }
+                if (tgosMatch != null) {
+                    // Raw TGOS coords are not published; only a MISMATCH fix projected onto the OSM road is.
+                    if (tgosMatch.pinsHouse) tgosHouse = tgosMatch.pos
+                    val tgosDist = GeoUtils.haversine(cam.pos, tgosMatch.pos)
                     val tgosVerdict = LocationVerdict.forTgos(tgosDist)
                     method = "tgos"
                     rawDistM = tgosDist
@@ -372,6 +383,27 @@ internal class LocationChecker(
                     }
                 }
             }
+        } else if (
+            parsed.kind == AddressKind.HOUSE_NUMBER &&
+            combined == VerdictLevel.MISMATCH &&
+            // Only when OSM independently shows the coordinate is wrong: a camera already on its road
+            // may sit some way from the house number its address merely refers to.
+            (osmRoadVerdict == VerdictLevel.MISMATCH || adminVerdict == VerdictLevel.MISMATCH)
+        ) {
+            val house = tgosHouse
+            val road = parsed.roads.first()
+            val onRoad = if (house != null && osm != null && !osm.isEmpty) {
+                osm.nearestPointOnRoad(house, road, cam.city, LocationVerdict.TGOS_SNAP_MAX_M, parsed.roadLanes[road])
+            } else {
+                null
+            }
+            if (onRoad != null && osm != null && inDeclaredArea(onRoad, cam.city, cam.district, osm)) {
+                suggested = onRoad
+                suggestedSource = "tgos"
+                val jumpM = GeoUtils.haversine(cam.pos, onRoad)
+                rawDistM = jumpM
+                reasons += "門牌推算位置相距 ${jumpM.roundToInt()} m"
+            }
         }
 
         // Compute stabilized roadAxis (0..170 deg) for single-road cameras within 25 m of OSM centerline.
@@ -480,7 +512,38 @@ internal class LocationChecker(
                 }
             }
         }
+
+        // House number pinned by TGOS and lying on the named OSM road: high confidence, auto-rescued.
+        if (parsed.kind == AddressKind.HOUSE_NUMBER && parsed.roads.isNotEmpty() && osm != null && !osm.isEmpty) {
+            val cleaned = TgosCsv.cleanAddressForTgos(row.city, row.region, row.address)
+            val hit = tgosResults[id] ?: if (!offline) tgos?.query(id, cleaned) else null
+            val house = hit?.let { TgosCsv.assess(it, city, district, cleaned) }?.takeIf { it.pinsHouse }?.pos
+            val road = parsed.roads.first()
+            val lane = parsed.roadLanes[road]
+            val onRoad = house?.let { osm.nearestPointOnRoad(it, road, city, LocationVerdict.TGOS_SNAP_MAX_M, lane) }
+            if (onRoad != null &&
+                CountyBounds.of(city).contains(onRoad.lat, onRoad.lon) &&
+                inDeclaredArea(onRoad, city, district, osm)
+            ) {
+                return LocationCheck(
+                    verdict = VerdictLevel.MISMATCH,
+                    method = "tgos",
+                    suggestedLat = round6(onRoad.lat),
+                    suggestedLon = round6(onRoad.lon),
+                    reason = "被拒絕列依門牌位置推算（${lane ?: road}）",
+                    checkedAt = now,
+                    suggestedSource = "tgos",
+                )
+            }
+        }
         return null
+    }
+
+    /** True when OSM admin boundaries put [pos] in [city]/[district] (or the area can't be checked). */
+    private fun inDeclaredArea(pos: LatLng, city: String, district: String, osm: OsmExtract): Boolean {
+        if (osm.isEmpty || AddressParser.isRouteCity(city) || !CountyBounds.isKnown(city)) return true
+        val hit = osm.adminAt(pos)
+        return LocationVerdict.forAdmin(city, district, hit.city, hit.district, hit.borderDistanceM) == VerdictLevel.OK
     }
 
     private fun merge(external: LocationCheck?, internal: LocationCheck?): LocationCheck? {
@@ -523,6 +586,7 @@ internal class LocationChecker(
                 if (CameraKind.MOBILE in cam.kinds || CameraKind.CUSTOM in cam.kinds) continue
                 val parsed = AddressParser.parse(cam.address, cam.city, cam.directionText, knownRoads)
                 if (parsed.kind != AddressKind.HOUSE_NUMBER) continue
+                if (cam.posSource == "tgos") continue
                 val prev = checks[cam.id]?.takeIf { it.matchesPosition(cam.lat, cam.lon) }
                 if (prev?.method == "tgos") continue
                 val cleaned = TgosCsv.cleanAddressForTgos(cam.city, cam.district, cam.address)
@@ -533,6 +597,7 @@ internal class LocationChecker(
                 val row = rowsById[id] ?: continue
                 val parsed = AddressParser.parse(row.address, row.city, row.direct, knownRoads)
                 if (parsed.kind != AddressKind.HOUSE_NUMBER) continue
+                if (checks[id]?.method == "tgos") continue
                 val cleaned = TgosCsv.cleanAddressForTgos(row.city, row.region, row.address)
                 if (cleaned.isNotBlank()) out += TgosRow(id, cleaned)
             }

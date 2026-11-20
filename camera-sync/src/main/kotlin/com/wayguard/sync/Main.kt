@@ -216,9 +216,11 @@ fun sync(a: SyncArgs): Int {
     }
     val milepostIndex = a.mileposts?.takeIf { it.isFile }?.let { MilepostIndex.fromCsv(it.readText()) }
     val tgosResults = a.tgosResult?.takeIf { it.isFile }?.let { TgosCsv.parseResults(it.readText()) }.orEmpty()
+    // Verify the published NPA coordinates (and rejected rows), never ones an auto-fix already replaced.
+    val unfixed = build(applyAutoFixes = false)
     val locResult = LocationChecker(osm, nlsc, a.offline, milepostIndex, tgosResults, tgos).checkAll(
-        cameras = result.dataset.cameras,
-        rejected = result.report.rejected,
+        cameras = unfixed.dataset.cameras,
+        rejected = unfixed.report.rejected,
         rowsById = rowsById,
         existing = cachedLocChecks,
         now = now,
@@ -227,8 +229,8 @@ fun sync(a: SyncArgs): Int {
     )
     if (locResult.checks != cachedLocChecks) {
         locChecks = locResult.checks
-        result = build()
     }
+    result = build()
     if (osm != null && !osm.isEmpty) {
         println("位置交叉驗證：本輪檢查 ${locResult.checkedCount} 個點位，發現可疑／不符 ${result.report.locationIssues.size} 筆，自動修正 ${result.report.autoFixedLocations.size} 筆")
     }

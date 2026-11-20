@@ -43,7 +43,7 @@ data class LocationCheck(
     val lon: Double? = null,
     /** Stabilized road axis (0–170°, rounded to 10°) when single-road camera sits <= 25 m from its OSM road. */
     val roadAxis: Int? = null,
-    /** High-confidence suggestion source (`"intersection"` or `"milepost"`) eligible for auto-apply on MISMATCH. */
+    /** High-confidence suggestion source (`"intersection"`, `"milepost"` or `"tgos"`) eligible for auto-apply on MISMATCH. */
     val suggestedSource: String? = null,
 ) {
     fun matchesPosition(camLat: Double, camLon: Double): Boolean =
@@ -71,6 +71,12 @@ object LocationVerdict {
     const val ROAD_SUSPECT_M = 150.0
     const val TGOS_OK_M = 100.0
     const val TGOS_SUSPECT_M = 300.0
+
+    /** Max distance between any two TGOS candidates of one query to still treat them as one spot. */
+    const val TGOS_CLUSTER_MAX_M = 100.0
+
+    /** Max distance from a TGOS house point to its named OSM road when projecting it onto the road. */
+    const val TGOS_SNAP_MAX_M = 100.0
     const val MILEPOST_OK_M = 200.0
     const val MILEPOST_SUSPECT_M = 1000.0
     const val ROAD_AXIS_MAX_DIST_M = 25.0

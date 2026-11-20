@@ -4,7 +4,8 @@
 
 .DESCRIPTION
   GitHub Actions 的境外 IP 會被 TGOS 以 HTTP 403 阻擋，因此門牌驗證改在本機執行，
-  再把 data/generated/location-checks.json（只含驗證結論與距離，不含 TGOS 原始座標）commit 回 repo，
+  再把 data/generated/location-checks.json（只含驗證結論與距離，不含 TGOS 原始座標；僅「位置不符」且門牌號對上者，
+  另存投影到 OSM 道路上的修正座標）commit 回 repo，
   之後 CI 每週增量檢查會沿用這些結果。
 
   流程與 .github/workflows/update-cameras.yml 相同：

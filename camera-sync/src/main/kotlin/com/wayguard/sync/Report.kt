@@ -118,7 +118,7 @@ internal object Report {
                 appendLine()
                 appendLine("## 自動修正座標（高信心地址推算）")
                 appendLine()
-                appendLine("以下點位原公告座標判定為「位置不符」，且地址具備唯一高信心推算位置（單一路口或里程內插），已自動採用推算座標並標記 `posSource`（`overrides.json` 仍具最高優先權）。")
+                appendLine("以下點位原公告座標判定為「位置不符」（或因座標超出縣市範圍被拒絕），且地址具備唯一高信心推算位置（單一路口、里程內插，或 TGOS 門牌號完全對應並投影到同名 OSM 道路），已自動採用推算座標並標記 `posSource`（`overrides.json` 仍具最高優先權）。")
                 appendLine()
                 appendLine("| id | 來源 | 地址 | 原公告座標 | 採用座標 | 差距 |")
                 appendLine("|---|---|---|---|---|---|")
@@ -126,6 +126,7 @@ internal object Report {
                     val srcLabel = when (cam.posSource) {
                         "intersection" -> "路口推算"
                         "milepost" -> "里程推算"
+                        "tgos" -> "門牌推算"
                         else -> cam.posSource.orEmpty()
                     }
                     val addr = cell("${cam.city}${cam.district} ${cam.address}".trim())

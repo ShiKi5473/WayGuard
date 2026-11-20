@@ -151,6 +151,49 @@ class LocationVerdictTest {
     }
 
     @Test
+    fun tgosAssessKeepsOnlyResultsPinnedToTheQueriedHouseNumber() {
+        // Rows taken from a real TGOS fuzzy-matching batch result.
+        val csv = """
+            id,Address,Response_Address,Response_X,Response_Y
+            a,新北市三重區環河北路3段166號,新北市三重區富貴里21鄰環河北路三段166號,121.493948,25.088166
+            b,新北市鶯歌區西湖街191號,新北市鶯歌區中湖里27鄰西湖街191號之1,121.338615,24.964082
+            c,臺中市大雅區民生路四段55號,臺中市大雅區上楓里19鄰民生路四段51號;臺中市大雅區上楓里19鄰民生路四段57號,120.668297;120.668364,24.236740;24.236788
+            d,臺北市萬華區中華路1段406號,臺北市萬華區仁德里16鄰中華路一段218號,121.506311,25.037291
+            e,臺中市西屯區環中路三段龍洋巷50-15號,臺中市西屯區龍潭里2鄰環中路三段770巷50之1號,120.627225,24.163722
+            f,臺北市內湖區潭美街223號,臺北市內湖區週美里1鄰潭美街221號;臺北市內湖區石潭里12鄰潭美街285號,121.585372;121.587965,25.056158;25.057496
+            g,臺中市霧峰區中正路569-9號,臺中市霧峰區坑口里31鄰中正路569之9號,120.693273,24.048494
+            h,基隆市中正區臺62甲線3號,基隆市中正區正砂里10鄰東海街3號;基隆市中正區正義里7鄰信五路3號,121.760642;121.748123,25.142896;25.133585
+            i,臺北市文山區木柵路5段近100之1號,臺北市文山區博嘉里1鄰木柵路五段100之1號,121.591446,24.999579
+            j,新北市石碇區106線靜安路1段282號,找不到指定的門牌地址。,,
+        """.trimIndent()
+        val hits = TgosCsv.parseResults(csv)
+        assertEquals(9, hits.size)
+        assertEquals(2, hits.getValue("c").candidates.size)
+        assertEquals(24.236764, hits.getValue("c").pos.lat, 1e-6)
+
+        fun quality(id: String, city: String, district: String, address: String) =
+            TgosCsv.assess(hits.getValue(id), city, district, address)?.quality
+
+        assertEquals(TgosMatchQuality.EXACT, quality("a", "新北市", "三重區", "新北市三重區環河北路3段166號"))
+        assertEquals(TgosMatchQuality.SAME_BASE, quality("b", "新北市", "鶯歌區", "新北市鶯歌區西湖街191號"))
+        assertEquals(TgosMatchQuality.BRACKETED, quality("c", "臺中市", "大雅區", "臺中市大雅區民生路四段55號"))
+        // Fuzzy matching fell back to another number / lane / road: a different place.
+        assertNull(quality("d", "臺北市", "萬華區", "臺北市萬華區中華路1段406號"))
+        assertNull(quality("e", "臺中市", "西屯區", "臺中市西屯區環中路三段龍洋巷50-15號"))
+        assertNull(quality("h", "基隆市", "中正區", "基隆市中正區臺62甲線3號"))
+        // Bracketing numbers ~300 m apart are too vague.
+        assertNull(quality("f", "臺北市", "內湖區", "臺北市內湖區潭美街223號"))
+        assertEquals(TgosMatchQuality.EXACT, quality("g", "臺中市", "霧峰區", "臺中市霧峰區中正路569-9號"))
+        assertEquals(TgosMatchQuality.EXACT, quality("i", "臺北市", "文山區", "臺北市文山區木柵路5段近100之1號"))
+
+        // A result without matched addresses still verifies, but never pins a house.
+        val generic = TgosCsv.parseResults("id,lon,lat\nk,121.23,24.96\n")
+        val match = TgosCsv.assess(generic.getValue("k"), "桃園市", "中壢區", "桃園市中壢區中山路100號")!!
+        assertEquals(TgosMatchQuality.UNKNOWN, match.quality)
+        assertFalse(match.pinsHouse)
+    }
+
+    @Test
     fun milepostIndexParsesCsvAndInterpolatesLinearly() {
         val csv = """
             路線編號,里程,經度,緯度
