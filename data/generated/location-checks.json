@@ -39,7 +39,7 @@
         "method": "intersection",
         "distanceM": 13940,
         "reason": "距路口道路最遠 13940 m（西濱路 13940 m、中山西路 4 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.987894,
         "lon": 121.02092
     },
@@ -64,7 +64,7 @@
         "method": "road",
         "distanceM": 3690,
         "reason": "距 大埔路 3686 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.860182,
         "lon": 121.36074
     },
@@ -73,7 +73,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 66 m（承德路 4 m、敦煌路 66 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.074507,
         "lon": 121.519936
     },
@@ -106,7 +106,7 @@
         "method": "route",
         "distanceM": 700,
         "reason": "距 61線 701 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.294575,
         "lon": 120.12972
     },
@@ -114,7 +114,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.742186,
         "lon": 120.44719
     },
@@ -193,9 +193,9 @@
     },
     "npa-02c144e678": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.088356,
         "lon": 121.494255,
         "roadAxis": 140
@@ -243,9 +243,9 @@
     },
     "npa-035fb0690b": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.12225,
         "lon": 120.66404,
         "roadAxis": 50
@@ -255,7 +255,7 @@
         "method": "route",
         "distanceM": 40,
         "reason": "距 1線 40 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.549187,
         "lon": 120.43407
     },
@@ -288,9 +288,9 @@
     },
     "npa-03ce75a957": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 30,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.880243,
         "lon": 121.248314
     },
@@ -311,10 +311,10 @@
     },
     "npa-0455b2b290": {
         "verdict": "MISMATCH",
-        "method": "road",
-        "distanceM": 590,
+        "method": "tgos",
+        "distanceM": 40,
         "reason": "距 富興路 593 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.566614,
         "lon": 120.59149
     },
@@ -331,7 +331,7 @@
         "method": "intersection",
         "distanceM": 1320,
         "reason": "距路口道路最遠 1323 m（新臺五路 1323 m、福三街 23 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.08034,
         "lon": 121.69804
     },
@@ -375,20 +375,29 @@
         "lat": 25.037588,
         "lon": 121.42746
     },
+    "npa-05bfaa7177": {
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "suggestedLat": 24.077555,
+        "suggestedLon": 120.647681,
+        "reason": "被拒絕列依門牌位置推算（環中路）",
+        "checkedAt": "2026-11-20T04:03:40Z",
+        "suggestedSource": "tgos"
+    },
     "npa-05d312633c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.720804,
         "lon": 120.90529,
         "roadAxis": 0
     },
     "npa-05d86638d4": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.065548,
         "lon": 121.38972,
         "roadAxis": 100
@@ -478,15 +487,15 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 30線 58 m；座標落於 花蓮縣富里鄉（國土測繪複查），非 花蓮縣玉里鎮",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.26736,
         "lon": 121.369484
     },
     "npa-08132117d5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.19317,
         "lon": 120.64267,
         "roadAxis": 40
@@ -496,7 +505,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 91 m（建德路 1 m、豐德路 91 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.925838,
         "lon": 121.28121
     },
@@ -522,16 +531,16 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.44457,
         "lon": 118.40811,
         "roadAxis": 130
     },
     "npa-08a79bcf53": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.054245,
         "lon": 121.5656,
         "roadAxis": 90
@@ -580,7 +589,7 @@
         "method": "route",
         "distanceM": 6960,
         "reason": "距 國道1號 6964 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.01288,
         "lon": 121.16468
     },
@@ -618,9 +627,9 @@
     },
     "npa-0a05024a48": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.963926,
         "lon": 121.33839,
         "roadAxis": 0
@@ -659,18 +668,18 @@
     },
     "npa-0afddcd86c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.11272,
         "lon": 121.25576,
         "roadAxis": 60
     },
     "npa-0b0f9b8a8f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.98775,
         "lon": 121.284065,
         "roadAxis": 60
@@ -694,18 +703,18 @@
     },
     "npa-0b9d7d9680": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.12422,
         "lon": 121.79071,
         "roadAxis": 120
     },
     "npa-0b9e6126e2": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.095709,
         "lon": 121.71404,
         "roadAxis": 40
@@ -728,10 +737,11 @@
         "roadAxis": 10
     },
     "npa-0c12ae6316": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 120,
+        "reason": "距 TGOS 門牌位置 121 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.826025,
         "lon": 121.238655,
         "roadAxis": 120
@@ -739,7 +749,7 @@
     "npa-0c76d330a5": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.630129,
         "lon": 120.32004
     },
@@ -748,7 +758,7 @@
         "method": "route",
         "distanceM": 70,
         "reason": "距 國道3號 74 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.330832,
         "lon": 120.43159
     },
@@ -804,9 +814,9 @@
     },
     "npa-0e102b495d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.203175,
         "lon": 120.6867,
         "roadAxis": 0
@@ -814,7 +824,7 @@
     "npa-0e34aa9561": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.55043,
         "lon": 121.10031
     },
@@ -844,9 +854,9 @@
     },
     "npa-0e8966c68f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.983473,
         "lon": 121.43936,
         "roadAxis": 10
@@ -862,9 +872,9 @@
     },
     "npa-0ec77daa37": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.176296,
         "lon": 120.73518,
         "roadAxis": 80
@@ -895,9 +905,9 @@
     },
     "npa-0f5d0233d6": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.950453,
         "lon": 121.26084,
         "roadAxis": 60
@@ -914,7 +924,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 30,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.84498,
         "lon": 120.32285
     },
@@ -923,7 +933,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.10187,
         "lon": 121.75308
     },
@@ -937,9 +947,9 @@
     },
     "npa-0fdce60346": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.993011,
         "lon": 121.32719,
         "roadAxis": 80
@@ -965,7 +975,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 義一路 41 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.13194,
         "lon": 121.7445
     },
@@ -999,7 +1009,7 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 191 m（正順北路 6 m、正順東路 191 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.882696,
         "lon": 120.200676
     },
@@ -1008,24 +1018,24 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新北市五股區（國土測繪複查），非 新北市八里區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.111614,
         "lon": 121.422195
     },
     "npa-110f3674b7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.778402,
         "lon": 120.98497,
         "roadAxis": 50
     },
     "npa-115a118607": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.053802,
         "lon": 121.15602,
         "roadAxis": 70
@@ -1035,7 +1045,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 262 m（華亞三路 0 m、文化二路 262 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.043844,
         "lon": 121.37707
     },
@@ -1098,10 +1108,11 @@
         "lon": 121.37187
     },
     "npa-12de07ca10": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 100,
+        "reason": "距 TGOS 門牌位置 104 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.025896,
         "lon": 121.41754,
         "roadAxis": 20
@@ -1115,10 +1126,11 @@
         "lon": 120.47608
     },
     "npa-132c6f8013": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 130,
+        "reason": "距 TGOS 門牌位置 135 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.573195,
         "lon": 120.35929,
         "roadAxis": 90
@@ -1230,9 +1242,9 @@
     },
     "npa-15137007b1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.712439,
         "lon": 120.92275,
         "roadAxis": 160
@@ -1241,7 +1253,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.138615,
         "lon": 120.630974,
         "roadAxis": 130
@@ -1291,7 +1303,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 230 m（安吉路 3 m、安順庄大道 230 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.07735,
         "lon": 120.193634
     },
@@ -1300,7 +1312,7 @@
         "method": "intersection",
         "distanceM": 270,
         "reason": "距路口道路最遠 273 m（羅斯福路 3 m、興隆路 273 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.001501,
         "lon": 121.539116
     },
@@ -1366,15 +1378,15 @@
         "method": "road",
         "distanceM": 36770,
         "reason": "距 營區路 36774 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.36148,
         "lon": 120.36428
     },
     "npa-17a9b154de": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.977966,
         "lon": 121.270676,
         "roadAxis": 60
@@ -1397,9 +1409,9 @@
     },
     "npa-1837cdbdae": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.91479,
         "lon": 121.23118,
         "roadAxis": 0
@@ -1460,7 +1472,7 @@
         "suggestedLat": 23.319456,
         "suggestedLon": 120.308247,
         "reason": "距路口道路最遠 856 m（長榮路 464 m、三興街 856 m）；推算路口相距 806 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.319435,
         "lon": 120.300354,
         "suggestedSource": "intersection"
@@ -1492,9 +1504,9 @@
     },
     "npa-19fb808eb4": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.23644,
         "lon": 120.66809,
         "roadAxis": 50
@@ -1532,7 +1544,7 @@
         "suggestedLat": 24.131278,
         "suggestedLon": 120.707066,
         "reason": "距路口道路最遠 1467 m（環中東路 0 m、東義街 1467 m）；推算路口相距 1514 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.14412,
         "lon": 120.712036,
         "suggestedSource": "intersection"
@@ -1573,15 +1585,15 @@
         "method": "road",
         "distanceM": 420,
         "reason": "距 金福路 419 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.575134,
         "lon": 120.32586
     },
     "npa-1b5ffafcd3": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.672127,
         "lon": 120.42602,
         "roadAxis": 0
@@ -1636,9 +1648,9 @@
     },
     "npa-1c0860b1e7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.07782,
         "lon": 121.37548,
         "roadAxis": 40
@@ -1654,9 +1666,9 @@
     },
     "npa-1c4df6cbb8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.893105,
         "lon": 121.21205,
         "roadAxis": 160
@@ -1666,15 +1678,15 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 110 m（濱南路 5 m、喜樹路340巷 110 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.937895,
         "lon": 120.176
     },
     "npa-1c63da5be5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.732006,
         "lon": 120.360504,
         "roadAxis": 0
@@ -1713,9 +1725,9 @@
     },
     "npa-1d02ea0981": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.132046,
         "lon": 121.79835,
         "roadAxis": 160
@@ -1812,24 +1824,24 @@
     "npa-1e6d874925": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.669052,
         "lon": 120.28896
     },
     "npa-1ea94c0242": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.163551,
         "lon": 120.71781,
         "roadAxis": 100
     },
     "npa-1eb5bb0c6d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.960901,
         "lon": 121.61378,
         "roadAxis": 60
@@ -1845,9 +1857,9 @@
     },
     "npa-1ee55f6c5e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.920135,
         "lon": 121.3694,
         "roadAxis": 80
@@ -1879,9 +1891,9 @@
     },
     "npa-1fbfd2e1cc": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.008944,
         "lon": 121.37507,
         "roadAxis": 60
@@ -1931,7 +1943,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.056156,
         "lon": 121.585625,
         "roadAxis": 60
@@ -1978,9 +1990,9 @@
     },
     "npa-211a694666": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.964375,
         "lon": 120.17872,
         "roadAxis": 90
@@ -1996,7 +2008,7 @@
     "npa-2150b8e361": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.59276,
         "lon": 120.39066
     },
@@ -2010,9 +2022,9 @@
     },
     "npa-219743ec97": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.76286,
         "lon": 120.913246,
         "roadAxis": 20
@@ -2022,7 +2034,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 臺南市仁德區（國土測繪複查），非 臺南市南區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.941513,
         "lon": 120.21746,
         "roadAxis": 150
@@ -2040,7 +2052,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 77 m（擺接堡路 1 m、民權街 77 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.96446,
         "lon": 121.41541
     },
@@ -2049,7 +2061,7 @@
         "method": "intersection",
         "distanceM": 220,
         "reason": "距路口道路最遠 221 m（環河北路 0 m、敦煌路 221 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.079073,
         "lon": 121.50822
     },
@@ -2074,7 +2086,7 @@
         "method": "road",
         "distanceM": 540,
         "reason": "距 金福路 542 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.578098,
         "lon": 120.326035
     },
@@ -2106,9 +2118,9 @@
     },
     "npa-23b57287a1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.043074,
         "lon": 121.50858,
         "roadAxis": 10
@@ -2118,15 +2130,15 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 成功路 38 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.702805,
         "lon": 120.55346
     },
     "npa-240dd0ca79": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.561409,
         "lon": 120.40384,
         "roadAxis": 100
@@ -2146,7 +2158,7 @@
         "suggestedLat": 25.07613,
         "suggestedLon": 121.562718,
         "reason": "距路口道路最遠 308 m（樂群一路 2 m、基湖路 308 m）；推算路口相距 373 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.076668,
         "lon": 121.566376,
         "suggestedSource": "intersection"
@@ -2161,9 +2173,9 @@
     },
     "npa-24a1384768": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.052607,
         "lon": 121.61159,
         "roadAxis": 80
@@ -2245,9 +2257,9 @@
     },
     "npa-25a442910d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.508509,
         "lon": 120.446365,
         "roadAxis": 160
@@ -2314,7 +2326,7 @@
         "method": "intersection",
         "distanceM": 290,
         "reason": "距路口道路最遠 294 m（嘉勝路 294 m、守密街 19 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.665485,
         "lon": 120.25901
     },
@@ -2337,9 +2349,9 @@
     },
     "npa-26ae7785b7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.008162,
         "lon": 121.24305,
         "roadAxis": 90
@@ -2356,7 +2368,7 @@
     "npa-270a662c92": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.554989,
         "lon": 120.39456
     },
@@ -2367,7 +2379,7 @@
         "suggestedLat": 25.090314,
         "suggestedLon": 121.229889,
         "reason": "距路口道路最遠 2287 m（國際路 0 m、中央路 2287 m）；推算路口相距 2377 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.107386,
         "lon": 121.244095,
         "suggestedSource": "intersection"
@@ -2435,15 +2447,15 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 文昌路 36 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.68034,
         "lon": 120.48086
     },
     "npa-28459356f8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.019592,
         "lon": 120.47051,
         "roadAxis": 100
@@ -2452,16 +2464,16 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.435467,
         "lon": 118.327385,
         "roadAxis": 30
     },
     "npa-285975f6bc": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.772102,
         "lon": 120.3888,
         "roadAxis": 60
@@ -2506,15 +2518,15 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 中興路 36 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.476171,
         "lon": 120.545456
     },
     "npa-2914b40664": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.04613,
         "lon": 121.18615,
         "roadAxis": 50
@@ -2596,15 +2608,15 @@
     "npa-2aa1beb06e": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.924803,
         "lon": 120.421616
     },
     "npa-2aca186e5a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.77218,
         "lon": 120.2685,
         "roadAxis": 10
@@ -2701,9 +2713,9 @@
     },
     "npa-2c5b6f481f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.738028,
         "lon": 121.76105,
         "roadAxis": 150
@@ -2775,9 +2787,9 @@
     },
     "npa-2da8877595": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.152458,
         "lon": 120.69855,
         "roadAxis": 10
@@ -2809,9 +2821,9 @@
     },
     "npa-2e43d85233": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.726501,
         "lon": 120.93,
         "roadAxis": 50
@@ -2866,9 +2878,9 @@
     },
     "npa-2f0dfe4eb0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.044518,
         "lon": 121.53994,
         "roadAxis": 90
@@ -2926,7 +2938,7 @@
         "method": "route",
         "distanceM": 390,
         "reason": "距 國道1號 386 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.04396,
         "lon": 121.30055
     },
@@ -2982,10 +2994,11 @@
         "lon": 120.30887
     },
     "npa-30afd58fff": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 220,
+        "reason": "距 TGOS 門牌位置 223 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.58326,
         "lon": 120.34073,
         "roadAxis": 90
@@ -3034,7 +3047,7 @@
         "method": "intersection",
         "distanceM": 7290,
         "reason": "距路口道路最遠 7288 m（向上路 1 m、中興路 7288 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.18763,
         "lon": 120.57346
     },
@@ -3049,9 +3062,9 @@
     },
     "npa-3220627201": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.97773,
         "lon": 121.40463,
         "roadAxis": 50
@@ -3083,9 +3096,9 @@
     },
     "npa-32c732072a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.619112,
         "lon": 120.30265,
         "roadAxis": 160
@@ -3100,9 +3113,9 @@
     },
     "npa-3309b8fa37": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.057318,
         "lon": 121.614105,
         "roadAxis": 0
@@ -3117,9 +3130,9 @@
     },
     "npa-3333d33d4a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.161688,
         "lon": 120.725,
         "roadAxis": 110
@@ -3143,9 +3156,9 @@
     },
     "npa-337922d8e9": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.975636,
         "lon": 121.525024,
         "roadAxis": 140
@@ -3202,7 +3215,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.035666,
         "lon": 121.35543,
         "roadAxis": 170
@@ -3260,7 +3273,7 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 112 m（高鐵北路 3 m、中正東路 112 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.0271,
         "lon": 121.22922
     },
@@ -3300,7 +3313,7 @@
         "method": "route",
         "distanceM": 3360,
         "reason": "距 國道1號 3357 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.042383,
         "lon": 121.53301
     },
@@ -3313,10 +3326,11 @@
         "lon": 121.006836
     },
     "npa-36f4847229": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 160,
+        "reason": "距 TGOS 門牌位置 156 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.04303,
         "lon": 121.369965,
         "roadAxis": 170
@@ -3447,7 +3461,7 @@
         "suggestedLat": 24.162106,
         "suggestedLon": 120.664618,
         "reason": "距路口道路最遠 522 m（忠明路 352 m、西屯路 522 m）；推算路口相距 760 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.15549,
         "lon": 120.66273,
         "suggestedSource": "intersection"
@@ -3484,18 +3498,18 @@
     },
     "npa-3948f842d1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.793715,
         "lon": 120.93678,
         "roadAxis": 70
     },
     "npa-394e0d2b69": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.781918,
         "lon": 121.01379,
         "roadAxis": 0
@@ -3566,18 +3580,18 @@
     },
     "npa-3a308bc9ae": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.082373,
         "lon": 121.499084,
         "roadAxis": 150
     },
     "npa-3a4289257d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.074348,
         "lon": 120.46232,
         "roadAxis": 50
@@ -3622,7 +3636,7 @@
         "method": "road",
         "distanceM": 19830,
         "reason": "距 文華路 19828 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.600435,
         "lon": 120.52638
     },
@@ -3639,7 +3653,7 @@
         "method": "road",
         "distanceM": 8550,
         "reason": "距 振興路 8546 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.790707,
         "lon": 120.47045
     },
@@ -3722,7 +3736,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 大坑路 41 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.70776,
         "lon": 120.439255
     },
@@ -3755,7 +3769,7 @@
         "method": "road",
         "distanceM": 60,
         "reason": "距 松正路 64 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.57036,
         "lon": 120.376785
     },
@@ -3793,9 +3807,9 @@
     },
     "npa-3ce6257198": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.881773,
         "lon": 120.616135,
         "roadAxis": 60
@@ -3813,7 +3827,7 @@
         "method": "route",
         "distanceM": 160,
         "reason": "距 國道3號 159 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.10567,
         "lon": 120.55382
     },
@@ -3827,9 +3841,9 @@
     },
     "npa-3d2865234f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.6596,
         "lon": 120.32598,
         "roadAxis": 90
@@ -3851,9 +3865,9 @@
     },
     "npa-3d5ad9ea19": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.205421,
         "lon": 120.63207,
         "roadAxis": 110
@@ -3868,9 +3882,9 @@
     },
     "npa-3d8274bb0c": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.996529,
         "lon": 121.23196,
         "roadAxis": 140
@@ -3894,7 +3908,7 @@
     "npa-3e37cd724b": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.684856,
         "lon": 120.30621
     },
@@ -3908,9 +3922,9 @@
     },
     "npa-3efcba4f1d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.023808,
         "lon": 121.23075,
         "roadAxis": 0
@@ -3945,15 +3959,15 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 85 m（中山四路 6 m、平和東路 85 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.570253,
         "lon": 120.33743
     },
     "npa-3f8015b2f3": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.053974,
         "lon": 121.613174,
         "roadAxis": 90
@@ -4016,10 +4030,11 @@
         "lon": 120.80868
     },
     "npa-4027174e30": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 280,
+        "reason": "距 TGOS 門牌位置 284 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.758595,
         "lon": 120.36395,
         "roadAxis": 170
@@ -4050,9 +4065,9 @@
     },
     "npa-407a802339": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.146921,
         "lon": 120.630356,
         "roadAxis": 130
@@ -4060,7 +4075,7 @@
     "npa-408dcb437a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.897558,
         "lon": 120.62668
     },
@@ -4147,9 +4162,9 @@
     },
     "npa-41bcc78fa7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.232218,
         "lon": 120.63916,
         "roadAxis": 140
@@ -4233,15 +4248,15 @@
         "method": "intersection",
         "distanceM": 1240,
         "reason": "距路口道路最遠 1244 m（中科路 8 m、科雅東路 1244 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.207615,
         "lon": 120.62186
     },
     "npa-42fc2e23ab": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.198017,
         "lon": 120.70297,
         "roadAxis": 10
@@ -4272,9 +4287,9 @@
     },
     "npa-434dcc1a8a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.964502,
         "lon": 121.21087,
         "roadAxis": 80
@@ -4339,18 +4354,18 @@
     },
     "npa-43e3767021": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.116156,
         "lon": 121.72644,
         "roadAxis": 150
     },
     "npa-43f1153b50": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.908733,
         "lon": 121.27918,
         "roadAxis": 20
@@ -4360,7 +4375,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 新北市板橋區（國土測繪複查），非 新北市中和區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.018978,
         "lon": 121.47077
     },
@@ -4423,9 +4438,9 @@
     },
     "npa-453e479479": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.02906,
         "lon": 121.55731,
         "roadAxis": 30
@@ -4450,7 +4465,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.031464,
         "lon": 121.39822,
         "roadAxis": 120
@@ -4465,10 +4480,11 @@
         "roadAxis": 70
     },
     "npa-45f98ea229": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 170,
+        "reason": "距 TGOS 門牌位置 168 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.912996,
         "lon": 120.53655,
         "roadAxis": 140
@@ -4532,7 +4548,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.949121,
         "lon": 121.34403,
         "roadAxis": 60
@@ -4580,9 +4596,9 @@
     },
     "npa-47a8638d1c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.757471,
         "lon": 120.301926,
         "roadAxis": 50
@@ -4682,7 +4698,7 @@
         "method": "road",
         "distanceM": 760,
         "reason": "距 新生二路 762 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.683113,
         "lon": 120.49306
     },
@@ -4733,7 +4749,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 70 m（沙田路 70 m、振興街 35 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.11332,
         "lon": 120.587204
     },
@@ -4800,7 +4816,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 9線 61 m；座標落於 宜蘭縣蘇澳鎮（國土測繪複查），非 宜蘭縣南澳鄉",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.547905,
         "lon": 121.83988
     },
@@ -4830,10 +4846,11 @@
         "lon": 120.210495
     },
     "npa-4b5c4b228e": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 120,
+        "reason": "距 TGOS 門牌位置 115 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.811949,
         "lon": 120.92646,
         "roadAxis": 50
@@ -4851,15 +4868,15 @@
         "method": "intersection",
         "distanceM": 220,
         "reason": "距路口道路最遠 221 m（市民大道 3 m、東新街 221 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.04997,
         "lon": 121.586235
     },
     "npa-4c47e63536": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.029663,
         "lon": 121.37497,
         "roadAxis": 50
@@ -4877,7 +4894,7 @@
         "method": "intersection",
         "distanceM": 120,
         "reason": "距路口道路最遠 116 m（中北路 3 m、中山東路 116 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.955116,
         "lon": 121.234436
     },
@@ -4958,18 +4975,18 @@
     },
     "npa-4dcfa24ebe": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.00729,
         "lon": 121.32475,
         "roadAxis": 40
     },
     "npa-4de9c96f28": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.83119,
         "lon": 121.00229,
         "roadAxis": 40
@@ -5000,18 +5017,18 @@
     },
     "npa-4e329c3392": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.928667,
         "lon": 120.67903,
         "roadAxis": 150
     },
     "npa-4e4b51dbf4": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.208696,
         "lon": 120.53984,
         "roadAxis": 10
@@ -5099,9 +5116,9 @@
     },
     "npa-4f0ea3967f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.198912,
         "lon": 120.76548,
         "roadAxis": 100
@@ -5132,9 +5149,9 @@
     },
     "npa-505b7a346e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 100,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.15291,
         "lon": 121.44082,
         "roadAxis": 140
@@ -5168,7 +5185,7 @@
         "method": "intersection",
         "distanceM": 11080,
         "reason": "距路口道路最遠 11075 m（中正路 31 m、南屏路 11075 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.96794,
         "lon": 120.35717
     },
@@ -5182,10 +5199,11 @@
         "roadAxis": 160
     },
     "npa-51b298b218": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 270,
+        "reason": "距 TGOS 門牌位置 266 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.960634,
         "lon": 121.318436,
         "roadAxis": 110
@@ -5219,15 +5237,15 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 62 m（源遠路 62 m、水源路 49 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.104801,
         "lon": 121.73433
     },
     "npa-529c45b638": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.674002,
         "lon": 120.89102,
         "roadAxis": 60
@@ -5249,19 +5267,20 @@
         "lon": 120.982635
     },
     "npa-52b145600a": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 450,
+        "reason": "距 TGOS 門牌位置 454 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.18653,
         "lon": 120.60414,
         "roadAxis": 30
     },
     "npa-53182c8672": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.72859,
         "lon": 121.03269,
         "roadAxis": 110
@@ -5270,7 +5289,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.12745,
         "lon": 120.62967,
         "roadAxis": 140
@@ -5285,18 +5304,18 @@
     },
     "npa-53d8dde3ec": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.153727,
         "lon": 121.7342,
         "roadAxis": 130
     },
     "npa-540ac76bcb": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.059704,
         "lon": 121.48048,
         "roadAxis": 160
@@ -5347,7 +5366,7 @@
         "method": "road",
         "distanceM": 350,
         "reason": "距 旗文路 354 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.9106,
         "lon": 120.46642
     },
@@ -5388,7 +5407,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 南陽路 32 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.907316,
         "lon": 120.690674
     },
@@ -5438,7 +5457,7 @@
         "method": "road",
         "distanceM": 50,
         "reason": "距 海興路 49 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.241701,
         "lon": 121.63341
     },
@@ -5447,7 +5466,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 彰員路 38 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.0214,
         "lon": 120.55818
     },
@@ -5494,9 +5513,9 @@
     },
     "npa-583054f7e8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.78748,
         "lon": 120.92676,
         "roadAxis": 60
@@ -5560,9 +5579,9 @@
     },
     "npa-58ed68aa32": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.27415,
         "lon": 120.77903,
         "roadAxis": 90
@@ -5577,9 +5596,9 @@
     },
     "npa-5931b0ba0d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.047688,
         "lon": 121.5685,
         "roadAxis": 30
@@ -5619,9 +5638,9 @@
     },
     "npa-598b1533ca": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.818113,
         "lon": 120.99483,
         "roadAxis": 30
@@ -5691,10 +5710,11 @@
         "lon": 118.340614
     },
     "npa-5a5b59f700": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 310,
+        "reason": "距 TGOS 門牌位置 314 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.654182,
         "lon": 120.35681,
         "roadAxis": 0
@@ -5742,9 +5762,9 @@
     },
     "npa-5ad0c74cde": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.957096,
         "lon": 121.31319,
         "roadAxis": 100
@@ -5768,9 +5788,9 @@
     },
     "npa-5b611e144a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.809292,
         "lon": 120.98313,
         "roadAxis": 50
@@ -5829,7 +5849,7 @@
         "method": "intersection",
         "distanceM": 21470,
         "reason": "距路口道路最遠 21466 m（北安路四段548巷 96 m、長和街 21466 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.067614,
         "lon": 120.21477
     },
@@ -5838,15 +5858,15 @@
         "method": "intersection",
         "distanceM": 820,
         "reason": "距路口道路最遠 820 m（五權西路 210 m、向上路 820 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.13952,
         "lon": 120.64006
     },
     "npa-5c14714ffc": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.1901,
         "lon": 120.6128,
         "roadAxis": 110
@@ -5864,7 +5884,7 @@
         "method": "intersection",
         "distanceM": 1560,
         "reason": "距路口道路最遠 1560 m（員鹿路 0 m、大新路 1560 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.007885,
         "lon": 120.459526
     },
@@ -5902,6 +5922,15 @@
         "lat": 25.21232,
         "lon": 121.646545
     },
+    "npa-5d2ab7aa19": {
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "suggestedLat": 24.111536,
+        "suggestedLon": 120.679096,
+        "reason": "被拒絕列依門牌位置推算（國光路）",
+        "checkedAt": "2026-11-20T04:03:40Z",
+        "suggestedSource": "tgos"
+    },
     "npa-5d8b1136e3": {
         "verdict": "OK",
         "method": "road",
@@ -5928,10 +5957,11 @@
         "lon": 120.94431
     },
     "npa-5df52469c1": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 150,
+        "reason": "距 TGOS 門牌位置 147 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.792568,
         "lon": 120.61227,
         "roadAxis": 160
@@ -5954,9 +5984,9 @@
     },
     "npa-5e26a144d8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.957594,
         "lon": 121.248886,
         "roadAxis": 50
@@ -6013,7 +6043,7 @@
         "method": "road",
         "distanceM": 580,
         "reason": "距 復興北路 581 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.071774,
         "lon": 121.54434
     },
@@ -6030,15 +6060,15 @@
         "method": "intersection",
         "distanceM": 4750,
         "reason": "距路口道路最遠 4753 m（新臺五路 4753 m、福三街 3589 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.114391,
         "lon": 121.68534
     },
     "npa-5f512c0ff8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.7978,
         "lon": 121.05449,
         "roadAxis": 140
@@ -6070,12 +6100,15 @@
     },
     "npa-5fec16c0dd": {
         "verdict": "MISMATCH",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 330,
-        "reason": "距 深澳坑路 331 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "suggestedLat": 25.127007,
+        "suggestedLon": 121.78326,
+        "reason": "距 深澳坑路 331 m；距 TGOS 門牌位置 355 m；門牌推算位置相距 335 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.13,
-        "lon": 121.78361
+        "lon": 121.78361,
+        "suggestedSource": "tgos"
     },
     "npa-5fff07853c": {
         "verdict": "OK",
@@ -6098,7 +6131,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 93 m（豐勢路 71 m、廣華街 93 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.275433,
         "lon": 120.78272
     },
@@ -6138,9 +6171,9 @@
     },
     "npa-60ccf04a88": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.077787,
         "lon": 121.60028,
         "roadAxis": 160
@@ -6156,9 +6189,9 @@
     },
     "npa-60eaf443d1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.953558,
         "lon": 121.63839,
         "roadAxis": 150
@@ -6166,7 +6199,7 @@
     "npa-6105b00ec8": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.583641,
         "lon": 120.30965
     },
@@ -6204,9 +6237,9 @@
     },
     "npa-617d1b12a5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.887613,
         "lon": 120.42328,
         "roadAxis": 130
@@ -6223,7 +6256,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.114113,
         "lon": 120.52612,
         "roadAxis": 10
@@ -6255,9 +6288,9 @@
     },
     "npa-624a43ab47": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.926458,
         "lon": 121.213036,
         "roadAxis": 20
@@ -6275,7 +6308,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 69 m（中山路 69 m、東安路 0 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.32607,
         "lon": 120.608826
     },
@@ -6289,9 +6322,9 @@
     },
     "npa-62f35b9065": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.826906,
         "lon": 121.05023,
         "roadAxis": 100
@@ -6309,7 +6342,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 264 m（太堤東路 264 m、光興路1343巷 9 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.12292,
         "lon": 120.73434
     },
@@ -6377,24 +6410,24 @@
         "method": "road",
         "distanceM": 180,
         "reason": "距 機場北路 178 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.67714,
         "lon": 120.47336
     },
     "npa-6454e0e866": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.167746,
         "lon": 120.73345,
         "roadAxis": 0
     },
     "npa-645d99ae0f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.188057,
         "lon": 120.71834,
         "roadAxis": 170
@@ -6417,9 +6450,9 @@
     },
     "npa-64f38c4eb7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.182007,
         "lon": 121.45079,
         "roadAxis": 130
@@ -6435,9 +6468,9 @@
     },
     "npa-652b325b6a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.224024,
         "lon": 120.544044,
         "roadAxis": 20
@@ -6452,9 +6485,9 @@
     },
     "npa-654772e942": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 0,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.987537,
         "lon": 121.04484,
         "roadAxis": 100
@@ -6466,7 +6499,7 @@
         "suggestedLat": 23.055566,
         "suggestedLon": 120.1904,
         "reason": "距路口道路最遠 340 m（安吉路 9 m、本原街 340 m）；推算路口相距 352 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.052488,
         "lon": 120.18961,
         "suggestedSource": "intersection"
@@ -6484,7 +6517,7 @@
         "method": "road",
         "distanceM": 330,
         "reason": "距 豐原大道 333 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.24755,
         "lon": 120.706635
     },
@@ -6501,7 +6534,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 雲林縣麥寮鄉（國土測繪複查），非 雲林縣東勢鄉",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.738638,
         "lon": 120.25528
     },
@@ -6581,7 +6614,7 @@
     "npa-6889efd69a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.56297,
         "lon": 120.31369
     },
@@ -6811,10 +6844,10 @@
     },
     "npa-6c9fe91f9a": {
         "verdict": "MISMATCH",
-        "method": "road",
-        "distanceM": 470,
+        "method": "tgos",
+        "distanceM": 80,
         "reason": "距 景觀大道 465 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.786226,
         "lon": 120.94983
     },
@@ -6827,9 +6860,9 @@
     },
     "npa-6cd40fbd7d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.06275,
         "lon": 121.50368,
         "roadAxis": 20
@@ -6853,9 +6886,9 @@
     },
     "npa-6d2f40dd5c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.888147,
         "lon": 120.487366,
         "roadAxis": 100
@@ -6873,7 +6906,7 @@
         "method": "route",
         "distanceM": 3670,
         "reason": "距 65線 3666 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.025955,
         "lon": 121.48416
     },
@@ -6895,9 +6928,9 @@
     },
     "npa-6daaceb608": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.641333,
         "lon": 120.33226,
         "roadAxis": 0
@@ -6912,9 +6945,9 @@
     },
     "npa-6e1f7bd82a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.88637,
         "lon": 121.08199,
         "roadAxis": 70
@@ -6944,9 +6977,9 @@
     },
     "npa-6e532400e4": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.504309,
         "lon": 120.476776,
         "roadAxis": 60
@@ -6956,7 +6989,7 @@
         "method": "road",
         "distanceM": 400,
         "reason": "距 三商街 402 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.59266,
         "lon": 120.33633
     },
@@ -6969,10 +7002,11 @@
         "lon": 120.68622
     },
     "npa-6e70db07f4": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 120,
+        "reason": "距 TGOS 門牌位置 121 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.132162,
         "lon": 121.54652,
         "roadAxis": 160
@@ -6986,10 +7020,11 @@
         "lon": 120.51747
     },
     "npa-6ea1ec2639": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 100,
+        "reason": "距 TGOS 門牌位置 103 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.616146,
         "lon": 120.303604,
         "roadAxis": 160
@@ -7040,7 +7075,7 @@
         "method": "admin",
         "distanceM": 50,
         "reason": "座標落於 臺南市新市區（國土測繪複查），非 臺南市善化區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.104445,
         "lon": 120.28986
     },
@@ -7063,9 +7098,9 @@
     },
     "npa-6fdc86cd18": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.949238,
         "lon": 120.21669,
         "roadAxis": 0
@@ -7080,16 +7115,17 @@
     },
     "npa-70217d2163": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 30,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.264332,
         "lon": 120.72574
     },
     "npa-702db18987": {
         "verdict": "OK",
-        "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.158367,
         "lon": 120.63997
     },
@@ -7115,7 +7151,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 集鹿路 36 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.822039,
         "lon": 120.78453
     },
@@ -7123,7 +7159,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.005,
         "lon": 121.31246,
         "roadAxis": 160
@@ -7157,7 +7193,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣北埔鄉（國土測繪複查），非 新竹縣峨眉鄉",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.70351,
         "lon": 121.04712
     },
@@ -7203,18 +7239,18 @@
     },
     "npa-72400c5cdf": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.137129,
         "lon": 120.69985,
         "roadAxis": 10
     },
     "npa-7263e51dba": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.8635,
         "lon": 120.50838,
         "roadAxis": 40
@@ -7224,7 +7260,7 @@
         "method": "intersection",
         "distanceM": 550,
         "reason": "距 中正路 552 m；座標落於 雲林縣莿桐鄉（國土測繪複查），非 雲林縣斗六市",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.750086,
         "lon": 120.50892
     },
@@ -7238,9 +7274,9 @@
     },
     "npa-728b5192a1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.730991,
         "lon": 120.37311,
         "roadAxis": 70
@@ -7250,7 +7286,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 61 m（基金三路 2 m、武訓街 61 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.149271,
         "lon": 121.699745
     },
@@ -7275,7 +7311,7 @@
         "method": "intersection",
         "distanceM": 130,
         "reason": "距路口道路最遠 126 m（振興路 3 m、西勢湖路 126 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.025007,
         "lon": 121.36954
     },
@@ -7284,15 +7320,15 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 67 m（沿海一路 3 m、宏平路 67 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.568972,
         "lon": 120.35012
     },
     "npa-738d9f07c3": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.058706,
         "lon": 121.48974,
         "roadAxis": 50
@@ -7307,9 +7343,9 @@
     },
     "npa-73f7bd3d06": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.90953,
         "lon": 121.2313,
         "roadAxis": 170
@@ -7333,9 +7369,9 @@
     },
     "npa-7432ff8fdc": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.240812,
         "lon": 120.675,
         "roadAxis": 60
@@ -7345,7 +7381,7 @@
         "method": "road",
         "distanceM": 150,
         "reason": "距 榮濱路 153 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.845257,
         "lon": 120.9341
     },
@@ -7384,9 +7420,9 @@
     },
     "npa-74d822ad74": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.897879,
         "lon": 121.3376,
         "roadAxis": 50
@@ -7420,7 +7456,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 林森路 33 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.717178,
         "lon": 120.44133
     },
@@ -7549,7 +7585,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.027754,
         "lon": 121.53792,
         "roadAxis": 0
@@ -7572,9 +7608,9 @@
     },
     "npa-783ef6f2ca": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.075089,
         "lon": 120.69999,
         "roadAxis": 170
@@ -7605,19 +7641,20 @@
         "roadAxis": 10
     },
     "npa-78e432455c": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 120,
+        "reason": "距 TGOS 門牌位置 122 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.736464,
         "lon": 120.396,
         "roadAxis": 0
     },
     "npa-78fd6fdf09": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.180975,
         "lon": 120.72484,
         "roadAxis": 120
@@ -7626,7 +7663,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.114443,
         "lon": 121.50257,
         "roadAxis": 50
@@ -7684,7 +7721,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 臺中市龍井區（國土測繪複查），非 臺中市清水區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.21861,
         "lon": 120.52289
     },
@@ -7696,10 +7733,11 @@
         "lon": 120.95915
     },
     "npa-7aa55f61d6": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 110,
+        "reason": "距 TGOS 門牌位置 112 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.889494,
         "lon": 120.359566,
         "roadAxis": 50
@@ -7709,7 +7747,7 @@
         "method": "admin",
         "distanceM": 30,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.11111,
         "lon": 121.735
     },
@@ -7760,7 +7798,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 南投縣埔里鎮（國土測繪複查），非 南投縣魚池鄉",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.94172,
         "lon": 120.92913
     },
@@ -7768,7 +7806,7 @@
         "verdict": "SUSPECT",
         "method": "internal",
         "reason": "與 npa-b4c5d58e9e（臺南市新市區 西拉雅大道與南科南路口）相距 2m 但路名不同",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.102247,
         "lon": 120.28029
     },
@@ -7790,9 +7828,9 @@
     },
     "npa-7c2b27f9a0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.014334,
         "lon": 121.39537,
         "roadAxis": 70
@@ -7858,9 +7896,9 @@
     },
     "npa-7d9345e248": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.039837,
         "lon": 121.26845,
         "roadAxis": 170
@@ -7915,10 +7953,11 @@
         "lon": 121.37678
     },
     "npa-7e472c63b4": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 230,
+        "reason": "距 TGOS 門牌位置 226 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.82536,
         "lon": 121.05772,
         "roadAxis": 100
@@ -7967,9 +8006,9 @@
     },
     "npa-7f0b97cacd": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.010178,
         "lon": 121.48016,
         "roadAxis": 120
@@ -7986,7 +8025,7 @@
     "npa-7f366eebda": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.667456,
         "lon": 120.28902
     },
@@ -8003,15 +8042,15 @@
         "method": "intersection",
         "distanceM": 1330,
         "reason": "距路口道路最遠 1334 m（中華路 3 m、南隘路 1334 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.731752,
         "lon": 120.915436
     },
     "npa-7ff46acb0a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.675001,
         "lon": 120.359085,
         "roadAxis": 150
@@ -8102,9 +8141,9 @@
     },
     "npa-81046c0595": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.044512,
         "lon": 121.50114,
         "roadAxis": 40
@@ -8119,9 +8158,9 @@
     },
     "npa-81b3b69671": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.291664,
         "lon": 120.58764,
         "roadAxis": 30
@@ -8144,10 +8183,10 @@
     },
     "npa-8259ae3a59": {
         "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 100,
+        "method": "tgos",
+        "distanceM": 60,
         "reason": "距 中正路 104 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.990446,
         "lon": 121.1744
     },
@@ -8161,18 +8200,18 @@
     },
     "npa-82a5e25829": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.056648,
         "lon": 121.40175,
         "roadAxis": 110
     },
     "npa-82aefefacf": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.232698,
         "lon": 120.57241,
         "roadAxis": 150
@@ -8194,17 +8233,17 @@
     },
     "npa-82f1091b22": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 30,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.972265,
         "lon": 121.12517
     },
     "npa-83233805fe": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.066792,
         "lon": 121.59969,
         "roadAxis": 80
@@ -8239,24 +8278,24 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 186 m（市民大道 6 m、昆陽街 186 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.050976,
         "lon": 121.59186
     },
     "npa-83c4f1c72e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.006742,
         "lon": 121.29746,
         "roadAxis": 40
     },
     "npa-83e88eebb5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.88507,
         "lon": 121.02363,
         "roadAxis": 120
@@ -8297,21 +8336,24 @@
     },
     "npa-8427a89406": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.95302,
         "lon": 121.544846,
         "roadAxis": 110
     },
     "npa-8435c0ecfa": {
         "verdict": "MISMATCH",
-        "method": "road",
-        "distanceM": 3420,
-        "reason": "距 中正路 3421 m；座標落於 彰化縣福興鄉（國土測繪複查），非 臺中市霧峰區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 28240,
+        "suggestedLat": 24.048439,
+        "suggestedLon": 120.693434,
+        "reason": "距 中正路 3421 m；距 TGOS 門牌位置 28228 m；座標落於 彰化縣福興鄉（國土測繪複查），非 臺中市霧峰區；門牌推算位置相距 28243 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.02899,
-        "lon": 120.41613
+        "lon": 120.41613,
+        "suggestedSource": "tgos"
     },
     "npa-84489d3453": {
         "verdict": "OK",
@@ -8331,9 +8373,9 @@
     },
     "npa-84e5cd7c54": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.240393,
         "lon": 120.61459,
         "roadAxis": 10
@@ -8341,7 +8383,7 @@
     "npa-84eee9b1b5": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.33292,
         "lon": 120.30184
     },
@@ -8350,7 +8392,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣寶山鄉（國土測繪複查），非 新竹市東區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.774435,
         "lon": 120.99819,
         "roadAxis": 130
@@ -8481,7 +8523,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 98 m（環湖路 6 m、文前路 98 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.661678,
         "lon": 120.357925
     },
@@ -8549,7 +8591,7 @@
         "method": "intersection",
         "distanceM": 1280,
         "reason": "距路口道路最遠 1277 m（中科路 7 m、科雅東路 1277 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.20721,
         "lon": 120.622116
     },
@@ -8563,9 +8605,9 @@
     },
     "npa-892cd91008": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.971012,
         "lon": 121.44263,
         "roadAxis": 40
@@ -8613,9 +8655,9 @@
     },
     "npa-89a75a2b88": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.085323,
         "lon": 120.65899,
         "roadAxis": 130
@@ -8630,18 +8672,19 @@
     },
     "npa-89b3977c17": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.13034,
         "lon": 121.49684,
         "roadAxis": 160
     },
     "npa-89c88143da": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 410,
+        "reason": "距 TGOS 門牌位置 413 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.849716,
         "lon": 121.22926,
         "roadAxis": 120
@@ -8653,7 +8696,7 @@
         "suggestedLat": 22.752751,
         "suggestedLon": 120.354996,
         "reason": "距路口道路最遠 318 m（旗楠路 318 m、鳳旗路 19 m）；推算路口相距 305 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.755226,
         "lon": 120.35628,
         "suggestedSource": "intersection"
@@ -8676,10 +8719,10 @@
     },
     "npa-8b00483f70": {
         "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 50,
+        "method": "tgos",
+        "distanceM": 40,
         "reason": "距 和強路 53 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.961102,
         "lon": 121.31854
     },
@@ -8718,7 +8761,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.703785,
         "lon": 120.20016,
         "roadAxis": 10
@@ -8753,15 +8796,15 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 82 m（基隆路 1 m、長興街 82 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.01664,
         "lon": 121.54384
     },
     "npa-8c9aa3b762": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.074215,
         "lon": 120.13506,
         "roadAxis": 10
@@ -8785,9 +8828,9 @@
     },
     "npa-8d894db0a0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.999096,
         "lon": 121.59139,
         "roadAxis": 130
@@ -8880,10 +8923,11 @@
         "lon": 120.28468
     },
     "npa-8faa5ef5fe": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 160,
+        "reason": "距 TGOS 門牌位置 159 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.1819,
         "lon": 120.5978,
         "roadAxis": 90
@@ -8949,9 +8993,9 @@
     },
     "npa-90cb8d4ee3": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.111053,
         "lon": 120.6484,
         "roadAxis": 70
@@ -8986,7 +9030,7 @@
         "method": "intersection",
         "distanceM": 3030,
         "reason": "距路口道路最遠 3030 m（景觀大道 3030 m、五福路 1 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.75506,
         "lon": 120.953094
     },
@@ -8994,7 +9038,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.203812,
         "lon": 120.60799,
         "roadAxis": 50
@@ -9008,10 +9052,11 @@
         "lon": 121.46512
     },
     "npa-926090d72f": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 110,
+        "reason": "距 TGOS 門牌位置 109 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.486872,
         "lon": 120.40342,
         "roadAxis": 110
@@ -9074,9 +9119,9 @@
     },
     "npa-93655874ff": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.129658,
         "lon": 121.79962,
         "roadAxis": 170
@@ -9118,7 +9163,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 中正路 32 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.757978,
         "lon": 120.49661
     },
@@ -9135,7 +9180,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 63 m（雲科路 10 m、科班路 63 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.73015,
         "lon": 120.56408
     },
@@ -9184,7 +9229,7 @@
         "method": "intersection",
         "distanceM": 5270,
         "reason": "距路口道路最遠 5273 m（港埠路 9 m、中社路 5273 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.320395,
         "lon": 120.56591
     },
@@ -9197,10 +9242,11 @@
         "lon": 120.23424
     },
     "npa-9504695a80": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 210,
+        "reason": "距 TGOS 門牌位置 207 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.32162,
         "lon": 120.721985,
         "roadAxis": 110
@@ -9254,7 +9300,7 @@
         "suggestedLat": 24.18256,
         "suggestedLon": 120.701931,
         "reason": "距路口道路最遠 4779 m（北屯路 4779 m、松竹路 2878 m）；推算路口相距 4983 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.197582,
         "lon": 120.748215,
         "suggestedSource": "intersection"
@@ -9343,9 +9389,9 @@
     },
     "npa-98024f7145": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.943188,
         "lon": 121.40115,
         "roadAxis": 60
@@ -9368,9 +9414,9 @@
     },
     "npa-98bdf7ff2a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.133339,
         "lon": 121.72058,
         "roadAxis": 50
@@ -9412,7 +9458,7 @@
         "method": "route",
         "distanceM": 3120,
         "reason": "距 國道1號 3115 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.03426,
         "lon": 121.24545
     },
@@ -9429,7 +9475,7 @@
         "method": "road",
         "distanceM": 60,
         "reason": "距 份尾三路 62 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.8297,
         "lon": 121.78401
     },
@@ -9443,18 +9489,18 @@
     },
     "npa-99d4b585f0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.033098,
         "lon": 121.49679,
         "roadAxis": 80
     },
     "npa-99e2202cf9": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.912418,
         "lon": 121.365906,
         "roadAxis": 0
@@ -9502,9 +9548,9 @@
     },
     "npa-9aa8595581": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.823582,
         "lon": 120.97796,
         "roadAxis": 70
@@ -9527,9 +9573,9 @@
     },
     "npa-9b2a143a77": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.013403,
         "lon": 121.52218,
         "roadAxis": 150
@@ -9579,7 +9625,7 @@
         "method": "intersection",
         "distanceM": 160,
         "reason": "距路口道路最遠 162 m（忠孝東路 6 m、逸仙路 162 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.04131,
         "lon": 121.55998
     },
@@ -9587,7 +9633,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.011087,
         "lon": 121.48889,
         "roadAxis": 150
@@ -9653,7 +9699,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 基隆市信義區（國土測繪複查），非 基隆市中正區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.13217,
         "lon": 121.77228
     },
@@ -9662,7 +9708,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 中正國中旁岔路 36 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.559347,
         "lon": 119.59845
     },
@@ -9745,7 +9791,7 @@
         "method": "road",
         "distanceM": 820,
         "reason": "距 大潭寮路 818 m；座標落於 臺南市將軍區（國土測繪複查），非 臺南市七股區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.189188,
         "lon": 120.124985
     },
@@ -9801,9 +9847,9 @@
     },
     "npa-a023c5ecd8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.779778,
         "lon": 120.252304,
         "roadAxis": 160
@@ -9826,9 +9872,9 @@
     },
     "npa-a06f2154cf": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.176659,
         "lon": 120.71065,
         "roadAxis": 170
@@ -9845,7 +9891,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.880974,
         "lon": 120.26041
     },
@@ -9884,7 +9930,7 @@
     "npa-a182cdb9ce": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.124218,
         "lon": 120.401024
     },
@@ -9943,7 +9989,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 99 m（擺接堡路 5 m、自強街 99 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.972385,
         "lon": 121.43178
     },
@@ -9957,9 +10003,9 @@
     },
     "npa-a2655785d9": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.870478,
         "lon": 121.204506,
         "roadAxis": 150
@@ -9998,18 +10044,18 @@
     },
     "npa-a2be69d787": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.049377,
         "lon": 121.29094,
         "roadAxis": 150
     },
     "npa-a2c4a5a630": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.147081,
         "lon": 120.62328,
         "roadAxis": 0
@@ -10052,7 +10098,7 @@
         "method": "intersection",
         "distanceM": 170,
         "reason": "距路口道路最遠 173 m（擺接堡路 6 m、民權街 173 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.964876,
         "lon": 121.41625
     },
@@ -10075,14 +10121,14 @@
     "npa-a40a3e947f": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.290691,
         "lon": 120.2927
     },
     "npa-a41464d0f5": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.55137,
         "lon": 121.10067
     },
@@ -10120,9 +10166,9 @@
     },
     "npa-a4ae3ebde7": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.024027,
         "lon": 121.11509,
         "roadAxis": 130
@@ -10202,9 +10248,9 @@
     },
     "npa-a5dc2bcc02": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.090446,
         "lon": 121.707184,
         "roadAxis": 70
@@ -10219,9 +10265,9 @@
     },
     "npa-a5ed476bfd": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.014406,
         "lon": 121.203674,
         "roadAxis": 0
@@ -10231,7 +10277,7 @@
         "method": "intersection",
         "distanceM": 1020,
         "reason": "距路口道路最遠 1021 m（景觀大道 1021 m、東香路 18 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.77316,
         "lon": 120.95296
     },
@@ -10240,7 +10286,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市信義區（國土測繪複查），非 基隆市中正區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.124674,
         "lon": 121.77938
     },
@@ -10274,7 +10320,7 @@
         "method": "road",
         "distanceM": 8650,
         "reason": "距 振興路 8647 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.789797,
         "lon": 120.47077
     },
@@ -10319,9 +10365,9 @@
     },
     "npa-a75b283b75": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.74614,
         "lon": 121.00037,
         "roadAxis": 160
@@ -10339,7 +10385,7 @@
         "method": "intersection",
         "distanceM": 22720,
         "reason": "距路口道路最遠 22716 m（和港路 0 m、西興路 22716 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.129986,
         "lon": 120.4901
     },
@@ -10362,18 +10408,18 @@
     },
     "npa-a7a39f791e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.7996,
         "lon": 121.05292,
         "roadAxis": 150
     },
     "npa-a7c6e57787": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.24755,
         "lon": 120.7364,
         "roadAxis": 40
@@ -10383,7 +10429,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 97 m（中華路 97 m、延平一路 6 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.892141,
         "lon": 120.483376
     },
@@ -10413,9 +10459,9 @@
     },
     "npa-a829f2ce2e": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.101782,
         "lon": 121.69604,
         "roadAxis": 130
@@ -10466,7 +10512,7 @@
         "method": "admin",
         "distanceM": 20,
         "reason": "座標落於 新竹市新竹市（國土測繪複查），非 新竹市北區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.818996,
         "lon": 120.9245
     },
@@ -10512,9 +10558,9 @@
     },
     "npa-aa3d627899": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.12536,
         "lon": 121.39088,
         "roadAxis": 0
@@ -10532,7 +10578,7 @@
         "method": "road",
         "distanceM": 50,
         "reason": "距 振興路829巷 49 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.021631,
         "lon": 121.362755
     },
@@ -10554,36 +10600,36 @@
     },
     "npa-ab7a8cfa95": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.122475,
         "lon": 121.72526,
         "roadAxis": 50
     },
     "npa-aba1c452af": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.22982,
         "lon": 120.69065,
         "roadAxis": 10
     },
     "npa-abe8359783": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.164951,
         "lon": 121.543755,
         "roadAxis": 160
     },
     "npa-ac102b2a68": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.74125,
         "lon": 121.10885,
         "roadAxis": 130
@@ -10633,9 +10679,9 @@
     },
     "npa-acd594b790": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 0,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.991396,
         "lon": 121.222,
         "roadAxis": 0
@@ -10675,9 +10721,9 @@
     },
     "npa-adafcebd96": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 100,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.154503,
         "lon": 120.611015,
         "roadAxis": 110
@@ -10693,9 +10739,9 @@
     },
     "npa-add1a9228f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.083605,
         "lon": 121.37815,
         "roadAxis": 130
@@ -10718,9 +10764,9 @@
     },
     "npa-ae9a86d24b": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.12111,
         "lon": 121.72194,
         "roadAxis": 160
@@ -10811,7 +10857,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 澎湖縣湖西鄉（國土測繪複查），非 澎湖縣馬公市",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.571623,
         "lon": 119.61402
     },
@@ -10820,7 +10866,7 @@
         "method": "route",
         "distanceM": 80,
         "reason": "距 62甲線 76 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.12806,
         "lon": 121.77834
     },
@@ -10834,9 +10880,9 @@
     },
     "npa-b189b2d666": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.079973,
         "lon": 120.22951,
         "roadAxis": 30
@@ -10850,10 +10896,11 @@
         "lon": 120.54064
     },
     "npa-b1d88531a4": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 130,
+        "reason": "距 TGOS 門牌位置 131 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.077879,
         "lon": 121.53627,
         "roadAxis": 90
@@ -10868,18 +10915,18 @@
     },
     "npa-b1fd3dd5ce": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.903605,
         "lon": 121.19139,
         "roadAxis": 0
     },
     "npa-b22598a831": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.089521,
         "lon": 121.70143,
         "roadAxis": 160
@@ -10895,9 +10942,9 @@
     },
     "npa-b277173138": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.928421,
         "lon": 121.213455,
         "roadAxis": 20
@@ -10920,9 +10967,9 @@
     },
     "npa-b2dbf30fab": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.171839,
         "lon": 120.68926,
         "roadAxis": 100
@@ -10953,9 +11000,9 @@
     },
     "npa-b370690862": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.060823,
         "lon": 121.58296,
         "roadAxis": 50
@@ -10970,9 +11017,9 @@
     },
     "npa-b39e188524": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.081982,
         "lon": 121.30809,
         "roadAxis": 110
@@ -10995,9 +11042,9 @@
     },
     "npa-b3b60a9e77": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.275217,
         "lon": 120.72201,
         "roadAxis": 0
@@ -11087,7 +11134,7 @@
         "verdict": "SUSPECT",
         "method": "internal",
         "reason": "與 npa-7bd3c928a0（臺南市新市區 西拉雅大道與南科南北路口）相距 2m 但路名不同",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.102236,
         "lon": 120.2803
     },
@@ -11096,7 +11143,7 @@
         "method": "road",
         "distanceM": 50,
         "reason": "距 東衛岔路 50 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.569069,
         "lon": 119.59909
     },
@@ -11105,7 +11152,7 @@
         "method": "intersection",
         "distanceM": 200,
         "reason": "距路口道路最遠 200 m（永貞路 1 m、勝利街 200 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.69521,
         "lon": 120.885445
     },
@@ -11221,7 +11268,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 92 m（惠中路 92 m、向上路 77 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.14771,
         "lon": 120.63971
     },
@@ -11268,10 +11315,10 @@
     },
     "npa-b7ad9aac2c": {
         "verdict": "SUSPECT",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 80,
         "reason": "距 環河路 83 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.087242,
         "lon": 120.65812
     },
@@ -11285,9 +11332,9 @@
     },
     "npa-b7d8ff3f41": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.02877,
         "lon": 121.42217,
         "roadAxis": 70
@@ -11304,7 +11351,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.047396,
         "lon": 121.25152,
         "roadAxis": 50
@@ -11345,15 +11392,15 @@
     "npa-b867043cfb": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.56024,
         "lon": 120.30972
     },
     "npa-b86993234b": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.953762,
         "lon": 121.56291,
         "roadAxis": 110
@@ -11363,7 +11410,7 @@
         "method": "route",
         "distanceM": 340,
         "reason": "距 187乙線 339 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.485254,
         "lon": 120.49082
     },
@@ -11401,9 +11448,9 @@
     },
     "npa-b90964e142": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.138643,
         "lon": 120.60922,
         "roadAxis": 90
@@ -11418,9 +11465,9 @@
     },
     "npa-b93bd7b9d1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.277452,
         "lon": 120.71295,
         "roadAxis": 80
@@ -11447,7 +11494,7 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 109 m（國泰路 11 m、南京路 109 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.620205,
         "lon": 120.346664
     },
@@ -11478,15 +11525,15 @@
     "npa-ba639178a7": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.629728,
         "lon": 120.32502
     },
     "npa-ba7bd98b8e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.078297,
         "lon": 120.14962,
         "roadAxis": 90
@@ -11510,7 +11557,7 @@
     "npa-bac4f720ed": {
         "verdict": "OK",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.208727,
         "lon": 120.48009
     },
@@ -11519,7 +11566,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 258 m（中山路 9 m、工業一路 258 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.520376,
         "lon": 120.440254
     },
@@ -11566,9 +11613,9 @@
     },
     "npa-bb7ed5a34b": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.969753,
         "lon": 121.408424,
         "roadAxis": 80
@@ -11606,9 +11653,9 @@
     },
     "npa-bd0800cbb6": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.131016,
         "lon": 120.74129,
         "roadAxis": 90
@@ -11618,7 +11665,7 @@
         "method": "intersection",
         "distanceM": 30290,
         "reason": "距路口道路最遠 30295 m（信義路 4 m、公正街 30295 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.74475,
         "lon": 121.452415
     },
@@ -11650,7 +11697,7 @@
     "npa-be39c9fef9": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.829601,
         "lon": 120.26319
     },
@@ -11705,9 +11752,9 @@
     },
     "npa-bf10ba7e15": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.087082,
         "lon": 120.69613,
         "roadAxis": 160
@@ -11750,7 +11797,7 @@
         "method": "intersection",
         "distanceM": 380,
         "reason": "距路口道路最遠 378 m（八堵路 3 m、水源路 378 m）；座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.108835,
         "lon": 121.730316
     },
@@ -11768,7 +11815,7 @@
         "method": "route",
         "distanceM": 770,
         "reason": "距 17線 766 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.702332,
         "lon": 120.51959
     },
@@ -11777,7 +11824,7 @@
         "method": "intersection",
         "distanceM": 280,
         "reason": "距路口道路最遠 278 m（中華路 235 m、鳳岡路 278 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.85749,
         "lon": 121.00296
     },
@@ -11791,9 +11838,9 @@
     },
     "npa-c0187057e2": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.08173,
         "lon": 121.56998,
         "roadAxis": 110
@@ -11802,7 +11849,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.929586,
         "lon": 121.33779,
         "roadAxis": 70
@@ -11812,7 +11859,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 85 m（公道五路 1 m、東大路三段430巷 85 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.838078,
         "lon": 120.94409
     },
@@ -11845,18 +11892,21 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 96 m（三豐路 0 m、枋寮路 96 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.29135,
         "lon": 120.723434
     },
     "npa-c0971772d9": {
         "verdict": "MISMATCH",
-        "method": "road",
-        "distanceM": 460,
-        "reason": "距 東勢街 462 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 1990,
+        "suggestedLat": 25.08843,
+        "suggestedLon": 121.742777,
+        "reason": "距 東勢街 462 m；距 TGOS 門牌位置 1984 m；門牌推算位置相距 1988 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.104843,
-        "lon": 121.73496
+        "lon": 121.73496,
+        "suggestedSource": "tgos"
     },
     "npa-c0b36af767": {
         "verdict": "OK",
@@ -11876,9 +11926,9 @@
     },
     "npa-c11571f9f5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.98002,
         "lon": 121.52311,
         "roadAxis": 170
@@ -11953,7 +12003,7 @@
         "method": "road",
         "distanceM": 140,
         "reason": "距 梅獅路 135 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.89299,
         "lon": 121.184975
     },
@@ -11967,19 +12017,20 @@
         "roadAxis": 100
     },
     "npa-c258b08787": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 110,
+        "reason": "距 TGOS 門牌位置 109 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.825977,
         "lon": 121.18508,
         "roadAxis": 90
     },
     "npa-c287fb8133": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.959152,
         "lon": 121.22454,
         "roadAxis": 30
@@ -12123,9 +12174,9 @@
     },
     "npa-c4ef544c66": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.110003,
         "lon": 120.660736,
         "roadAxis": 130
@@ -12140,27 +12191,27 @@
     },
     "npa-c52a739804": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 80,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.89416,
         "lon": 120.40055,
         "roadAxis": 120
     },
     "npa-c552521d01": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.659475,
         "lon": 120.36719,
         "roadAxis": 90
     },
     "npa-c55b05a295": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.128283,
         "lon": 120.66449,
         "roadAxis": 70
@@ -12184,7 +12235,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.948414,
         "lon": 121.546074,
         "roadAxis": 10
@@ -12207,9 +12258,9 @@
     },
     "npa-c63f3767f7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.075266,
         "lon": 121.363235,
         "roadAxis": 50
@@ -12226,7 +12277,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.83135,
         "lon": 121.08766,
         "roadAxis": 70
@@ -12319,7 +12370,7 @@
         "suggestedLat": 24.16349,
         "suggestedLon": 120.685054,
         "reason": "距路口道路最遠 325 m（崇德路 325 m、進化北路 98 m）；推算路口相距 334 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.16392,
         "lon": 120.68831,
         "suggestedSource": "intersection"
@@ -12329,15 +12380,15 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 中山東路 35 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.78851,
         "lon": 121.18603
     },
     "npa-c856d22183": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.870377,
         "lon": 120.5492,
         "roadAxis": 140
@@ -12355,7 +12406,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 1線 60 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.667603,
         "lon": 120.47478
     },
@@ -12372,7 +12423,7 @@
         "method": "intersection",
         "distanceM": 160,
         "reason": "距路口道路最遠 160 m（園區三路 6 m、研新四路 160 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.782099,
         "lon": 120.99193
     },
@@ -12381,7 +12432,7 @@
         "method": "intersection",
         "distanceM": 140,
         "reason": "距路口道路最遠 137 m（萬壽路 3 m、中正路 137 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.018389,
         "lon": 121.407135
     },
@@ -12389,7 +12440,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.558868,
         "lon": 120.42732,
         "roadAxis": 40
@@ -12406,7 +12457,7 @@
     "npa-c98c714f72": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.56284,
         "lon": 120.31384
     },
@@ -12423,7 +12474,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 65 m（中興路 0 m、丹榮路 65 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.578241,
         "lon": 120.484116
     },
@@ -12432,7 +12483,7 @@
         "method": "road",
         "distanceM": 110,
         "reason": "距 文中路一段265巷 109 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.989258,
         "lon": 121.262245
     },
@@ -12452,38 +12503,47 @@
         "lat": 23.942873,
         "lon": 121.54195
     },
+    "npa-ca873ecab2": {
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "suggestedLat": 24.086952,
+        "suggestedLon": 120.67817,
+        "reason": "被拒絕列依門牌位置推算（環河路）",
+        "checkedAt": "2026-11-20T04:03:40Z",
+        "suggestedSource": "tgos"
+    },
     "npa-cac24fcdae": {
         "verdict": "SUSPECT",
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 63 m（世賢路 31 m、美源街 63 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.462564,
         "lon": 120.447655
     },
     "npa-cad78b2d92": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 90,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.014542,
         "lon": 121.2712,
         "roadAxis": 120
     },
     "npa-cafe0745d1": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.017994,
         "lon": 121.9491,
         "roadAxis": 70
     },
     "npa-cb07e57725": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.001873,
         "lon": 121.35082,
         "roadAxis": 90
@@ -12501,7 +12561,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 復興北路 36 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.066849,
         "lon": 121.54438
     },
@@ -12542,7 +12602,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 新生南路 39 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.176693,
         "lon": 120.25403
     },
@@ -12588,15 +12648,15 @@
     "npa-cc2d2e8300": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.56438,
         "lon": 120.31559
     },
     "npa-cc2fb90201": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.992584,
         "lon": 121.54072,
         "roadAxis": 20
@@ -12619,18 +12679,18 @@
     },
     "npa-cc9297c637": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.013025,
         "lon": 120.55131,
         "roadAxis": 160
     },
     "npa-ccb1ed148d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.812801,
         "lon": 120.3271,
         "roadAxis": 10
@@ -12661,9 +12721,9 @@
     },
     "npa-cd3ecc90a9": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.95701,
         "lon": 121.34703,
         "roadAxis": 90
@@ -12677,10 +12737,11 @@
         "lon": 120.89375
     },
     "npa-cd7ac41ddf": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 880,
+        "reason": "距 TGOS 門牌位置 884 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.826963,
         "lon": 121.266235,
         "roadAxis": 50
@@ -12780,7 +12841,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.040014,
         "lon": 121.50749,
         "roadAxis": 20
@@ -12790,7 +12851,7 @@
         "method": "intersection",
         "distanceM": 130,
         "reason": "距路口道路最遠 128 m（中山四路 6 m、大業北路 128 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.569653,
         "lon": 120.34452
     },
@@ -12828,9 +12889,9 @@
     },
     "npa-cfebc1e9d0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 100,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.846693,
         "lon": 121.27307,
         "roadAxis": 40
@@ -12881,7 +12942,7 @@
         "method": "intersection",
         "distanceM": 240,
         "reason": "距路口道路最遠 243 m（鹽洲路 4 m、義仁路 243 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.48791,
         "lon": 120.44127
     },
@@ -12903,10 +12964,10 @@
     },
     "npa-d080344a5b": {
         "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 30,
+        "method": "tgos",
+        "distanceM": 80,
         "reason": "距 文德路 30 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.77466,
         "lon": 121.07385
     },
@@ -12953,7 +13014,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.715528,
         "lon": 120.39001,
         "roadAxis": 30
@@ -13069,7 +13130,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.2915,
         "lon": 120.7324,
         "roadAxis": 0
@@ -13079,7 +13140,7 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 195 m（園區一路 14 m、慈雲路 195 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.78629,
         "lon": 121.00824
     },
@@ -13087,7 +13148,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.65996,
         "lon": 120.320015,
         "roadAxis": 70
@@ -13134,9 +13195,9 @@
     },
     "npa-d4552df4da": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.678333,
         "lon": 120.28276,
         "roadAxis": 0
@@ -13200,18 +13261,18 @@
     },
     "npa-d5217af43d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.074657,
         "lon": 121.58999,
         "roadAxis": 0
     },
     "npa-d543ef9d09": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.044203,
         "lon": 121.29424,
         "roadAxis": 160
@@ -13221,7 +13282,7 @@
         "method": "intersection",
         "distanceM": 400,
         "reason": "距路口道路最遠 403 m（臺江大道 7 m、安中路320巷 403 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.06164,
         "lon": 120.17002
     },
@@ -13323,9 +13384,9 @@
     },
     "npa-d72363d429": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.7525,
         "lon": 121.0755,
         "roadAxis": 120
@@ -13372,9 +13433,9 @@
     },
     "npa-d7f2fe18b8": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.11225,
         "lon": 120.59575,
         "roadAxis": 110
@@ -13389,10 +13450,11 @@
         "roadAxis": 40
     },
     "npa-d85ec94c8c": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 3190,
+        "reason": "距 TGOS 門牌位置 3195 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.002476,
         "lon": 121.22935,
         "roadAxis": 170
@@ -13407,9 +13469,9 @@
     },
     "npa-d8cf9d9d53": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.034035,
         "lon": 121.24809,
         "roadAxis": 140
@@ -13438,7 +13500,7 @@
         "suggestedLat": 24.070604,
         "suggestedLon": 120.696714,
         "reason": "距路口道路最遠 1404 m（林森路 228 m、草湖路 1404 m）；推算路口相距 1726 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.05517,
         "lon": 120.69852,
         "suggestedSource": "intersection"
@@ -13532,10 +13594,11 @@
         "lon": 120.5988
     },
     "npa-db14e04f31": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 2090,
+        "reason": "距 TGOS 門牌位置 2089 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.045538,
         "lon": 121.266235,
         "roadAxis": 170
@@ -13647,7 +13710,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.932316,
         "lon": 121.407265,
         "roadAxis": 120
@@ -13715,7 +13778,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 230 m（中央路 3 m、大湖路 230 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.866404,
         "lon": 120.43808
     },
@@ -13728,11 +13791,11 @@
         "lon": 120.673485
     },
     "npa-de23951493": {
-        "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 90,
-        "reason": "距 月眉路 85 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 320,
+        "reason": "距 月眉路 85 m；距 TGOS 門牌位置 322 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.885729,
         "lon": 121.28862
     },
@@ -13755,18 +13818,18 @@
     },
     "npa-de7cbd225c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.774559,
         "lon": 120.59788,
         "roadAxis": 40
     },
     "npa-dea53c3f6a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.035313,
         "lon": 121.49719,
         "roadAxis": 90
@@ -13789,10 +13852,11 @@
         "roadAxis": 90
     },
     "npa-df190bd46f": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 5700,
+        "reason": "距 TGOS 門牌位置 5697 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.880772,
         "lon": 121.2889,
         "roadAxis": 130
@@ -13807,37 +13871,37 @@
         "roadAxis": 10
     },
     "npa-df2672d1ad": {
-        "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 150,
-        "reason": "距 大山一路 149 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 360,
+        "reason": "距 大山一路 149 m；距 TGOS 門牌位置 362 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.827557,
         "lon": 120.62407
     },
     "npa-df32745f53": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.145042,
         "lon": 120.62725,
         "roadAxis": 90
     },
     "npa-dfe233beeb": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.171976,
         "lon": 120.62116,
         "roadAxis": 30
     },
     "npa-dfeb9d427d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.95702,
         "lon": 121.36128,
         "roadAxis": 90
@@ -13860,11 +13924,11 @@
         "lon": 120.57901
     },
     "npa-e04afd38a4": {
-        "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 40,
-        "reason": "距 民族路 40 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 660,
+        "reason": "距 民族路 40 m；距 TGOS 門牌位置 662 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.958342,
         "lon": 121.18032
     },
@@ -13927,10 +13991,10 @@
     },
     "npa-e1c66b17a0": {
         "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 90,
+        "method": "tgos",
+        "distanceM": 20,
         "reason": "距 瑪鋉路 88 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.183182,
         "lon": 121.687614
     },
@@ -13952,18 +14016,18 @@
     },
     "npa-e20a4e282e": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.020033,
         "lon": 121.53406,
         "roadAxis": 10
     },
     "npa-e2221c8176": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.077658,
         "lon": 121.540924,
         "roadAxis": 90
@@ -14002,9 +14066,9 @@
     },
     "npa-e30d23c07a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.96975,
         "lon": 121.54622,
         "roadAxis": 30
@@ -14020,9 +14084,9 @@
     },
     "npa-e32c8b50d3": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.134548,
         "lon": 120.69571,
         "roadAxis": 40
@@ -14041,7 +14105,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 金門縣金寧鄉（國土測繪複查），非 金門縣金城鎮",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.458384,
         "lon": 118.36486,
         "roadAxis": 100
@@ -14081,9 +14145,9 @@
     },
     "npa-e444cf591f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.73897,
         "lon": 120.38318,
         "roadAxis": 110
@@ -14117,7 +14181,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 久安路 33 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.691448,
         "lon": 120.50823
     },
@@ -14196,9 +14260,9 @@
     },
     "npa-e5be709630": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.8736,
         "lon": 121.26314,
         "roadAxis": 0
@@ -14248,7 +14312,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣寶山鄉（國土測繪複查），非 新竹市東區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.775665,
         "lon": 120.99644,
         "roadAxis": 130
@@ -14317,7 +14381,7 @@
         "suggestedLat": 25.011882,
         "suggestedLon": 121.389694,
         "reason": "距路口道路最遠 1358 m（東萬壽路 0 m、龍校街121巷6弄 1358 m）；推算路口相距 1369 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.009476,
         "lon": 121.37637,
         "suggestedSource": "intersection"
@@ -14337,7 +14401,7 @@
         "suggestedLat": 24.191573,
         "suggestedLon": 120.596948,
         "reason": "距路口道路最遠 1892 m（西屯路 947 m、遠東街 1892 m）；推算路口相距 2120 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.18044,
         "lon": 120.61391,
         "suggestedSource": "intersection"
@@ -14388,7 +14452,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 75 m（仁愛路 3 m、臨沂街 75 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.038351,
         "lon": 121.53017
     },
@@ -14418,18 +14482,18 @@
     },
     "npa-e95eba3fe5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.134834,
         "lon": 121.52868,
         "roadAxis": 20
     },
     "npa-e98be41ae9": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.15363,
         "lon": 120.72522,
         "roadAxis": 30
@@ -14464,7 +14528,7 @@
         "method": "road",
         "distanceM": 110,
         "reason": "距 文山路 107 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.00007,
         "lon": 121.621445
     },
@@ -14473,7 +14537,7 @@
         "method": "intersection",
         "distanceM": 20770,
         "reason": "距路口道路最遠 20765 m（安樂路 1 m、崇德街 20765 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.12841,
         "lon": 121.733025
     },
@@ -14482,7 +14546,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 彰新路 31 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.149263,
         "lon": 120.509766
     },
@@ -14499,7 +14563,7 @@
         "method": "road",
         "distanceM": 380,
         "reason": "距 仁和路二段517巷 378 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.911953,
         "lon": 121.259544
     },
@@ -14530,9 +14594,9 @@
     },
     "npa-eb1271256b": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.945978,
         "lon": 120.19549,
         "roadAxis": 0
@@ -14547,9 +14611,9 @@
     },
     "npa-eb5f3ab921": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.119066,
         "lon": 120.68229,
         "roadAxis": 90
@@ -14592,7 +14656,7 @@
         "method": "road",
         "distanceM": 23660,
         "reason": "距 大灣路 23658 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.211151,
         "lon": 120.18567
     },
@@ -14606,9 +14670,9 @@
     },
     "npa-ecddb51a02": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.165049,
         "lon": 120.618515,
         "roadAxis": 10
@@ -14631,9 +14695,9 @@
     },
     "npa-ed1de42d0a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 100,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.210121,
         "lon": 120.559746,
         "roadAxis": 130
@@ -14643,7 +14707,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新北市板橋區（國土測繪複查），非 新北市新莊區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.999134,
         "lon": 121.451256
     },
@@ -14651,7 +14715,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.0294,
         "lon": 121.48293,
         "roadAxis": 160
@@ -14691,9 +14755,9 @@
     },
     "npa-ee8b8d496d": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.014463,
         "lon": 121.285835,
         "roadAxis": 150
@@ -14740,9 +14804,9 @@
     },
     "npa-eee7bb8196": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.186693,
         "lon": 120.61284,
         "roadAxis": 100
@@ -14809,7 +14873,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 228 m（中華路 9 m、獅山街 228 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.878002,
         "lon": 120.57057
     },
@@ -14839,9 +14903,9 @@
     },
     "npa-f0293ea438": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.989222,
         "lon": 121.61,
         "roadAxis": 10
@@ -14888,9 +14952,9 @@
     },
     "npa-f0d6e6a034": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.836103,
         "lon": 120.462395,
         "roadAxis": 10
@@ -14898,7 +14962,7 @@
     "npa-f0f045e919": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.68351,
         "lon": 120.30761
     },
@@ -14911,19 +14975,20 @@
         "lon": 120.284904
     },
     "npa-f10bc429b1": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 840,
+        "reason": "距 TGOS 門牌位置 841 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.7405,
         "lon": 121.16245,
         "roadAxis": 0
     },
     "npa-f14017ee7a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.02534,
         "lon": 121.08704,
         "roadAxis": 50
@@ -14955,9 +15020,9 @@
     },
     "npa-f1f0d7cf0c": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.825012,
         "lon": 120.97564,
         "roadAxis": 110
@@ -14989,9 +15054,9 @@
     },
     "npa-f27a00f244": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 70,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.68059,
         "lon": 121.76142,
         "roadAxis": 100
@@ -15057,7 +15122,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 233 m（三民路 137 m、公園路 233 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.14563,
         "lon": 120.68389
     },
@@ -15083,7 +15148,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 79 m（介壽路 8 m、興豐路 79 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.930553,
         "lon": 121.29728
     },
@@ -15124,15 +15189,15 @@
         "method": "road",
         "distanceM": 380,
         "reason": "距 瑞安路 380 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.874975,
         "lon": 121.27842
     },
     "npa-f544cab4a0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.086985,
         "lon": 120.51911,
         "roadAxis": 0
@@ -15155,9 +15220,9 @@
     },
     "npa-f57d312964": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.7843,
         "lon": 121.07964,
         "roadAxis": 10
@@ -15193,7 +15258,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.102283,
         "lon": 121.754326
     },
@@ -15244,7 +15309,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 232 m（濱海路 1 m、工五路 232 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.167889,
         "lon": 120.5143
     },
@@ -15266,9 +15331,9 @@
     },
     "npa-f689c75acd": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.938059,
         "lon": 121.3079,
         "roadAxis": 60
@@ -15314,10 +15379,11 @@
         "lon": 121.01196
     },
     "npa-f7885d790b": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 160,
+        "reason": "距 TGOS 門牌位置 157 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.086546,
         "lon": 121.44341,
         "roadAxis": 30
@@ -15351,15 +15417,16 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 103 m（高鐵南路 5 m、快速路 103 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.955482,
         "lon": 121.148994
     },
     "npa-f831ae9692": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 110,
+        "reason": "距 TGOS 門牌位置 113 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.720003,
         "lon": 120.916664,
         "roadAxis": 80
@@ -15447,12 +15514,15 @@
     },
     "npa-fa091e5b05": {
         "verdict": "MISMATCH",
-        "method": "road",
-        "distanceM": 27890,
-        "reason": "距 國光路 27886 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 28130,
+        "suggestedLat": 24.097229,
+        "suggestedLon": 120.68444,
+        "reason": "距 國光路 27886 m；距 TGOS 門牌位置 28144 m；門牌推算位置相距 28130 m",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.05835,
-        "lon": 120.41064
+        "lon": 120.41064,
+        "suggestedSource": "tgos"
     },
     "npa-fa23e411d4": {
         "verdict": "OK",
@@ -15473,9 +15543,9 @@
     },
     "npa-fa55af81e2": {
         "verdict": "OK",
-        "method": "road",
+        "method": "tgos",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.822033,
         "lon": 120.98689,
         "roadAxis": 110
@@ -15490,9 +15560,9 @@
     },
     "npa-fa6dcc3246": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 100,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.033958,
         "lon": 121.28599,
         "roadAxis": 130
@@ -15507,9 +15577,9 @@
     },
     "npa-faa7bc6d85": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 20,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.245043,
         "lon": 120.73099,
         "roadAxis": 30
@@ -15560,7 +15630,7 @@
         "method": "intersection",
         "distanceM": 200,
         "reason": "距路口道路最遠 197 m（中科二林大道 6 m、產學三路 197 m）",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.93027,
         "lon": 120.4359
     },
@@ -15575,7 +15645,7 @@
     "npa-fc1c41045a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 22.717821,
         "lon": 120.325356
     },
@@ -15665,7 +15735,7 @@
         "verdict": "OK",
         "method": "road",
         "distanceM": 10,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 24.167393,
         "lon": 120.63082,
         "roadAxis": 20
@@ -15756,7 +15826,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 19線 58 m",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 23.29279,
         "lon": 120.241684
     },
@@ -15771,9 +15841,9 @@
     },
     "npa-ff0de2a502": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 50,
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.109812,
         "lon": 121.45561,
         "roadAxis": 10
@@ -15796,11 +15866,11 @@
         "lon": 121.59436
     },
     "npa-ff98626ede": {
-        "verdict": "SUSPECT",
-        "method": "admin",
-        "distanceM": 0,
-        "reason": "座標落於 桃園市中壢區（國土測繪複查），非 桃園市觀音區",
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "verdict": "MISMATCH",
+        "method": "tgos",
+        "distanceM": 1520,
+        "reason": "距 TGOS 門牌位置 1519 m；座標落於 桃園市中壢區（國土測繪複查），非 桃園市觀音區",
+        "checkedAt": "2026-11-20T04:03:40Z",
         "lat": 25.01923,
         "lon": 121.169106,
         "roadAxis": 130
