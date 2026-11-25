@@ -39,7 +39,7 @@
         "method": "intersection",
         "distanceM": 13940,
         "reason": "距路口道路最遠 13940 m（西濱路 13940 m、中山西路 4 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.987894,
         "lon": 121.02092
     },
@@ -64,7 +64,7 @@
         "method": "road",
         "distanceM": 3690,
         "reason": "距 大埔路 3686 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.860182,
         "lon": 121.36074
     },
@@ -73,7 +73,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 66 m（承德路 4 m、敦煌路 66 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.074507,
         "lon": 121.519936
     },
@@ -106,7 +106,7 @@
         "method": "route",
         "distanceM": 700,
         "reason": "距 61線 701 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.294575,
         "lon": 120.12972
     },
@@ -114,7 +114,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 0,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.742186,
         "lon": 120.44719
     },
@@ -255,7 +255,7 @@
         "method": "route",
         "distanceM": 40,
         "reason": "距 1線 40 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.549187,
         "lon": 120.43407
     },
@@ -331,7 +331,7 @@
         "method": "intersection",
         "distanceM": 1320,
         "reason": "距路口道路最遠 1323 m（新臺五路 1323 m、福三街 23 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.08034,
         "lon": 121.69804
     },
@@ -459,9 +459,9 @@
     },
     "npa-072393643f": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.719,
         "lon": 121.748116,
         "roadAxis": 90
@@ -487,7 +487,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 30線 58 m；座標落於 花蓮縣富里鄉（國土測繪複查），非 花蓮縣玉里鎮",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.26736,
         "lon": 121.369484
     },
@@ -505,7 +505,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 91 m（建德路 1 m、豐德路 91 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.925838,
         "lon": 121.28121
     },
@@ -589,7 +589,7 @@
         "method": "route",
         "distanceM": 6960,
         "reason": "距 國道1號 6964 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.01288,
         "lon": 121.16468
     },
@@ -749,7 +749,7 @@
     "npa-0c76d330a5": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.630129,
         "lon": 120.32004
     },
@@ -758,7 +758,7 @@
         "method": "route",
         "distanceM": 70,
         "reason": "距 國道3號 74 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.330832,
         "lon": 120.43159
     },
@@ -824,7 +824,7 @@
     "npa-0e34aa9561": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.55043,
         "lon": 121.10031
     },
@@ -924,7 +924,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 30,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.84498,
         "lon": 120.32285
     },
@@ -933,7 +933,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.10187,
         "lon": 121.75308
     },
@@ -975,7 +975,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 義一路 41 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.13194,
         "lon": 121.7445
     },
@@ -1009,7 +1009,7 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 191 m（正順北路 6 m、正順東路 191 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.882696,
         "lon": 120.200676
     },
@@ -1018,7 +1018,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新北市五股區（國土測繪複查），非 新北市八里區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.111614,
         "lon": 121.422195
     },
@@ -1045,7 +1045,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 262 m（華亞三路 0 m、文化二路 262 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.043844,
         "lon": 121.37707
     },
@@ -1303,7 +1303,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 230 m（安吉路 3 m、安順庄大道 230 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.07735,
         "lon": 120.193634
     },
@@ -1312,7 +1312,7 @@
         "method": "intersection",
         "distanceM": 270,
         "reason": "距路口道路最遠 273 m（羅斯福路 3 m、興隆路 273 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.001501,
         "lon": 121.539116
     },
@@ -1378,7 +1378,7 @@
         "method": "road",
         "distanceM": 36770,
         "reason": "距 營區路 36774 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.36148,
         "lon": 120.36428
     },
@@ -1472,7 +1472,7 @@
         "suggestedLat": 23.319456,
         "suggestedLon": 120.308247,
         "reason": "距路口道路最遠 856 m（長榮路 464 m、三興街 856 m）；推算路口相距 806 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.319435,
         "lon": 120.300354,
         "suggestedSource": "intersection"
@@ -1544,7 +1544,7 @@
         "suggestedLat": 24.131278,
         "suggestedLon": 120.707066,
         "reason": "距路口道路最遠 1467 m（環中東路 0 m、東義街 1467 m）；推算路口相距 1514 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.14412,
         "lon": 120.712036,
         "suggestedSource": "intersection"
@@ -1585,7 +1585,7 @@
         "method": "road",
         "distanceM": 420,
         "reason": "距 金福路 419 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.575134,
         "lon": 120.32586
     },
@@ -1678,7 +1678,7 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 110 m（濱南路 5 m、喜樹路340巷 110 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.937895,
         "lon": 120.176
     },
@@ -1824,7 +1824,7 @@
     "npa-1e6d874925": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.669052,
         "lon": 120.28896
     },
@@ -2008,7 +2008,7 @@
     "npa-2150b8e361": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.59276,
         "lon": 120.39066
     },
@@ -2034,7 +2034,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 臺南市仁德區（國土測繪複查），非 臺南市南區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.941513,
         "lon": 120.21746,
         "roadAxis": 150
@@ -2052,7 +2052,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 77 m（擺接堡路 1 m、民權街 77 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.96446,
         "lon": 121.41541
     },
@@ -2061,7 +2061,7 @@
         "method": "intersection",
         "distanceM": 220,
         "reason": "距路口道路最遠 221 m（環河北路 0 m、敦煌路 221 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.079073,
         "lon": 121.50822
     },
@@ -2086,7 +2086,7 @@
         "method": "road",
         "distanceM": 540,
         "reason": "距 金福路 542 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.578098,
         "lon": 120.326035
     },
@@ -2130,7 +2130,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 成功路 38 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.702805,
         "lon": 120.55346
     },
@@ -2158,7 +2158,7 @@
         "suggestedLat": 25.07613,
         "suggestedLon": 121.562718,
         "reason": "距路口道路最遠 308 m（樂群一路 2 m、基湖路 308 m）；推算路口相距 373 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.076668,
         "lon": 121.566376,
         "suggestedSource": "intersection"
@@ -2326,7 +2326,7 @@
         "method": "intersection",
         "distanceM": 290,
         "reason": "距路口道路最遠 294 m（嘉勝路 294 m、守密街 19 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.665485,
         "lon": 120.25901
     },
@@ -2368,7 +2368,7 @@
     "npa-270a662c92": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.554989,
         "lon": 120.39456
     },
@@ -2379,7 +2379,7 @@
         "suggestedLat": 25.090314,
         "suggestedLon": 121.229889,
         "reason": "距路口道路最遠 2287 m（國際路 0 m、中央路 2287 m）；推算路口相距 2377 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.107386,
         "lon": 121.244095,
         "suggestedSource": "intersection"
@@ -2447,7 +2447,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 文昌路 36 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.68034,
         "lon": 120.48086
     },
@@ -2518,7 +2518,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 中興路 36 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.476171,
         "lon": 120.545456
     },
@@ -2608,7 +2608,7 @@
     "npa-2aa1beb06e": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.924803,
         "lon": 120.421616
     },
@@ -2938,7 +2938,7 @@
         "method": "route",
         "distanceM": 390,
         "reason": "距 國道1號 386 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.04396,
         "lon": 121.30055
     },
@@ -2953,9 +2953,9 @@
     },
     "npa-30488db40a": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 40,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.009697,
         "lon": 121.68765,
         "roadAxis": 160
@@ -3047,7 +3047,7 @@
         "method": "intersection",
         "distanceM": 7290,
         "reason": "距路口道路最遠 7288 m（向上路 1 m、中興路 7288 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.18763,
         "lon": 120.57346
     },
@@ -3273,7 +3273,7 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 112 m（高鐵北路 3 m、中正東路 112 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.0271,
         "lon": 121.22922
     },
@@ -3313,7 +3313,7 @@
         "method": "route",
         "distanceM": 3360,
         "reason": "距 國道1號 3357 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.042383,
         "lon": 121.53301
     },
@@ -3461,7 +3461,7 @@
         "suggestedLat": 24.162106,
         "suggestedLon": 120.664618,
         "reason": "距路口道路最遠 522 m（忠明路 352 m、西屯路 522 m）；推算路口相距 760 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.15549,
         "lon": 120.66273,
         "suggestedSource": "intersection"
@@ -3636,7 +3636,7 @@
         "method": "road",
         "distanceM": 19830,
         "reason": "距 文華路 19828 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.600435,
         "lon": 120.52638
     },
@@ -3653,7 +3653,7 @@
         "method": "road",
         "distanceM": 8550,
         "reason": "距 振興路 8546 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.790707,
         "lon": 120.47045
     },
@@ -3736,7 +3736,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 大坑路 41 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.70776,
         "lon": 120.439255
     },
@@ -3769,7 +3769,7 @@
         "method": "road",
         "distanceM": 60,
         "reason": "距 松正路 64 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.57036,
         "lon": 120.376785
     },
@@ -3827,7 +3827,7 @@
         "method": "route",
         "distanceM": 160,
         "reason": "距 國道3號 159 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.10567,
         "lon": 120.55382
     },
@@ -3908,7 +3908,7 @@
     "npa-3e37cd724b": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.684856,
         "lon": 120.30621
     },
@@ -3959,7 +3959,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 85 m（中山四路 6 m、平和東路 85 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.570253,
         "lon": 120.33743
     },
@@ -4075,7 +4075,7 @@
     "npa-408dcb437a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.897558,
         "lon": 120.62668
     },
@@ -4248,7 +4248,7 @@
         "method": "intersection",
         "distanceM": 1240,
         "reason": "距路口道路最遠 1244 m（中科路 8 m、科雅東路 1244 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.207615,
         "lon": 120.62186
     },
@@ -4375,7 +4375,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 新北市板橋區（國土測繪複查），非 新北市中和區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.018978,
         "lon": 121.47077
     },
@@ -4698,7 +4698,7 @@
         "method": "road",
         "distanceM": 760,
         "reason": "距 新生二路 762 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.683113,
         "lon": 120.49306
     },
@@ -4749,7 +4749,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 70 m（沙田路 70 m、振興街 35 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.11332,
         "lon": 120.587204
     },
@@ -4816,7 +4816,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 9線 61 m；座標落於 宜蘭縣蘇澳鎮（國土測繪複查），非 宜蘭縣南澳鄉",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.547905,
         "lon": 121.83988
     },
@@ -4868,7 +4868,7 @@
         "method": "intersection",
         "distanceM": 220,
         "reason": "距路口道路最遠 221 m（市民大道 3 m、東新街 221 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.04997,
         "lon": 121.586235
     },
@@ -4894,7 +4894,7 @@
         "method": "intersection",
         "distanceM": 120,
         "reason": "距路口道路最遠 116 m（中北路 3 m、中山東路 116 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.955116,
         "lon": 121.234436
     },
@@ -5185,7 +5185,7 @@
         "method": "intersection",
         "distanceM": 11080,
         "reason": "距路口道路最遠 11075 m（中正路 31 m、南屏路 11075 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.96794,
         "lon": 120.35717
     },
@@ -5237,7 +5237,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 62 m（源遠路 62 m、水源路 49 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.104801,
         "lon": 121.73433
     },
@@ -5366,7 +5366,7 @@
         "method": "road",
         "distanceM": 350,
         "reason": "距 旗文路 354 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.9106,
         "lon": 120.46642
     },
@@ -5407,7 +5407,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 南陽路 32 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.907316,
         "lon": 120.690674
     },
@@ -5454,10 +5454,10 @@
     },
     "npa-56c278dfc2": {
         "verdict": "SUSPECT",
-        "method": "road",
-        "distanceM": 50,
+        "method": "tgos",
+        "distanceM": 70,
         "reason": "距 海興路 49 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.241701,
         "lon": 121.63341
     },
@@ -5466,7 +5466,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 彰員路 38 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.0214,
         "lon": 120.55818
     },
@@ -5849,7 +5849,7 @@
         "method": "intersection",
         "distanceM": 21470,
         "reason": "距路口道路最遠 21466 m（北安路四段548巷 96 m、長和街 21466 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.067614,
         "lon": 120.21477
     },
@@ -5858,7 +5858,7 @@
         "method": "intersection",
         "distanceM": 820,
         "reason": "距路口道路最遠 820 m（五權西路 210 m、向上路 820 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.13952,
         "lon": 120.64006
     },
@@ -5884,7 +5884,7 @@
         "method": "intersection",
         "distanceM": 1560,
         "reason": "距路口道路最遠 1560 m（員鹿路 0 m、大新路 1560 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.007885,
         "lon": 120.459526
     },
@@ -6043,7 +6043,7 @@
         "method": "road",
         "distanceM": 580,
         "reason": "距 復興北路 581 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.071774,
         "lon": 121.54434
     },
@@ -6060,7 +6060,7 @@
         "method": "intersection",
         "distanceM": 4750,
         "reason": "距路口道路最遠 4753 m（新臺五路 4753 m、福三街 3589 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.114391,
         "lon": 121.68534
     },
@@ -6131,7 +6131,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 93 m（豐勢路 71 m、廣華街 93 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.275433,
         "lon": 120.78272
     },
@@ -6199,7 +6199,7 @@
     "npa-6105b00ec8": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.583641,
         "lon": 120.30965
     },
@@ -6308,7 +6308,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 69 m（中山路 69 m、東安路 0 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.32607,
         "lon": 120.608826
     },
@@ -6342,7 +6342,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 264 m（太堤東路 264 m、光興路1343巷 9 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.12292,
         "lon": 120.73434
     },
@@ -6410,7 +6410,7 @@
         "method": "road",
         "distanceM": 180,
         "reason": "距 機場北路 178 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.67714,
         "lon": 120.47336
     },
@@ -6499,7 +6499,7 @@
         "suggestedLat": 23.055566,
         "suggestedLon": 120.1904,
         "reason": "距路口道路最遠 340 m（安吉路 9 m、本原街 340 m）；推算路口相距 352 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.052488,
         "lon": 120.18961,
         "suggestedSource": "intersection"
@@ -6517,7 +6517,7 @@
         "method": "road",
         "distanceM": 330,
         "reason": "距 豐原大道 333 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.24755,
         "lon": 120.706635
     },
@@ -6534,7 +6534,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 雲林縣麥寮鄉（國土測繪複查），非 雲林縣東勢鄉",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.738638,
         "lon": 120.25528
     },
@@ -6614,7 +6614,7 @@
     "npa-6889efd69a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.56297,
         "lon": 120.31369
     },
@@ -6906,7 +6906,7 @@
         "method": "route",
         "distanceM": 3670,
         "reason": "距 65線 3666 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.025955,
         "lon": 121.48416
     },
@@ -6989,7 +6989,7 @@
         "method": "road",
         "distanceM": 400,
         "reason": "距 三商街 402 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.59266,
         "lon": 120.33633
     },
@@ -7075,7 +7075,7 @@
         "method": "admin",
         "distanceM": 50,
         "reason": "座標落於 臺南市新市區（國土測繪複查），非 臺南市善化區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.104445,
         "lon": 120.28986
     },
@@ -7151,7 +7151,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 集鹿路 36 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.822039,
         "lon": 120.78453
     },
@@ -7193,7 +7193,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣北埔鄉（國土測繪複查），非 新竹縣峨眉鄉",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.70351,
         "lon": 121.04712
     },
@@ -7260,7 +7260,7 @@
         "method": "intersection",
         "distanceM": 550,
         "reason": "距 中正路 552 m；座標落於 雲林縣莿桐鄉（國土測繪複查），非 雲林縣斗六市",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.750086,
         "lon": 120.50892
     },
@@ -7286,7 +7286,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 61 m（基金三路 2 m、武訓街 61 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.149271,
         "lon": 121.699745
     },
@@ -7311,7 +7311,7 @@
         "method": "intersection",
         "distanceM": 130,
         "reason": "距路口道路最遠 126 m（振興路 3 m、西勢湖路 126 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.025007,
         "lon": 121.36954
     },
@@ -7320,7 +7320,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 67 m（沿海一路 3 m、宏平路 67 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.568972,
         "lon": 120.35012
     },
@@ -7381,7 +7381,7 @@
         "method": "road",
         "distanceM": 150,
         "reason": "距 榮濱路 153 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.845257,
         "lon": 120.9341
     },
@@ -7456,7 +7456,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 林森路 33 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.717178,
         "lon": 120.44133
     },
@@ -7721,7 +7721,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 臺中市龍井區（國土測繪複查），非 臺中市清水區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.21861,
         "lon": 120.52289
     },
@@ -7747,7 +7747,7 @@
         "method": "admin",
         "distanceM": 30,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.11111,
         "lon": 121.735
     },
@@ -7798,7 +7798,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 南投縣埔里鎮（國土測繪複查），非 南投縣魚池鄉",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.94172,
         "lon": 120.92913
     },
@@ -7806,7 +7806,7 @@
         "verdict": "SUSPECT",
         "method": "internal",
         "reason": "與 npa-b4c5d58e9e（臺南市新市區 西拉雅大道與南科南路口）相距 2m 但路名不同",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.102247,
         "lon": 120.28029
     },
@@ -8025,7 +8025,7 @@
     "npa-7f366eebda": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.667456,
         "lon": 120.28902
     },
@@ -8042,7 +8042,7 @@
         "method": "intersection",
         "distanceM": 1330,
         "reason": "距路口道路最遠 1334 m（中華路 3 m、南隘路 1334 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.731752,
         "lon": 120.915436
     },
@@ -8278,7 +8278,7 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 186 m（市民大道 6 m、昆陽街 186 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.050976,
         "lon": 121.59186
     },
@@ -8383,7 +8383,7 @@
     "npa-84eee9b1b5": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.33292,
         "lon": 120.30184
     },
@@ -8392,7 +8392,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣寶山鄉（國土測繪複查），非 新竹市東區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.774435,
         "lon": 120.99819,
         "roadAxis": 130
@@ -8523,7 +8523,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 98 m（環湖路 6 m、文前路 98 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.661678,
         "lon": 120.357925
     },
@@ -8591,7 +8591,7 @@
         "method": "intersection",
         "distanceM": 1280,
         "reason": "距路口道路最遠 1277 m（中科路 7 m、科雅東路 1277 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.20721,
         "lon": 120.622116
     },
@@ -8690,16 +8690,12 @@
         "roadAxis": 120
     },
     "npa-8a40af0d07": {
-        "verdict": "MISMATCH",
-        "method": "intersection",
-        "distanceM": 310,
-        "suggestedLat": 22.752751,
-        "suggestedLon": 120.354996,
-        "reason": "距路口道路最遠 318 m（旗楠路 318 m、鳳旗路 19 m）；推算路口相距 305 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "verdict": "OK",
+        "method": "tgos",
+        "distanceM": 0,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.755226,
-        "lon": 120.35628,
-        "suggestedSource": "intersection"
+        "lon": 120.35628
     },
     "npa-8a65a8b0d0": {
         "verdict": "OK",
@@ -8759,9 +8755,9 @@
     },
     "npa-8c24f2edf5": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.703785,
         "lon": 120.20016,
         "roadAxis": 10
@@ -8796,7 +8792,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 82 m（基隆路 1 m、長興街 82 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.01664,
         "lon": 121.54384
     },
@@ -9030,15 +9026,16 @@
         "method": "intersection",
         "distanceM": 3030,
         "reason": "距路口道路最遠 3030 m（景觀大道 3030 m、五福路 1 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.75506,
         "lon": 120.953094
     },
     "npa-91ffdf4423": {
-        "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "verdict": "SUSPECT",
+        "method": "tgos",
+        "distanceM": 140,
+        "reason": "距 TGOS 門牌位置 144 m",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.203812,
         "lon": 120.60799,
         "roadAxis": 50
@@ -9163,7 +9160,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 中正路 32 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.757978,
         "lon": 120.49661
     },
@@ -9180,7 +9177,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 63 m（雲科路 10 m、科班路 63 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.73015,
         "lon": 120.56408
     },
@@ -9229,7 +9226,7 @@
         "method": "intersection",
         "distanceM": 5270,
         "reason": "距路口道路最遠 5273 m（港埠路 9 m、中社路 5273 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.320395,
         "lon": 120.56591
     },
@@ -9300,7 +9297,7 @@
         "suggestedLat": 24.18256,
         "suggestedLon": 120.701931,
         "reason": "距路口道路最遠 4779 m（北屯路 4779 m、松竹路 2878 m）；推算路口相距 4983 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.197582,
         "lon": 120.748215,
         "suggestedSource": "intersection"
@@ -9458,7 +9455,7 @@
         "method": "route",
         "distanceM": 3120,
         "reason": "距 國道1號 3115 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.03426,
         "lon": 121.24545
     },
@@ -9475,7 +9472,7 @@
         "method": "road",
         "distanceM": 60,
         "reason": "距 份尾三路 62 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.8297,
         "lon": 121.78401
     },
@@ -9531,9 +9528,9 @@
     },
     "npa-9a594bd2a4": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.017378,
         "lon": 121.90794,
         "roadAxis": 170
@@ -9625,7 +9622,7 @@
         "method": "intersection",
         "distanceM": 160,
         "reason": "距路口道路最遠 162 m（忠孝東路 6 m、逸仙路 162 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.04131,
         "lon": 121.55998
     },
@@ -9699,7 +9696,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 基隆市信義區（國土測繪複查），非 基隆市中正區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.13217,
         "lon": 121.77228
     },
@@ -9708,7 +9705,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 中正國中旁岔路 36 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.559347,
         "lon": 119.59845
     },
@@ -9791,7 +9788,7 @@
         "method": "road",
         "distanceM": 820,
         "reason": "距 大潭寮路 818 m；座標落於 臺南市將軍區（國土測繪複查），非 臺南市七股區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.189188,
         "lon": 120.124985
     },
@@ -9891,7 +9888,7 @@
         "verdict": "UNVERIFIABLE",
         "method": "intersection",
         "distanceM": 0,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.880974,
         "lon": 120.26041
     },
@@ -9930,7 +9927,7 @@
     "npa-a182cdb9ce": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.124218,
         "lon": 120.401024
     },
@@ -9989,7 +9986,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 99 m（擺接堡路 5 m、自強街 99 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.972385,
         "lon": 121.43178
     },
@@ -10098,7 +10095,7 @@
         "method": "intersection",
         "distanceM": 170,
         "reason": "距路口道路最遠 173 m（擺接堡路 6 m、民權街 173 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.964876,
         "lon": 121.41625
     },
@@ -10121,14 +10118,14 @@
     "npa-a40a3e947f": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.290691,
         "lon": 120.2927
     },
     "npa-a41464d0f5": {
         "verdict": "UNVERIFIABLE",
         "method": "route",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.55137,
         "lon": 121.10067
     },
@@ -10277,7 +10274,7 @@
         "method": "intersection",
         "distanceM": 1020,
         "reason": "距路口道路最遠 1021 m（景觀大道 1021 m、東香路 18 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.77316,
         "lon": 120.95296
     },
@@ -10286,7 +10283,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市信義區（國土測繪複查），非 基隆市中正區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.124674,
         "lon": 121.77938
     },
@@ -10320,7 +10317,7 @@
         "method": "road",
         "distanceM": 8650,
         "reason": "距 振興路 8647 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.789797,
         "lon": 120.47077
     },
@@ -10385,7 +10382,7 @@
         "method": "intersection",
         "distanceM": 22720,
         "reason": "距路口道路最遠 22716 m（和港路 0 m、西興路 22716 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.129986,
         "lon": 120.4901
     },
@@ -10429,7 +10426,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 97 m（中華路 97 m、延平一路 6 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.892141,
         "lon": 120.483376
     },
@@ -10512,7 +10509,7 @@
         "method": "admin",
         "distanceM": 20,
         "reason": "座標落於 新竹市新竹市（國土測繪複查），非 新竹市北區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.818996,
         "lon": 120.9245
     },
@@ -10578,7 +10575,7 @@
         "method": "road",
         "distanceM": 50,
         "reason": "距 振興路829巷 49 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.021631,
         "lon": 121.362755
     },
@@ -10644,9 +10641,9 @@
     },
     "npa-ac53f4b1f0": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.714243,
         "lon": 121.738594,
         "roadAxis": 40
@@ -10857,7 +10854,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 澎湖縣湖西鄉（國土測繪複查），非 澎湖縣馬公市",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.571623,
         "lon": 119.61402
     },
@@ -10866,7 +10863,7 @@
         "method": "route",
         "distanceM": 80,
         "reason": "距 62甲線 76 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.12806,
         "lon": 121.77834
     },
@@ -11134,7 +11131,7 @@
         "verdict": "SUSPECT",
         "method": "internal",
         "reason": "與 npa-7bd3c928a0（臺南市新市區 西拉雅大道與南科南北路口）相距 2m 但路名不同",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.102236,
         "lon": 120.2803
     },
@@ -11143,7 +11140,7 @@
         "method": "road",
         "distanceM": 50,
         "reason": "距 東衛岔路 50 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.569069,
         "lon": 119.59909
     },
@@ -11152,7 +11149,7 @@
         "method": "intersection",
         "distanceM": 200,
         "reason": "距路口道路最遠 200 m（永貞路 1 m、勝利街 200 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.69521,
         "lon": 120.885445
     },
@@ -11268,7 +11265,7 @@
         "method": "intersection",
         "distanceM": 90,
         "reason": "距路口道路最遠 92 m（惠中路 92 m、向上路 77 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.14771,
         "lon": 120.63971
     },
@@ -11392,7 +11389,7 @@
     "npa-b867043cfb": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.56024,
         "lon": 120.30972
     },
@@ -11410,7 +11407,7 @@
         "method": "route",
         "distanceM": 340,
         "reason": "距 187乙線 339 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.485254,
         "lon": 120.49082
     },
@@ -11494,7 +11491,7 @@
         "method": "intersection",
         "distanceM": 110,
         "reason": "距路口道路最遠 109 m（國泰路 11 m、南京路 109 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.620205,
         "lon": 120.346664
     },
@@ -11525,7 +11522,7 @@
     "npa-ba639178a7": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.629728,
         "lon": 120.32502
     },
@@ -11566,7 +11563,7 @@
         "method": "intersection",
         "distanceM": 260,
         "reason": "距路口道路最遠 258 m（中山路 9 m、工業一路 258 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.520376,
         "lon": 120.440254
     },
@@ -11665,7 +11662,7 @@
         "method": "intersection",
         "distanceM": 30290,
         "reason": "距路口道路最遠 30295 m（信義路 4 m、公正街 30295 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.74475,
         "lon": 121.452415
     },
@@ -11697,7 +11694,7 @@
     "npa-be39c9fef9": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.829601,
         "lon": 120.26319
     },
@@ -11797,7 +11794,7 @@
         "method": "intersection",
         "distanceM": 380,
         "reason": "距路口道路最遠 378 m（八堵路 3 m、水源路 378 m）；座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.108835,
         "lon": 121.730316
     },
@@ -11815,7 +11812,7 @@
         "method": "route",
         "distanceM": 770,
         "reason": "距 17線 766 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.702332,
         "lon": 120.51959
     },
@@ -11824,7 +11821,7 @@
         "method": "intersection",
         "distanceM": 280,
         "reason": "距路口道路最遠 278 m（中華路 235 m、鳳岡路 278 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.85749,
         "lon": 121.00296
     },
@@ -11859,7 +11856,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 85 m（公道五路 1 m、東大路三段430巷 85 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.838078,
         "lon": 120.94409
     },
@@ -11892,7 +11889,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 96 m（三豐路 0 m、枋寮路 96 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.29135,
         "lon": 120.723434
     },
@@ -12003,7 +12000,7 @@
         "method": "road",
         "distanceM": 140,
         "reason": "距 梅獅路 135 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.89299,
         "lon": 121.184975
     },
@@ -12275,9 +12272,9 @@
     },
     "npa-c66e21731b": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 10,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.83135,
         "lon": 121.08766,
         "roadAxis": 70
@@ -12370,7 +12367,7 @@
         "suggestedLat": 24.16349,
         "suggestedLon": 120.685054,
         "reason": "距路口道路最遠 325 m（崇德路 325 m、進化北路 98 m）；推算路口相距 334 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.16392,
         "lon": 120.68831,
         "suggestedSource": "intersection"
@@ -12380,7 +12377,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 中山東路 35 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.78851,
         "lon": 121.18603
     },
@@ -12406,7 +12403,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 1線 60 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.667603,
         "lon": 120.47478
     },
@@ -12423,7 +12420,7 @@
         "method": "intersection",
         "distanceM": 160,
         "reason": "距路口道路最遠 160 m（園區三路 6 m、研新四路 160 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.782099,
         "lon": 120.99193
     },
@@ -12432,7 +12429,7 @@
         "method": "intersection",
         "distanceM": 140,
         "reason": "距路口道路最遠 137 m（萬壽路 3 m、中正路 137 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.018389,
         "lon": 121.407135
     },
@@ -12457,7 +12454,7 @@
     "npa-c98c714f72": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.56284,
         "lon": 120.31384
     },
@@ -12474,7 +12471,7 @@
         "method": "intersection",
         "distanceM": 70,
         "reason": "距路口道路最遠 65 m（中興路 0 m、丹榮路 65 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.578241,
         "lon": 120.484116
     },
@@ -12483,7 +12480,7 @@
         "method": "road",
         "distanceM": 110,
         "reason": "距 文中路一段265巷 109 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.989258,
         "lon": 121.262245
     },
@@ -12517,7 +12514,7 @@
         "method": "intersection",
         "distanceM": 60,
         "reason": "距路口道路最遠 63 m（世賢路 31 m、美源街 63 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.462564,
         "lon": 120.447655
     },
@@ -12561,7 +12558,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 復興北路 36 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.066849,
         "lon": 121.54438
     },
@@ -12602,7 +12599,7 @@
         "method": "road",
         "distanceM": 40,
         "reason": "距 新生南路 39 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.176693,
         "lon": 120.25403
     },
@@ -12648,7 +12645,7 @@
     "npa-cc2d2e8300": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.56438,
         "lon": 120.31559
     },
@@ -12851,7 +12848,7 @@
         "method": "intersection",
         "distanceM": 130,
         "reason": "距路口道路最遠 128 m（中山四路 6 m、大業北路 128 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.569653,
         "lon": 120.34452
     },
@@ -12942,7 +12939,7 @@
         "method": "intersection",
         "distanceM": 240,
         "reason": "距路口道路最遠 243 m（鹽洲路 4 m、義仁路 243 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.48791,
         "lon": 120.44127
     },
@@ -13140,15 +13137,15 @@
         "method": "intersection",
         "distanceM": 190,
         "reason": "距路口道路最遠 195 m（園區一路 14 m、慈雲路 195 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.78629,
         "lon": 121.00824
     },
     "npa-d3634243d7": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 20,
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "method": "tgos",
+        "distanceM": 60,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.65996,
         "lon": 120.320015,
         "roadAxis": 70
@@ -13282,7 +13279,7 @@
         "method": "intersection",
         "distanceM": 400,
         "reason": "距路口道路最遠 403 m（臺江大道 7 m、安中路320巷 403 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.06164,
         "lon": 120.17002
     },
@@ -13500,7 +13497,7 @@
         "suggestedLat": 24.070604,
         "suggestedLon": 120.696714,
         "reason": "距路口道路最遠 1404 m（林森路 228 m、草湖路 1404 m）；推算路口相距 1726 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.05517,
         "lon": 120.69852,
         "suggestedSource": "intersection"
@@ -13605,9 +13602,9 @@
     },
     "npa-db156f8a81": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 30,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.008032,
         "lon": 121.67277,
         "roadAxis": 0
@@ -13778,7 +13775,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 230 m（中央路 3 m、大湖路 230 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.866404,
         "lon": 120.43808
     },
@@ -14105,7 +14102,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 金門縣金寧鄉（國土測繪複查），非 金門縣金城鎮",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.458384,
         "lon": 118.36486,
         "roadAxis": 100
@@ -14181,7 +14178,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 久安路 33 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.691448,
         "lon": 120.50823
     },
@@ -14312,7 +14309,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新竹縣寶山鄉（國土測繪複查），非 新竹市東區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.775665,
         "lon": 120.99644,
         "roadAxis": 130
@@ -14381,7 +14378,7 @@
         "suggestedLat": 25.011882,
         "suggestedLon": 121.389694,
         "reason": "距路口道路最遠 1358 m（東萬壽路 0 m、龍校街121巷6弄 1358 m）；推算路口相距 1369 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.009476,
         "lon": 121.37637,
         "suggestedSource": "intersection"
@@ -14401,7 +14398,7 @@
         "suggestedLat": 24.191573,
         "suggestedLon": 120.596948,
         "reason": "距路口道路最遠 1892 m（西屯路 947 m、遠東街 1892 m）；推算路口相距 2120 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.18044,
         "lon": 120.61391,
         "suggestedSource": "intersection"
@@ -14452,7 +14449,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 75 m（仁愛路 3 m、臨沂街 75 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.038351,
         "lon": 121.53017
     },
@@ -14528,7 +14525,7 @@
         "method": "road",
         "distanceM": 110,
         "reason": "距 文山路 107 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.00007,
         "lon": 121.621445
     },
@@ -14537,7 +14534,7 @@
         "method": "intersection",
         "distanceM": 20770,
         "reason": "距路口道路最遠 20765 m（安樂路 1 m、崇德街 20765 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.12841,
         "lon": 121.733025
     },
@@ -14546,7 +14543,7 @@
         "method": "road",
         "distanceM": 30,
         "reason": "距 彰新路 31 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.149263,
         "lon": 120.509766
     },
@@ -14563,7 +14560,7 @@
         "method": "road",
         "distanceM": 380,
         "reason": "距 仁和路二段517巷 378 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.911953,
         "lon": 121.259544
     },
@@ -14656,7 +14653,7 @@
         "method": "road",
         "distanceM": 23660,
         "reason": "距 大灣路 23658 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.211151,
         "lon": 120.18567
     },
@@ -14707,7 +14704,7 @@
         "method": "admin",
         "distanceM": 10,
         "reason": "座標落於 新北市板橋區（國土測繪複查），非 新北市新莊區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.999134,
         "lon": 121.451256
     },
@@ -14873,7 +14870,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 228 m（中華路 9 m、獅山街 228 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.878002,
         "lon": 120.57057
     },
@@ -14962,7 +14959,7 @@
     "npa-f0f045e919": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.68351,
         "lon": 120.30761
     },
@@ -15122,7 +15119,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 233 m（三民路 137 m、公園路 233 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.14563,
         "lon": 120.68389
     },
@@ -15148,7 +15145,7 @@
         "method": "intersection",
         "distanceM": 80,
         "reason": "距路口道路最遠 79 m（介壽路 8 m、興豐路 79 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.930553,
         "lon": 121.29728
     },
@@ -15189,7 +15186,7 @@
         "method": "road",
         "distanceM": 380,
         "reason": "距 瑞安路 380 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.874975,
         "lon": 121.27842
     },
@@ -15258,7 +15255,7 @@
         "method": "admin",
         "distanceM": 0,
         "reason": "座標落於 基隆市暖暖區（國土測繪複查），非 基隆市七堵區",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.102283,
         "lon": 121.754326
     },
@@ -15309,7 +15306,7 @@
         "method": "intersection",
         "distanceM": 230,
         "reason": "距路口道路最遠 232 m（濱海路 1 m、工五路 232 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.167889,
         "lon": 120.5143
     },
@@ -15417,7 +15414,7 @@
         "method": "intersection",
         "distanceM": 100,
         "reason": "距路口道路最遠 103 m（高鐵南路 5 m、快速路 103 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 24.955482,
         "lon": 121.148994
     },
@@ -15618,9 +15615,9 @@
     },
     "npa-fbb5ffe631": {
         "verdict": "OK",
-        "method": "road",
-        "distanceM": 0,
-        "checkedAt": "2026-11-17T08:36:25Z",
+        "method": "tgos",
+        "distanceM": 10,
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 25.01726,
         "lon": 121.698616,
         "roadAxis": 170
@@ -15630,7 +15627,7 @@
         "method": "intersection",
         "distanceM": 200,
         "reason": "距路口道路最遠 197 m（中科二林大道 6 m、產學三路 197 m）",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.93027,
         "lon": 120.4359
     },
@@ -15645,7 +15642,7 @@
     "npa-fc1c41045a": {
         "verdict": "UNVERIFIABLE",
         "method": "unverifiable",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 22.717821,
         "lon": 120.325356
     },
@@ -15826,7 +15823,7 @@
         "method": "route",
         "distanceM": 60,
         "reason": "距 19線 58 m",
-        "checkedAt": "2026-11-20T04:03:40Z",
+        "checkedAt": "2026-11-25T08:23:01Z",
         "lat": 23.29279,
         "lon": 120.241684
     },
