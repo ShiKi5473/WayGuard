@@ -59,6 +59,7 @@ object AddressParser {
     private val HOUSE_RE = Regex("(\\d+(?:[之\\-]\\d+)?)\\s*號")
     private val OFFSET_RE = Regex("(?:往[東西南北]|以[東西南北]|離[^\\s,，()（）]+?)\\s*約?\\s*(\\d+(?:\\.\\d+)?)\\s*公尺")
     private val RAMP_OR_SPAN_RE = Regex("(?:匝道|交流道|系統交流道|至)")
+    private val INTERSECTION_MARK_RE = Regex("[與和及、口/／&＆至間~～]|交叉|跨")
 
     fun parse(
         address: String,
@@ -70,22 +71,26 @@ object AddressParser {
         val normCity = normalizeText(city)
 
         val (addressRoads, addressRoadLanes) = CameraRoad.roadsAndLanesInAddress(address, knownRoads)
-        val roads = if (addressRoads.isNotEmpty()) {
+        val allRoads = if (addressRoads.isNotEmpty()) {
             addressRoads
         } else {
             listOfNotNull(CameraRoad.roadBeforeToward(directionText))
         }
-        val roadLanes = if (addressRoads.isNotEmpty()) addressRoadLanes else emptyMap()
+        val allRoadLanes = if (addressRoads.isNotEmpty()) addressRoadLanes else emptyMap()
 
         val (routeRef, isFreeway) = extractRoute(norm) ?: extractRoute(normCity) ?: (null to false)
         val km = extractKm(norm)
-        val house = if (routeRef == null || roads.isNotEmpty()) {
+        val house = if (routeRef == null || allRoads.isNotEmpty()) {
             HOUSE_RE.find(norm)?.groupValues?.get(1)
         } else {
             null
         }
         val offsetMeters = OFFSET_RE.find(norm)?.groupValues?.get(1)?.toDoubleOrNull()
         val isRampOrSpan = RAMP_OR_SPAN_RE.containsMatchIn(norm)
+        // A bare `X路段` beside a house number on another road is that house, not an intersection.
+        val stretchHouse = if (house != null) stretchHouseRoad(norm, allRoads) else null
+        val roads = stretchHouse?.let { listOf(it) } ?: allRoads
+        val roadLanes = if (stretchHouse != null) allRoadLanes.filterKeys { it == stretchHouse } else allRoadLanes
 
         val kind = when {
             roads.size >= 2 -> AddressKind.INTERSECTION
@@ -132,6 +137,21 @@ object AddressParser {
         val m = Regex("^([一二三四五六七八九十]+|\\d+)([甲乙丙丁己]?)$").find(norm) ?: return null
         val num = parseCnOrInt(m.groupValues[1]) ?: return null
         return "$num${m.groupValues[2]}"
+    }
+
+    /**
+     * `旗楠路段〈鳳旗路44號之10旁〉`: the bare `旗楠路段` only names the stretch, while the house number on
+     * 鳳旗路 pins the spot. Returns the road carrying the house number, or null whenever the address
+     * could still be an intersection (any `與`/`口`/`至`… marker, or not exactly one stretch + one house road).
+     */
+    private fun stretchHouseRoad(norm: String, roads: List<String>): String? {
+        if (roads.size != 2 || INTERSECTION_MARK_RE.containsMatchIn(norm)) return null
+        val stretch = roads.filter { Regex(Regex.escape(it) + "段").containsMatchIn(norm) }
+        val housed = roads.filter {
+            Regex(Regex.escape(it) + "(?:[一二三四五六七八九十\\d]+段)?\\s*\\d+(?:[之\\-]\\d+)?\\s*號").containsMatchIn(norm)
+        }
+        if (stretch.size != 1 || housed.size != 1 || stretch == housed) return null
+        return housed.single()
     }
 
     private fun extractRoute(text: String): Pair<String, Boolean>? {

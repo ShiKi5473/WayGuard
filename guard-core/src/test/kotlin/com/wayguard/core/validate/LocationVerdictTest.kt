@@ -194,6 +194,40 @@ class LocationVerdictTest {
     }
 
     @Test
+    fun tgosHandCorrectedQueryIsTrustedOnlyWhenItStillMatchesTheNpaAddress() {
+        // Rows taken from a real TGOS batch result, uploaded with hand-corrected addresses.
+        val csv = """
+            id,Address,Response_Address,Response_X,Response_Y
+            a,宜蘭縣員山鄉溪洲路150號,宜蘭縣員山鄉七賢村1鄰溪洲路150號,121.747896,24.719197
+            b,高雄市燕巢區鳳旗路44之10號,高雄市燕巢區鳳雄里4鄰鳳旗路44之10號,120.356298,22.75523
+            c,宜蘭縣員山鄉溪洲路152號,宜蘭縣員山鄉七賢村1鄰溪洲路152號,121.747896,24.719197
+        """.trimIndent()
+        val hits = TgosCsv.parseResults(csv)
+        assertEquals("宜蘭縣員山鄉溪洲路150號", hits.getValue("a").queryAddress)
+
+        val rawA = "宜18-2線溪洲路150號西向"
+        val cleanedA = TgosCsv.cleanAddressForTgos("宜蘭縣", "員山鄉", rawA)
+        // Against the NPA address the route code makes the road differ from TGOS's.
+        assertNull(TgosCsv.assess(hits.getValue("a"), "宜蘭縣", "員山鄉", cleanedA))
+        val queryA = TgosCsv.queryFor(hits.getValue("a"), "宜蘭縣", "員山鄉", rawA, cleanedA)
+        assertEquals("宜蘭縣員山鄉溪洲路150號", queryA)
+        assertEquals(TgosMatchQuality.EXACT, TgosCsv.assess(hits.getValue("a"), "宜蘭縣", "員山鄉", queryA)?.quality)
+
+        val rawB = "旗楠路段〈鳳旗路44號之10旁〉"
+        val cleanedB = TgosCsv.cleanAddressForTgos("高雄市", "燕巢區", rawB)
+        val queryB = TgosCsv.queryFor(hits.getValue("b"), "高雄市", "燕巢區", rawB, cleanedB)
+        assertEquals(TgosMatchQuality.EXACT, TgosCsv.assess(hits.getValue("b"), "高雄市", "燕巢區", queryB)?.quality)
+
+        // A query naming another house number (e.g. pasted onto the wrong row) is not trusted.
+        val queryC = TgosCsv.queryFor(hits.getValue("c"), "宜蘭縣", "員山鄉", rawA, cleanedA)
+        assertEquals(cleanedA, queryC)
+        assertNull(TgosCsv.assess(hits.getValue("c"), "宜蘭縣", "員山鄉", queryC))
+
+        // Results without a separate query column keep using the NPA address.
+        assertEquals("", TgosCsv.parseResults("id,lon,lat,address\nk,121.23,24.96,桃園市中壢區中山路100號\n").getValue("k").queryAddress)
+    }
+
+    @Test
     fun milepostIndexParsesCsvAndInterpolatesLinearly() {
         val csv = """
             路線編號,里程,經度,緯度

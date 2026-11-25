@@ -212,7 +212,9 @@ internal class LocationChecker(
                     null
                 }
                 // Fuzzy results that landed on another number or road are a different place: ignore them.
-                val tgosMatch = tgosHit?.let { TgosCsv.assess(it, cam.city, cam.district, cleaned) }
+                val tgosMatch = tgosHit?.let {
+                    TgosCsv.assess(it, cam.city, cam.district, TgosCsv.queryFor(it, cam.city, cam.district, cam.address, cleaned))
+                }
                 if (tgosMatch != null) {
                     // Raw TGOS coords are not published; only a MISMATCH fix projected onto the OSM road is.
                     if (tgosMatch.pinsHouse) tgosHouse = tgosMatch.pos
@@ -517,7 +519,9 @@ internal class LocationChecker(
         if (parsed.kind == AddressKind.HOUSE_NUMBER && parsed.roads.isNotEmpty() && osm != null && !osm.isEmpty) {
             val cleaned = TgosCsv.cleanAddressForTgos(row.city, row.region, row.address)
             val hit = tgosResults[id] ?: if (!offline) tgos?.query(id, cleaned) else null
-            val house = hit?.let { TgosCsv.assess(it, city, district, cleaned) }?.takeIf { it.pinsHouse }?.pos
+            val house = hit?.let {
+                TgosCsv.assess(it, city, district, TgosCsv.queryFor(it, city, district, row.address, cleaned))
+            }?.takeIf { it.pinsHouse }?.pos
             val road = parsed.roads.first()
             val lane = parsed.roadLanes[road]
             val onRoad = house?.let { osm.nearestPointOnRoad(it, road, city, LocationVerdict.TGOS_SNAP_MAX_M, lane) }

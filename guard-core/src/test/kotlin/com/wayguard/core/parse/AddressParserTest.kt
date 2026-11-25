@@ -42,6 +42,23 @@ class AddressParserTest {
     }
 
     @Test
+    fun bareRoadStretchBesideAHouseNumberOnAnotherRoadIsThatHouse() {
+        val known = setOf("旗楠路", "鳳旗路", "中環路", "新泰路")
+        val stretch = AddressParser.parse("旗楠路段〈鳳旗路44號之10旁〉", "高雄市", knownRoads = known)
+        assertEquals(AddressKind.HOUSE_NUMBER, stretch.kind)
+        assertEquals(listOf("鳳旗路"), stretch.roads)
+
+        // With an intersection marker both roads still count.
+        val inter = AddressParser.parse("旗楠路段與鳳旗路44號前", "高雄市", knownRoads = known)
+        assertEquals(AddressKind.INTERSECTION, inter.kind)
+
+        // A bracketed house number that only marks a landmark beside another road is left alone.
+        val landmark = AddressParser.parse("中環路2段台65線高架下（新泰路401巷29號對面）", "新北市", knownRoads = known)
+        assertEquals(listOf("中環路", "新泰路"), landmark.roads)
+        assertEquals(AddressKind.INTERSECTION, landmark.kind)
+    }
+
+    @Test
     fun parsesBranchRoutesFullWidthAndCountyRoads() {
         val branch = AddressParser.parse("台7乙線8.8K處", "桃園市")
         assertEquals(AddressKind.PROVINCIAL_KM, branch.kind)

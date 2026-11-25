@@ -514,5 +514,28 @@ class LocationCheckerTest {
         val upload = LocationChecker.buildTgosUploadRows(cams, rejected, rowsById, res.checks)
         assertEquals(listOf("cam-wrong"), upload.map { it.id })
     }
+
+    @Test
+    fun handCorrectedTgosQueryPinsTheHouseThoughTheNpaAddressKeepsItsRouteCode() {
+        val cam = SpeedCamera("cam-route", 24.960, 121.2215, city = "桃園市", district = "中壢區", address = "106線中山路100號前")
+        val header = "id,Address,Response_Address,Response_X,Response_Y"
+        val response = "桃園市中壢區中山里5鄰中山路100號,121.2212,24.9603"
+        fun check(query: String) = LocationChecker(
+            osm,
+            offline = true,
+            tgosResults = TgosCsv.parseResults("$header\ncam-route,$query,$response\n"),
+        ).checkAll(listOf(cam), emptyList(), emptyMap(), emptyMap(), "2026-11-25T00:00:00Z", verifyAll = true)
+            .checks.getValue("cam-route")
+
+        // Uploaded as exported: the route code makes the road differ from TGOS's, so it is ignored.
+        assertEquals("road", check("桃園市中壢區106線中山路100號").method)
+
+        val chk = check("桃園市中壢區中山路100號")
+        assertEquals("tgos", chk.method)
+        assertEquals(VerdictLevel.OK, chk.verdict)
+        // Recorded, so it is not exported for another upload.
+        val upload = LocationChecker.buildTgosUploadRows(listOf(cam), emptyList(), emptyMap(), mapOf("cam-route" to chk))
+        assertTrue(upload.isEmpty())
+    }
 }
 

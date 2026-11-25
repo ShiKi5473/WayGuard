@@ -21,6 +21,8 @@ data class TgosHit(
     val matchedAddress: String = "",
     /** Every location TGOS returned; fuzzy matching may return several (`;`-separated in the batch CSV). */
     val candidates: List<TgosCandidate> = listOf(TgosCandidate(pos, matchedAddress)),
+    /** The address uploaded for this row (batch `Address` column), possibly corrected by hand; empty if unknown. */
+    val queryAddress: String = "",
 )
 
 /** How well the address TGOS matched agrees with the house number queried. */
@@ -154,6 +156,8 @@ object TgosCsv {
         val yIdx = findCol(headers, "response_y", "y", "緯度", "縱坐標", "lat", "twd97_y", "y坐標")
         // Prefer the address TGOS matched over the one we uploaded.
         val addrIdx = findCol(headers, "response_address", "matched_address", "比對地址", "門牌地址", "完整地址", "address", "地址")
+        // The uploaded query (batch `Address` column), kept apart from the matched address.
+        val queryIdx = headers.indexOfFirst { it.equals("address", ignoreCase = true) }.takeIf { it != addrIdx } ?: -1
         if (idIdx < 0 || xIdx < 0 || yIdx < 0) return emptyMap()
 
         val out = LinkedHashMap<String, TgosHit>()
@@ -176,9 +180,26 @@ object TgosCsv {
             }
             // Drop the whole row when any candidate is unreadable: a partial set could mislead.
             if (candidates.size != xs.size) continue
-            out[id] = TgosHit(id, centroid(candidates.map { it.pos }), addr, candidates)
+            val query = if (queryIdx >= 0) cols.getOrNull(queryIdx)?.trim().orEmpty() else ""
+            out[id] = TgosHit(id, centroid(candidates.map { it.pos }), addr, candidates, query)
         }
         return out
+    }
+
+    /**
+     * The address to [assess] [hit] against: its uploaded query when that was corrected by hand
+     * (`宜18-2線溪洲路150號` → `溪洲路150號`), provided its road and house number both still appear
+     * in [rawAddress], the camera's own NPA address; otherwise [cleaned]. A query naming another road
+     * or number (e.g. pasted onto the wrong row) is never trusted.
+     */
+    fun queryFor(hit: TgosHit, city: String, district: String, rawAddress: String, cleaned: String): String {
+        val query = hit.queryAddress
+        if (query.isBlank() || query == cleaned) return cleaned
+        val key = houseKey(query, city, district) ?: return cleaned
+        val raw = normalizeHouseText(rawAddress)
+        val number = if (key.sub != null) "${key.number}之${key.sub}號" else "${key.number}號"
+        val numberInRaw = Regex("(?<!\\d)" + Regex.escape(number)).containsMatchIn(raw)
+        return if (key.road in raw && numberInRaw) query else cleaned
     }
 
     /**
